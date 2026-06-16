@@ -3,9 +3,9 @@ import rewind from "@turf/rewind";
 
 export async function crearMapaDelitos() {
   const [NuevaGranadaRaw, rawViz, rawLugar] = await Promise.all([
-    d3.json("/data/NuevaGranada.json"),
-    d3.csv("/data/Visualizaciones.csv"),
-    d3.csv("/data/Lugar.csv"),
+    d3.json(`${import.meta.env.BASE_URL}/data/NuevaGranada.json`),
+    d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`),
+    d3.csv(`${import.meta.env.BASE_URL}/data/Lugar.csv`),
   ]);
 
   const NuevaGranada = rewind(NuevaGranadaRaw, { reverse: true });

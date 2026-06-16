@@ -3,7 +3,7 @@ import * as Plot from "@observablehq/plot";
 
 export async function crearTiposCasos() {
 
-const MujeresMencionadas = await d3.csv("/data/Casos.csv");
+const MujeresMencionadas = await d3.csv(`${import.meta.env.BASE_URL}/data/Casos.csv`);
 
 const tipoCaso = 
     Plot.plot({

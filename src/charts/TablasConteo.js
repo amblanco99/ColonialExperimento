@@ -2,7 +2,7 @@ import * as d3 from "d3";
 
 export async function crearConteoInteractivo() {
 
-  const datos = await d3.csv("/data/Visualizaciones.csv");
+  const datos = await d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`);
 
   const getSiglo = (year) => {
     const y = +year;

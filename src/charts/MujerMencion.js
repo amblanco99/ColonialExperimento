@@ -4,7 +4,7 @@ import * as Plot from "@observablehq/plot";
 export async function crearMujerMencion() { 
 
 const MujeresMencionadas = await d3.csv(
-  "/data/Casos.csv",
+  `${import.meta.env.BASE_URL}/data/Casos.csv`,
   d => ({
     FechaInicial: +d.FechaInicial,
     MujeresMencionadas: +d.MujeresMencionadas

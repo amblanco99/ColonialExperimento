@@ -7,7 +7,7 @@ export async function crearMetadatos() {
   // =========================
 
   const data = await d3.csv(
-    "/data/metadatos.csv"
+    `${import.meta.env.BASE_URL}/data/metadatos.csv`
   );
 
   // =========================

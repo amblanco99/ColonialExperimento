@@ -3,7 +3,7 @@ import * as d3 from "d3";
 export async function crearPoblaInstiSunburst() {
 
   // ── Cargar datos ──────────────────────────────────────────────────────────
-  const raw = await d3.csv("/data/Visualizaciones.csv");
+  const raw = await d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`);
 // ── Sacar el siglo ──────────────────────────────────────────────────────────
   
    const getSiglo = y => {

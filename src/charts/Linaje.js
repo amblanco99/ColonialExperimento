@@ -2,7 +2,7 @@ import * as d3 from "d3";
 
 export async function crearLinaje() {
 
-  const datos = await d3.csv("/data/Linaje.csv");
+  const datos = await d3.csv(`${import.meta.env.BASE_URL}/data/Linaje.csv`);
 
   const width = 928;
   const marginTop = 10;

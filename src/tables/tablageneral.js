@@ -7,8 +7,8 @@ export async function crearTabla() {
   // =========================
 
   const [dataCrimenes, dataViz] = await Promise.all([
-    d3.csv("/data/crimenes.csv"),
-    d3.csv("/data/Visualizaciones.csv")
+    d3.csv(`${import.meta.env.BASE_URL}/data/crimenes.csv`),
+    d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`)
   ]);
 
   // =========================

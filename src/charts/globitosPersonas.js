@@ -3,7 +3,7 @@ import * as d3 from "d3";
 export async function crearGlobitosPersonas() {
 
   const documentoCuenta = await d3.csv(
-    "/data/Visualizaciones.csv"
+    `${import.meta.env.BASE_URL}/data/Visualizaciones.csv`
   );
 
   const datosFiltrados = documentoCuenta.filter(d =>

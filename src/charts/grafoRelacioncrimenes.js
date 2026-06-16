@@ -2,7 +2,7 @@ import * as d3 from "d3";
 
 export async function crearRelacionCrimenes() {
 
-  const raw = await d3.csv("/data/Visualizaciones.csv");
+  const raw = await d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`);
 
   // ── Siglo ──────────────────────────────────────────────────────────────
   const getSiglo = y => {
