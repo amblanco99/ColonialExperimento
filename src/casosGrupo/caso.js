@@ -1,8 +1,8 @@
 import { parseCSV, buildCasesMap } from '../tables/dataLoader.js';
 
 // ── Configuración de rutas ────────────────────────────────
-const CSV_CRIMENES = '/data/crimenes.csv';
-const CSV_FUENTES  = '/data/Source.csv';
+const CSV_CRIMENES = `${import.meta.env.BASE_URL}/data/crimenes.csv`;
+const CSV_FUENTES  = `${import.meta.env.BASE_URL}/data/Source.csv`;
 
 // ── Leer parámetro de URL ─────────────────────────────────
 const params  = new URLSearchParams(window.location.search);
