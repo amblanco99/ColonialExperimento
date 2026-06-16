@@ -1,0 +1,341 @@
+/* =====================================================
+   DESIGN TOKENS (Identidad Visual Adaptada)
+===================================================== */
+:root {
+  --ink:            #1a1410;
+  --ink-light:      #4a3f35;
+  --parchment:      #f7f2e8;
+  --parchment-dark: #ede5d0;
+  --rule:           #c8b89a;
+  --accent:         #7a3b1e;
+  --accent-dim:     #a0622f;
+  --badge-bg:       #f0e6d0;
+  --font-display:   'IM Fell English', Georgia, serif;
+  --font-body:      'Source Sans 3', system-ui, sans-serif;
+  --font-mono:      'Source Code Pro', monospace;
+}
+
+/* =====================================================
+   RESET & ESTILOS GENERALES
+===================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+.container {
+  width: 90%;            
+  max-width: 900px;      
+  margin: 0 auto;       
+  padding: 3rem 1rem 5rem;
+  padding-top: 100px; /* Espacio para el topnav sticky */
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;   
+  text-align: center;    
+}
+
+section {
+  width: 100%;
+  max-width: 750px;     
+  margin-bottom: 4rem; 
+}
+
+.section-mainTitle {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--accent);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.4rem;
+  margin: 2.5rem 0 1.25rem;
+  letter-spacing: 0.02em;
+  text-align: center;
+  width: 100%;
+}
+
+/* Títulos de sección con el estilo editorial */
+section h2, .section-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--accent);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.4rem;
+  margin: 2.5rem 0 1.25rem;
+  letter-spacing: 0.02em;
+  text-align: left;
+  width: 100%;
+}
+
+p {
+  font-size: 0.95rem;    
+  line-height: 1.7;
+  max-width: 650px;     
+  color: var(--ink-light);
+  margin: 0.5rem auto 1.5rem auto; 
+}
+
+svg {
+  display: block;
+  margin: 0 auto;        
+  max-width: 100%;       
+  height: auto;
+}
+
+/* =====================================================
+   NAVEGACIÓN (.topnav adaptada a .site-header)
+===================================================== */
+.topnav {
+  width: 100%;
+  height: 65px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  box-sizing: border-box;
+  background: var(--parchment-dark);
+  border-bottom: 2px solid var(--rule);
+
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-style: italic;
+  font-weight: normal;
+}
+
+.nav-links {
+  display: flex;
+  gap: 30px;
+}
+
+.logo, 
+.nav-links a {
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: color 0.15s;
+}
+
+.logo:hover,
+.nav-links a:hover {
+  color: var(--accent);
+}
+
+/* =====================================================
+   VISUALIZACIONES Y TARJETAS
+===================================================== */
+.col-root {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1400px;
+}
+
+.cards-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.card {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 2px; /* Bordes más rectos para look manuscrito/antiguo */
+  padding: 25px;
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent); /* Detalle elegante tomado de crime-card */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: box-shadow 0.15s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+#chartLinaje,
+#waffleGenero,
+#tablaContainer,
+#tablaMetadatos {
+  overflow-x: auto;
+  width: 100%;
+}
+
+#waffleGenero {
+  padding: 2rem 0;
+}
+
+#mapa-contenedor {
+  font-family: var(--font-display);
+}
+
+/* =====================================================
+   LEYENDAS Y FILTROS
+==================================================== */
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--ink-light);
+}
+
+.color-box {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+}
+
+/* Mantuve las clases de colores de tus gráficos */
+.azul { background: #003f5c; }
+.rosa { background: #bc5090; }
+
+.filters {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.filters select,
+.filters input {
+  padding: 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: #ffffff;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  outline: none;
+}
+
+.filters select:focus,
+.filters input:focus {
+  border-color: var(--accent);
+}
+
+/* =====================================================
+   TABLAS ARCHIVÍSTICAS
+===================================================== */
+.tabla-datos,
+.tabla-metadatos {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border: 1px solid var(--rule);
+  margin-top: 1rem;
+}
+
+.tabla-datos th,
+.tabla-metadatos th {
+  background: var(--parchment-dark);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--rule);
+}
+
+.tabla-datos td,
+.tabla-metadatos td {
+  padding: 0.8rem;
+  font-size: 0.9rem;
+  color: var(--ink-light);
+  border-bottom: 1px solid var(--rule);
+}
+
+.tabla-datos tr:hover,
+.tabla-metadatos tr:hover {
+  background: var(--parchment);
+}
+
+.fila-clickeable {
+  cursor: pointer;
+}
+
+.fila-clickeable:hover {
+  background-color: var(--badge-bg) !important;
+}
+
+/* =====================================================
+   BOTONES DE DESCARGA
+===================================================== */
+.descargas {
+  width: 100%;
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.botones-descarga {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.btn-descarga {
+  background: var(--accent);
+  color: var(--parchment);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.9rem 1.5rem;
+  text-decoration: none;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.btn-descarga:hover {
+  background: var(--parchment-dark);
+  color: var(--accent);
+  border-color: var(--rule);
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+@media (max-width: 768px) {
+  .topnav {
+    padding: 0 20px;
+  }
+  .col-root, .cards-container {
+    flex-direction: column;
+  }
+  .card {
+    width: 100%;
+  }
+}

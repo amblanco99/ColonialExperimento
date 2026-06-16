@@ -1,0 +1,131 @@
+ID_Código,Path,Nombre,Sinónimos,Explicación,Nivel
+0,0,Delitos,,,Nivel 0
+1,0/1,Homicidio,Homicidio/complicidad de homicidio,,Nivel 1
+1.1,0/1/1.1,Homicidio,Homicidio/dar muerte,,Nivel 2
+1.2,0/1/1.2,Uxoricidio,Uxoricidio,,Nivel 2
+1.3,0/1/1.3,Infanticidio,Infanticidio,,Nivel 2
+2,0/2,Sin codificar,Sin codificar,,Nivel 1
+3,0/3,Intento de homicidio,Intento de homicidio,,Nivel 1
+4,0/4,Violencia,Violencia/riña/heridas/sevicia/agresión de obra,,Nivel 1
+4.1,0/4/4.1,Heridas,Heridas/agresión de obra/ultrajes de obra/estoquear/agresión física/malos tratamientos,,Nivel 2
+4.2,0/4/4.2,Riña,Riña/duelo/pendencia,,Nivel 2
+4.3,0/4/4.3,Sevicia,Sevicia/mutilación/atormentar,,Nivel 2
+4.4,0/4/4.4,Dirigir una pandilla de malhechores,Dirigir una pandilla de malhechores,,Nivel 2
+5,0/5,Violencia conyugal,Violencia conyugal/abandono matrimonial,,Nivel 1
+5.1,0/5/5.1,Violencia conyugal,Violencia conyugal,,Nivel 2
+5.2,0/5/5.2,Abandono,Abandono,,Nivel 2
+6,0/6,Amenazas,Amenazas,,Nivel 1
+7,0/7,Secuestros,Secuestros/extorsión,,Nivel 1
+7.1,0/7/7.1,Secuestro,Secuestro,,Nivel 2
+7.2,0/7/7.2,Extorsión,Extorsión,,Nivel 2
+7.3,0/7/7.3,Coerción,Coerción,,Nivel 2
+8,0/8,Aborto,Aborto,,Nivel 1
+9,0/9,Estupro,Estupro/violación/desfloramiento/incesto/seducción,,Nivel 1
+9.1,0/9/9.1,Estrupo,Estrupo/estupro/deshonrar,,Nivel 2
+9.2,0/9/9.2,Desfloramiento,Desfloramiento/seducción,,Nivel 2
+9.3,0/9/9.3,Incesto,Incesto,,Nivel 2
+9.4,0/9/9.4,Violación,Violación/forzamiento,,Nivel 2
+9.5,0/9/9.5,Inquietar casadas,Inquietar casadas/matrimonios/doncellas,,Nivel 2
+9.6,0/9/9.6,Romper palabra de materimonio,Romper palabra de materimonio,,Nivel 2
+10,0/10,Concubinato,Concubinato/adulterio/amancebamiento/bigamía/unión ilícita/alcahuete,,Nivel 1
+10.1,0/10/10.1,Concubinato,Concubinato/amancebamiento/unión ilícita,,Nivel 2
+10.2,0/10/10.2,Adulterio,Adulterio,,Nivel 2
+10.3,0/10/10.3,Bigamía,Bigamía,,Nivel 2
+10.4,0/10/10.4,Alcahuete,Alcahuete,,Nivel 2
+11,0/11,Envenenamiento,Envenenamiento,,Nivel 1
+12,0/12,Prostitución,Prostitución/“mujer pública”/mujer de vida alegra/libertinaje/lenocinio/vida licensiosa/mujeriego,,Nivel 2
+13,0/13,Bestialidad,Bestialidad/pecado nefando/transvestirse/relaciones unisexuales/sodomía,,Nivel 1
+13.1,0/13/13.1,Bestialidad,Bestialidad,,Nivel 2
+13.2,0/13/13.2,Transvestirse,Transvestirse,,Nivel 2
+13.3,0/13/13.3,Sodomía,Sodomía/pecado nefando,,Nivel 2
+13.4,0/13/13.4,Relaciones unisexuales,Relaciones unisexuales,,Nivel 1
+14,0/14,Rapto ,Rapto ,,Nivel 1
+15,0/15,Juicio de residencia,Juicio de residencia/naturaleza política/queja sobre alcalde/abuso de autoridad(general)/pleito por jurisdicción/persecución/omisión de deberes del cargo,,Nivel 1
+15.1,0/15/15.1,Juicio de residencia ,Juicio de residencia ,,Nivel 2
+15.2,0/15/15.2,Abuso de autoridad (en general),Abuso de autoridad (en general)/arbitraridades,,Nivel 2
+15.3,0/15/15.3,Pleito por jurisdicción,Pleito por jurisdicción/extralimitación de jurisdicción,,Nivel 2
+15.4,0/15/15.4,Persecución,Persecución,,Nivel 2
+15.5,0/15/15.5,Omisión de deberes del cargo ,Omisión de deberes del cargo /violación de correspondencia/perder documentos,,Nivel 2
+16,0/16,Injuria,Injuria/insulto/ofensa/irrespeto/ultraje/ultraje de palabra/agravios/blasfemia/atropellos,,Nivel 1
+16.1,0/16/16.1,Injuria,Injuria/insulto/ofensa/irrespeto/ultraje/ultraje de palabra/calumnias/vejaciones/burla/agresión verbal,,Nivel 2
+16.2,0/16/16.2,Agravios,Agravios/persecución/hostilidades,,Nivel 2
+16.3,0/16/16.3,Blasfemia,Blasfemia,,Nivel 2
+16.4,0/16/16.4,Atropellos,Atropellos,,Nivel 2
+17,0/17,Crimen militar,Crimen militar/deserción,,Nivel 1
+18,0/18,Financiero,Financiero/fiscal/fraude/contrabando/disputa de tierra/negocios o juegos ilegales/ negocios incumplidos/embargos/porte ilegal de armas/despojo/destierro/falsificación o suplantación,,Nivel 2
+18.2,0/18/18.2,Contrabando,Contrabando,,Nivel 2
+18.3,0/18/18.3,Evación fiscal,Evación fiscal/fraude (alcance de rentas)/usura/deuda/exacción/logrerismo,,Nivel 2
+18.4,0/18/18.4,Negocios y juegos ilegales,Negocios y juegos ilegales/tahures/estafas/jugar de mala fe,,Nivel 2
+18.5,0/18/18.5,Disputa de por animales (matar ganado ajeno),Disputa de por animales (matar ganado ajeno)/mal uso de recursos,,Nivel 2
+18.6,0/18/18.6,Negocios incumplidos,Negocios incumplidos/salarios,,Nivel 2
+18.7,0/18/18.7,Embargo,Embargo/despojo de bienes/expropiación,,Nivel 2
+18.8,0/18/18.8,Porte de armas ilegales,Porte de armas ilegales/armas ilegales,,Nivel 2
+18.9,0/18/18.9,Destierro,Destierro,,Nivel 2
+18.11,0/18/18.11,Falsificación o suplantación,Falsificación o suplantación/plagio,,Nivel 2
+18.12,0/18/18.12,Aceptar sobornos,Aceptar sobornos/sobornar,,Nivel 2
+18.13,0/18/18.13,Abandono de persona,Abandono de persona,,Nivel 2
+18.14,0/18/18.14,Trabajo forzado,Trabajo forzado/Explotación,,Nivel 2
+18.15,0/18/18.15,Monedas ilegales,Monedas ilegales/productos adulterados,,Nivel 2
+19,0/19,Desacato,Desacato/Inobediencia-desobediencia-resistencia a la autoridad/insubordinación,,Nivel 1
+20,0/20,Robo,Robo/cuatreros/abigeato/daños-manipulación a territorio y negocio(incluye incendios)/traspaso(escalamiento),,Nivel 1
+20.1,0/20/20.1,Robo,Robo/cuatreros/abigeato/hurtos/latrocinio/demandas por suma de.../saltear/asaltar,,Nivel 2
+20.2,0/20/20.2,Daños-manipulación a territorio y negocio(incluye incendios),Daños-manipulación a territorio y negocio(incluye incendios)/Delitos contra la propiedad,,Nivel 2
+20.3,0/20/20.3,Traspaso,Traspaso/escalamiento,,Nivel 2
+21,0/21,"Fuga (e intento) (incluye carcel, exilio o juicio) ","Fuga (e intento) (incluye carcel, exilio o juicio) /ayudar a fugarse (complice) ",,Nivel 1
+21.1,0/21/21.1,"Fuga o intento de fuga (de cárcel, de exilio, etc)","Fuga o intento de fuga (de cárcel, de exilio, etc)",,Nivel 2
+21.2,0/21/21.2,Ayudar a alguien a fugarse,Ayudar a alguien a fugarse/evadir captura,,Nivel 2
+22,0/22,Vagancia,Vagancia/excesos/escándalo/desmanes/desafuero,,Nivel 1
+22.1,0/22/22.1,Vagancia,Vagancia/mal entretenido/crápula,,Nivel 2
+22.2,0/22/22.2,Excesos,Excesos,,Nivel 2
+22.3,0/22/22.3,Escándalo,Escándalo,,Nivel 2
+22.4,0/22/22.4,Desmanes,Desmanes,,Nivel 2
+22.5,0/22/22.5,Desafuero,Desafuero/conducta disociadora,,Nivel 2
+22.6,0/22/22.6,Embriaguez,Embriaguez,,Nivel 2
+22.7,0/22/22.7,Pernicioso,Pernicioso/mal vecino,,Nivel 2
+22.8,0/22/22.8,Caviloso,Caviloso,,Nivel 2
+22.9,0/22/22.9,Contra la moralidad,Contra la moralidad/contra las buenas costumbres,,Nivel 2
+23,0/23,Crimen eclesiástico,Crimen eclesiástico,,Nivel 1
+24,0/24,Mala praxis de abogados,Mala praxis de abogados/falsas declaraciones judiciales (perjurio)/jueces cuestionables/debido proceso/injusticia de sentencia/abuso de autoridad(en sentencias),,Nivel 1
+24.1,0/24/24.1,Jueces cuestionables,Jueces cuestionables/debido proceso/injusticia de sentencia/abuso de autoridad(en sentencias),,Nivel 2
+24.2,0/24/24.2,Malapraxis de abogados ,Malapraxis de abogados /rábula/tinterillo,,Nivel 2
+24.3,0/24/24.3,Perjurio,Perjurio/falsas declaraciones/falso denuncio,,Nivel 2
+24.4,0/24/24.4,Demora en trámites judiciales,Demora en trámites judiciales,,Nivel 2
+25,0/25,Sublevación,Sublevación/motín/traición/militar con enemigo/agitador/asonada,,Nivel 1
+25.1,0/25/25.1,Sublevación,Sublevación/motín/asonada/incursión/movimientos revolucionarios/tumulto/insurrección/sedición/rebeldía,,Nivel 2
+25.2,0/25/25.2,Agitación,Agitación/disturbios/alboroto/revoltoso/incendiario/inquieto,,Nivel 2
+25.3,0/25/25.3,Militar con un enemigo,Militar con un enemigo,,Nivel 2
+25.4,0/25/25.4,Traición,Traición/conspiración,,Nivel 2
+26,0/26,Suicidio o intento,Suicidio o intento,,Nivel 1
+27,0/27,Migración ilegal,Migración ilegal,,Nivel 1
+28,0/28,Tipo de documento diferente a sumario ,Tipo de documento diferente a sumario ,,Nivel 1
+28.1,0/28/28.1,Peticiones y solicitudes,Peticiones y solicitudes,,Nivel 2
+28.2,0/28/28.2,Justficación,Justficación,,Nivel 2
+28.3,0/28/28.3,Apelación,Apelación,,Nivel 2
+28.4,0/28/28.4,Notas,Notas,,Nivel 2
+28.5,0/28/28.5,Informe,Informe/circular,,Nivel 2
+28.6,0/28/28.6,Reclamo,Reclamo,,Nivel 2
+28.7,0/28/28.7,Memorial,Memorial,,Nivel 2
+28.8,0/28/28.8,Consulta,Consulta,,Nivel 2
+28.9,0/28/28.9,Perdon (no oficial),Perdon (no oficial)/retiro de demanda,,Nivel 2
+28.11,0/28/28.11,Carta,Carta,,Nivel 2
+28.12,0/28/28.12,Requisitoria,Requisitoria,,Nivel 2
+28.13,0/28/28.13,Multa,Multa,,Nivel 2
+28.14,0/28/28.14,Poder,Poder,,Nivel 2
+29,0/29,Separación,Separación/Divorcio,,Nivel 1
+29.1,0/29/29.1,Separación,Separación,,Nivel 2
+29.2,0/29/29.2,Divorcio,Divorcio,,Nivel 2
+29.3,0/29/29.3,Disenso matrimonial,Disenso matrimonial/anulación,,Nivel 2
+30,0/30,Sucesión,Sucesión/linaje,,Nivel 2
+31,0/31,Actos oficiales,Actos oficiales,,Nivel 1
+32,0/32,No-Casos,No-Casos,,Nivel 1
+33,0/33,Ambiguos,Ambiguos,,Nivel 1
+34,0/34,Traslados y petición de traslado,Traslados y petición de traslado,,Nivel 1
+35,0/35,Petición de indulto,Petición de indulto/excarcelación,,Nivel 1
+35.1,0/35/35.1,Indulto,Indulto,,Nivel 2
+35.2,0/35/35.2,Excarcelación,Excarcelación/libertad/fianza,,Nivel 2
+36,0/36,Juicios civiles,Juicios civiles,,Nivel 1
+36.1,0/36/36.1,Por costos de un juicio,Por costos de un juicio,,Nivel 2
+36.2,0/36/36.2,Propiedad y bienes,Propiedad y bienes,,Nivel 2
+36.3,0/36/36.3,Contratos,Contratos,,Nivel 2
+36.4,0/36/36.4,Daños e indemnizaciones,Daños e indemnizaciones,,Nivel 2
+36.5,0/36/36.5,Deudas,Deudas,,Nivel 2

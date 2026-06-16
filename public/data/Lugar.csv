@@ -1,0 +1,465 @@
+ID_Lugar,Lugar,Latitud,Longitud,Clasificación,País_Contemporáneo,Notas
+LID1,Aguachica,8.314519,-73.601915,Municipio,Colombia,null
+LID2,Aipe,3.221756,-75.236978,Municipio,Colombia,null
+LID3,Almaguer,1.914724,-76.854366,Municipio,Colombia,null
+LID4,Alpujarra,3.390881,-74.932552,Municipio,Colombia,null
+LID6,Altagracia de Sutagaos (Fusagasugá),4.343754,-74.361925,Municipio,Colombia,null
+LID7,Ambalema,4.780986,-74.764735,Municipio,Colombia,null
+LID8,Ambato,-1.259750,-78.626677,Municipio,Ecuador,null
+LID9,Anapoima,4.558702,-74.528114,Municipio,Colombia,null
+LID10,Anolaima,4.761674,-74.465124,Municipio,Colombia,null
+LID11,Anserma,5.235969,-75.784942,Municipio,Colombia,null
+LID12,Antioquia ,6.239776310094802,-75.35774652720208,Departamento/Provincia,Colombia,null
+LID13,Carmen de Apicalá,4.147890,-74.722571,Municipio,Colombia,null
+LID14,Aratoca,6.694630,-73.018781,Municipio,Colombia,null
+LID15,Arauca,7.087561,-70.757888,Municipio,Colombia,null
+LID16,Arboledas,7.642714,-72.799654,Municipio,Colombia,null
+LID17,Archidona,-0.914026,-77.809052,Municipio,Ecuador,null
+LID18,Arjona,10.254266,-75.339061,Municipio,Colombia,null
+LID19,Ataco,3.590453,-75.383172,Municipio,Colombia,null
+LID20,Ayapel,8.315185,-75.140411,Municipio,Colombia,null
+LID21,Bacapí,5.5311636368515975,-74.10508498265833,Cambio histórico,Colombia,"Hoy Muzo, Boyacá"
+LID22,Baranoa,10.789836,-74.915850,Municipio,Colombia,null
+LID23,Barbacoas,1.672032,-78.138566,Municipio,Colombia,null
+LID24,Barichara,6.635778,-73.223372,Municipio,Colombia,null
+LID25,Barinas,8.619970542063843,-70.23477617800202,Municipio,Venezuela,null
+LID26,Barlovento,10.434051643040474,-66.76686102618314,Región,Venezuela,Hoy zona costera del estado Miranda
+LID27,Barranca del Rey,7.061188952410899,-73.85432865642089,Cambio histórico,Colombia,Posiblemente Barrancabermeja
+LID28,Barranquilla,10.979871,-74.777481,Municipio,Colombia,null
+LID29,Barrigablanca,9.104396588053106,-75.39974590870925,Sitio espesifíco,Colombia,Hacienda en el municipio de Chinú
+LID30,Bebará,6.100667312902748,-76.58335854230081,Sitio espesifíco,Colombia,Río en Chocó
+LID31,Beltrán,4.800172,-74.742673,Municipio,Colombia,null
+LID32,Betéitiva,5.910859,-72.808926,Municipio,Colombia,null
+LID33,Bituima,4.872082,-74.539222,Municipio,Colombia,null
+LID34,Boavita,6.329346,-72.585467,Municipio,Colombia,null
+LID35,Bocachica,10.326301959407052,-75.57802649747299,Sitio espesifíco,Colombia,Fuerte en Cartagena
+LID36,Bochalema,7.612230,-72.647062,Municipio,Colombia,null
+LID37,Bojacá,4.732315,-74.341759,Municipio,Colombia,null
+LID38,Bosa,4.623801878443382,-74.19644955093378,Sitio espesifíco,Colombia,Hoy localidad de Bogotá
+LID39,Boyacá ,5.4538279635374565,-73.36216924679208,Municipio,Colombia,null
+LID40,Bucaramanga,7.119749,-73.122745,Municipio,Colombia,null
+LID41,Buchadó,6.591580660738845,-76.87589369929415,Sitio espesifíco,Colombia,Hoy Villa en Vigia del fuerte en Antioquia
+LID42,Buenavista,5.511793,-73.943159,Municipio,Colombia,null
+LID43,Buenavista del Escobar,null,null,Ilocalizable,Ilocalizable,Hacienda Buenavista de Escobar
+LID44,Buga,3.903836,-76.295413,Municipio,Colombia,null
+LID45,Buriticá,6.719911,-75.907016,Municipio,Colombia,null
+LID46,Busbanzá,5.830776,-72.883983,Municipio,Colombia,null
+LID47,Cáceres,7.582454,-75.347517,Municipio,Colombia,null
+LID48,Cácota,7.268442,-72.641932,Municipio,Colombia,null
+LID52,Caimán,8.283330862499973,-76.71657981955154,Sitio espesifíco,Colombia,null
+LID53,Cajicá,4.917193,-74.025693,Municipio,Colombia,null
+LID54,Calandaima,4.481288669999358,-74.54206210321593,Sitio espesifíco,Colombia,Hoy río en Cundinamarca y Tolima
+LID55,Cali,3.455067,-76.532916,Municipio,Colombia,null
+LID56,Caloto,3.034651,-76.406329,Municipio,Colombia,null
+LID57,Caparrapí,5.346135,-74.491700,Municipio,Colombia,null
+LID58,Capitanejo,6.529247,-72.698276,Municipio,Colombia,null
+LID59,Cáqueza,4.405682,-73.946036,Municipio,Colombia,null
+LID60,Caracas,10.483230,-66.895518,Municipio,Venezuela,null
+LID61,Carare,6.784264813560417,-74.10006728855475,Sitio espesifíco,Colombia,Posiblemente Valle del río Carare
+LID62,Carcasí,6.627359,-72.626190,Municipio,Colombia,null
+LID63,Carrizal,8.4302,73.13236,Sitio espesifíco,Colombia,null
+LID64,Cartagena de Indias,10.423295,-75.551217,Municipio,Colombia,null
+LID65,Cartago,4.749680,-75.913325,Municipio,Colombia,null
+LID66,Casanare,5.746997508138076,-71.22734227222675,Departamento/Provincia,Colombia,null
+LID67,Caucán,8.2629,73.17044,Departamento/Provincia,Colombia,Posiblemente región del Valle
+LID68,Cazalla de la Sierra,37.929493,-5.758987,Municipio,España,null
+LID69,Cepitá,6.753064,-72.973472,Municipio,Colombia,null
+LID70,Cerinza,5.956092,-72.948018,Municipio,Colombia,null
+LID71,Cerrito,6.843493,-72.693976,Municipio,Colombia,null
+LID72,Chaguaní,4.949644,-74.594807,Municipio,Colombia,null
+LID73,Chámeza,5.213052,-72.871112,Municipio,Colombia,null
+LID74,Chaparral,3.724597,-75.485124,Municipio,Colombia,null
+LID75,Charalá,6.288126,-73.148288,Municipio,Colombia,null
+LID76,Cheva,6.154506217060504,-72.54605453726533,Sitio espesifíco,Colombia,Hoy vereda de Boyacá
+LID77,Chía,4.861371,-74.060492,Municipio,Colombia,null
+LID78,Chicatá,5.55754488669251,-73.28300265199537,Sitio espesifíco,Colombia,null
+LID79,Chima,6.344313,-73.372608,Municipio,Colombia,null
+LID80,Chinú,9.104577,-75.399191,Municipio,Colombia,null
+LID81,Chipaque,4.442328,-74.044915,Municipio,Colombia,null
+LID82,Chipatá,6.062592,-73.637315,Municipio,Colombia,null
+LID83,Chipazaque,4.790429784277016,-73.66341905221677,Cambio histórico,Colombia,Hoy Junin
+LID84,Chiquinquirá,5.618181,-73.816843,Municipio,Colombia,null
+LID85,Chire,6.034202069422262,-71.8114096690995,Municipio,Colombia,null
+LID87,Chiriguaná,9.362046,-73.601713,Municipio,Colombia,null
+LID88,Chiriquí,8.396730360634558,-82.32159123674796,Departamento/Provincia,Panamá,null
+LID89,Chiriví,5.354865049996189,-73.45730098372425,Cambio histórico,Colombia,Hoy Nuevo Colón
+LID90,Chiscas,6.552538,-72.499841,Municipio,Colombia,null
+LID91,Chita,6.187050,-72.472970,Municipio,Colombia,null
+LID92,Chitaraque,6.027851,-73.446938,Municipio,Colombia,null
+LID93,Chivatá,5.557342,-73.283078,Municipio,Colombia,null
+LID94,Choachí,4.528914,-73.923137,Municipio,Colombia,null
+LID95,Chocó,5.963720930852098,-77.00650785362099,Departamento/Provincia,Colombia,null
+LID96,Chocontá,5.144948,-73.685196,Municipio,Colombia,null
+LID97,Ciénega,5.409671,-73.296488,Municipio,Colombia,null
+LID98,Cincelada,6.239367933797362,-73.07828955198806,Sitio espesifíco,Colombia,null
+LID99,Citará,5.695632968422672,-76.65134401980968,Municipio,Colombia,null
+LID100,Cocorná,6.057572,-75.185298,Municipio,Colombia,null
+LID101,Cocuy,6.407814,-72.445614,Municipio,Colombia,null
+LID102,Coello,4.288090,-74.898216,Municipio,Colombia,null
+LID103,Cogua,5.060052,-73.978695,Municipio,Colombia,null
+LID104,Combeima,4.33510833757888,-75.16226396529515,Sitio espesifíco,Colombia,Río en Ibagué
+LID105,Cómbita,5.633652,-73.324306,Municipio,Colombia,null
+LID106,Comeza,5.98385,72.6288,Sitio espesifíco,Colombia,Hoy Vereda
+LID107,Confines,6.356085,-73.241076,Municipio,Colombia,null
+LID108,Copacabana,6.346126,-75.508112,Municipio,Colombia,null
+LID109,Corcobado,5.31798,76.478,Sitio espesifíco,Colombia,Hoy Aldea en el chocó
+LID110,Corozal,9.315681566224907,-75.29273176474771,Municipio,Colombia,null
+LID111,Cosaquetiva,6.040432736508793,-72.63662138140407,Cambio histórico,Colombia,Hoy veredas en Socota
+LID112,Coyaima,3.799438,-75.194572,Municipio,Colombia,null
+LID113,Cravo,5.538880705318712,-72.5365144786929,Sitio espesifíco,Colombia,Río en Casanare
+LID114,Cucaita,5.544327,-73.454099,Municipio,Colombia,null
+LID115,Cucunubá,5.249955,-73.766725,Municipio,Colombia,null
+LID116,Cúcuta,7.886092,-72.504308,Municipio,Colombia,null
+LID117,Cucutilla,7.539660,-72.772756,Municipio,Colombia,null
+LID118,Cuenca,-2.897241,-79.004425,Municipio,Ecuador,null
+LID119,Cuiloto,6.580694195805499,-71.2501282816752,Sitio espesifíco,Colombia,Rio en Arauca
+LID120,Cuítiva,5.580933,-72.966107,Municipio,Colombia,null
+LID121,Cumaná,10.463751,-64.173369,Municipio,Venezuela,null
+LID122,Cumaral,4.271281,-73.487620,Municipio,Colombia,null
+LID123,Cunday,4.060744,-74.691914,Municipio,Colombia,null
+LID124,Curití,6.606635,-73.069147,Municipio,Colombia,null
+LID125,Dolores,3.6711007341208277,-74.7495211288221,Municipio,Colombia,null
+LID126,Duitama,5.827774,-73.033865,Municipio,Colombia,null
+LID127,Ecuador ,-1.3556871505241188,-79.16012901762481,País,Ecuador,null
+LID128,El Banco,8.995793,-73.971370,Municipio,Colombia,null
+LID129,El Colegio,4.584105,-74.445966,Municipio,Colombia,null
+LID130,El Espinal,4.150362,-74.884634,Municipio,Colombia,null
+LID131,El Guamo,4.031672,-74.970842,Municipio,Colombia,null
+LID132,El Morro,5.452854715472858,-72.45615757697372,Sitio espesifíco,Colombia,Fuerte
+LID133,El Pardo,40.51912563502067,-3.7758728054264012,Sitio espesifíco,España,null
+LID134,El Socorro,6.470068,-73.261512,Municipio,Colombia,null
+LID135,Enciso,6.668093,-72.699494,Municipio,Colombia,null
+LID136,Engativá,4.7024575565530435,-74.10776034695424,Sitio espesifíco,Colombia,Hoy localidad en Bogotá
+LID137,Envigado,6.169996,-75.587414,Municipio,Colombia,null
+LID138,España ,39.33200077392213,-2.790316972941107,País,España,null
+LID139,Espinal,4.150307,-74.884668,Municipio,Colombia,null
+LID140,Facatativá,4.809725,-74.354095,Municipio,Colombia,null
+LID141,Firavitoba,5.668915,-72.992258,Municipio,Colombia,null
+LID142,Floridablanca,7.071968,-73.107094,Municipio,Colombia,null
+LID143,Fómeque,4.486346,-73.895042,Municipio,Colombia,null
+LID144,Fontibón,4.681564685155829,-74.144918705937,Sitio espesifíco,Colombia,Hoy localidad en Bogotá
+LID145,Fosca,4.338904,-73.938412,Municipio,Colombia,null
+LID146,Fúquene,5.404523,-73.796107,Municipio,Colombia,null
+LID147,Fusagasugá,4.343765,-74.361954,Municipio,Colombia,null
+LID148,Gachantivá,5.752065,-73.549299,Municipio,Colombia,null
+LID149,Gachetá,4.817378,-73.635940,Municipio,Colombia,null
+LID150,Gámbita,5.945853,-73.345346,Municipio,Colombia,null
+LID151,Gámeza,5.802040,-72.804990,Municipio,Colombia,null
+LID152,Garagoa,5.082004,-73.363808,Municipio,Colombia,null
+LID153,Garnica,null,null,Ilocalizable,Ilocalizable,Se referencia una escuela de este nombre. 
+LID154,Girón,7.067620,-73.169436,Municipio,Colombia,null
+LID155,Guaca,6.875673,-72.856196,Municipio,Colombia,null
+LID156,Guacamayas,6.460175,-72.501134,Municipio,Colombia,null
+LID157,Guachetá,5.385008,-73.685896,Municipio,Colombia,null
+LID158,Guadalupe,6.246793,-73.418196,Municipio,Colombia,null
+LID159,Guaduas,5.067499,-74.595070,Municipio,Colombia,null
+LID160,Guagua,2.86048,75.43582,Cambio histórico,Colombia,Posiblemente Huila
+LID161,Guaímaro,10.580795855740899,-74.71361303354516,Sitio espesifíco,Colombia,null
+LID162,Guamanga,-13.164716875853198,-74.22251823734638,Municipio,Perú,Hoy Ayacucho
+LID163,Guamo,4.031717,-74.970839,Municipio,Colombia,null
+LID164,Guamoco,8.294658757149135,-74.47456983087277,Cambio histórico,Colombia,"Hoy Vereda de Montecristo, Bolivar"
+LID165,Guasca,4.866614,-73.877676,Municipio,Colombia,null
+LID166,Guatavita,4.935195,-73.835376,Municipio,Colombia,null
+LID167,Guateque,5.006257,-73.473174,Municipio,Colombia,null
+LID168,Guatoque,5.713341269251888,-73.60232062740656,Cambio histórico,Colombia,Hoy Santa Sofía
+LID169,Guayabal,5.027955433236788,-74.888832296019,Cambio histórico,Colombia,Hoy Armero
+LID170,Guayabito,6.442979768998412,-73.33814504312986,Sitio espesifíco,Colombia,"Posiblemente Simacota, ya que hay un rio Guayabito allí"
+LID171,Guayaquil,-2.190031,-79.887737,Municipio,Ecuador,null
+LID172,Güepsa,6.025468,-73.572462,Municipio,Colombia,null
+LID173,Guicán,6.461722,-72.411893,Municipio,Colombia,null
+LID174,Hatogrande,4.80873,-73.58118,Municipio,Colombia,null
+LID175,Hatoviejo,10.30407,-75.03874,Cambio histórico,Colombia,"Hoy Bello, Antioquia"
+LID176,Honda,5.203977,-74.736992,Municipio,Colombia,null
+LID177,Ibagué,4.444747,-75.243013,Municipio,Colombia,null
+LID178,Ibarra,0.351443,-78.119627,Municipio,Ecuador,null
+LID179,Icabocu,5.221455372028563,-73.45708463860325,Cambio histórico,Colombia,Hoy Úmbita
+LID180,Itagüí,6.168287,-75.619097,Municipio,Colombia,null
+LID181,Iza,5.612362,-72.979584,Municipio,Colombia,null
+LID182,La Chorrera,8.883669809521853,-79.77258679632773,Municipio,Panamá,null
+LID183,La Cruz,1.600914,-76.971767,Municipio,Colombia,null
+LID184,La Culebra,7.77421039362526,-72.8133486866943,Sitio espesifíco,Colombia,"Posiblemente bajo la jurisdiccion de Salazar de las Palmas, por lo cual se ubica allí. "
+LID185,La Guaira,10.602560,-66.931354,Municipio,Venezuela,Puerto
+LID186,La Mesa,4.632229,-74.463066,Municipio,Colombia,null
+LID187,La Palma,5.360494,-74.390503,Municipio,Colombia,null
+LID188,La Peña,5.199730,-74.393515,Municipio,Colombia,null
+LID189,La Piñuela,7.377335520977805,-72.6502618699693,Sitio espesifíco,Colombia,Se ubica en el monasterio de Santa Clara de Pamplona.
+LID190,La Plata,2.388189,-75.892140,Municipio,Colombia,null
+LID191,La Playa,8.267243114047874,-73.20369107939895,Sitio espesifíco,Colombia,null
+LID192,La Uvita,6.318082,-72.560200,Municipio,Colombia,null
+LID193,La Vega,4.999732,-74.339624,Municipio,Colombia,null
+LID194,Labateca,7.299841,-72.494235,Municipio,Colombia,null
+LID195,Labranzagrande,5.562870,-72.577966,Municipio,Colombia,null
+LID196,Las Lajas,0.8056466766852839,-77.58584215982074,Sitio espesifíco,Colombia,Posiblemente la zona de la iglesia en Ipiales
+LID197,Las Palmas,9.856691510213972,-75.02255456931894,Sitio espesifíco,Colombia,null
+LID198,Leiva,1.934906,-77.306181,Municipio,Colombia,null
+LID199,Lenguazaque,5.306407,-73.712398,Municipio,Colombia,null
+LID200,Lengupá,5.1952004241612375,-73.14244581378574,Departamento/Provincia,Colombia,null
+LID201,León (isla),36.540275373552475,-6.29974812074676,Isla,España,null
+LID202,Lérida,4.863197,-74.907675,Municipio,Colombia,null
+LID203,Limonal,4.631940307870051,-74.46222631416596,Sitio espesifíco,Colombia,Posiblemente cerca de La Mesa Cundinamarca
+LID204,Loreto de Ticuanas,null,null,Ilocalizable,Ilocalizable,null
+LID205,Lorica,9.227045,-75.818889,Municipio,Colombia,null
+LID206,Los Llanos,3.4920148997450284,-72.78914014990124,Región,Colombia,null
+LID207,Los Santos,6.756664,-73.102776,Municipio,Colombia,null
+LID208,Macaravita,6.506065,-72.592980,Municipio,Colombia,null
+LID209,Machetá,5.081136,-73.607834,Municipio,Colombia,null
+LID210,Macuco,4.736131790892382,-72.2066074925071,Sitio espesifíco,Colombia,null
+LID211,Magangué,9.243983,-74.756972,Municipio,Colombia,null
+LID212,Magdalena,6.708668940654183,-74.67480640526662,Sitio espesifíco,Colombia,Río
+LID213,Mahates,10.237176,-75.188259,Municipio,Colombia,null
+LID214,Majagual,8.540445,-74.630176,Municipio,Colombia,null
+LID215,Málaga,6.699656,-72.732647,Municipio,Colombia,null
+LID216,Malambo,10.859246,-74.772788,Municipio,Colombia,null
+LID217,Manta,5.008663,-73.541230,Municipio,Colombia,null
+LID218,Maracaibo,10.642492,-71.614876,Municipio,Venezuela,null
+LID219,Margarita (isla),10.992195126495892,-63.912163744751886,Isla,Venezuela,null
+LID220,Marinilla,6.173620,-75.334702,Municipio,Colombia,null
+LID221,Mariquita,5.199912,-74.897676,Municipio,Colombia,null
+LID222,Matanza,7.323163,-73.015416,Municipio,Colombia,null
+LID223,Medellín,6.245782,-75.567900,Municipio,Colombia,null
+LID224,Melgar,4.204095,-74.642671,Municipio,Colombia,null
+LID225,Mercadillo,5.87720116845638,-73.6802094193624,Sitio espesifíco,Colombia,Posiblemente sitio ubicado en Puente Nacional
+LID226,Mérida,8.570124,-71.180513,Municipio,Venezuela,null
+LID227,Miraflores,5.195546,-73.144090,Municipio,Colombia,null
+LID228,Mogotes,6.476940,-72.970600,Municipio,Colombia,null
+LID229,Molagavita,6.673833,-72.809058,Municipio,Colombia,null
+LID230,Mompós,9.240817,-74.424162,Municipio,Colombia,null
+LID231,Mongua,5.754396,-72.798117,Municipio,Colombia,null
+LID232,Monguí,5.722309,-72.849526,Municipio,Colombia,null
+LID233,Moniquirá,5.876248,-73.573291,Municipio,Colombia,null
+LID234,Morcote,5.622058537981569,-72.30095698026007,Municipio,Colombia,null
+LID235,Moscachí,8.749259411366276,-70.92048717435267,Cambio histórico,Venezuela,Posiblemente los indígenas de Mucuchíes que habitaron la zona Andina
+LID236,Motavita,5.576458,-73.367474,Municipio,Colombia,null
+LID237,Muzo,5.532393,-74.105293,Municipio,Colombia,null
+LID238,Nare,6.188139615894971,-74.58161291102266,Sitio espesifíco,Colombia,null
+LID239,Natagaima,3.622137,-75.095542,Municipio,Colombia,null
+LID240,Nechí,8.090820,-74.779880,Municipio,Colombia,null
+LID241,Neiva,2.925559,-75.290866,Municipio,Colombia,null
+LID242,Nemocón,5.066490,-73.876928,Municipio,Colombia,null
+LID243,Nieves,4.603090543350813,-74.06940291034967,Sitio espesifíco,Colombia,Posiblemente el barrio en Bogotá
+LID244,Nimaima,5.126165,-74.385569,Municipio,Colombia,null
+LID245,Nocaima,5.069671,-74.377571,Municipio,Colombia,null
+LID246,Nóvita,4.955087,-76.607290,Municipio,Colombia,null
+LID247,Nunchía,5.638012,-72.194572,Municipio,Colombia,null
+LID248,Ocamonte,6.340636,-73.122062,Municipio,Colombia,null
+LID249,Ocaña,8.247118,-73.360031,Municipio,Colombia,null
+LID250,Oiba,6.264116,-73.298789,Municipio,Colombia,null
+LID251,Oicatá,5.595657,-73.308355,Municipio,Colombia,null
+LID252,Onzaga,6.344407,-72.817042,Municipio,Colombia,null
+LID253,Otavalo,0.225788,-78.263903,Municipio,Ecuador,null
+LID254,Pachavita,5.139188,-73.396488,Municipio,Colombia,null
+LID255,Pacho,5.130198,-74.158375,Municipio,Colombia,null
+LID256,Paipa,5.781276,-73.117517,Municipio,Colombia,null
+LID257,Palencia,42.009520,-4.534385,Municipio,España,null
+LID258,Pamplona,7.376416,-72.648142,Municipio,Colombia,null
+LID259,Panamá (Ciudad de Panamá),9.008368,-79.486620,Municipio,Panamá,null
+LID260,Páramo,6.416412,-73.169374,Municipio,Colombia,null
+LID261,Pasto,1.210334,-77.281436,Municipio,Colombia,null
+LID262,Patía,2.0714933178592774,-77.0517539567651,Municipio,Colombia,null
+LID263,Pauna,5.657592122223264,-73.97889420796625,Municipio,Colombia,null
+LID264,Pedregal,4.558974866768127,-74.52818879229537,Sitio espesifíco,Colombia,Posiblemente cerca a Anapoima 
+LID265,Peladeros,4.863562805320244,-74.90779187724495,Cambio histórico,Colombia,"Hoy Lérida, tolima"
+LID266,Penonomé,8.51102372486563,-80.35149332482582,Municipio,Panamá,null
+LID267,Perijá ,10.001014120791593,-72.99993562677835,Región,Venezuela,Hoy Sierra de Perijá
+LID268,Perú,-10.457437597145368,-75.79149399737418,País,Perú,null
+LID269,Pesca,5.559075710260793,-73.0514790283845,Municipio,Colombia,null
+LID270,Piedecuesta,6.985610,-73.050796,Municipio,Colombia,null
+LID271,Piedras,4.542596,-74.877476,Municipio,Colombia,null
+LID272,Pinchote,6.533053546869633,-73.17312285282428,Municipio,Colombia,null
+LID273,Pital,2.266127,-75.805358,Municipio,Colombia,null
+LID274,Plato,9.793623,-74.782590,Municipio,Colombia,null
+LID275,Popayán,2.442042,-76.606332,Municipio,Colombia,null
+LID276,Pore,5.726670,-71.993571,Municipio,Colombia,null
+LID277,Portachuelo,7.33454424769853,-73.16559498469874,Municipio,Colombia,null
+LID278,Portillo de Carora,10.180625389322087,-70.08530159271925,Cambio histórico,Venezuela,Hoy Carora Venezuela
+LID279,Portobelo,9.553878357588204,-79.65564513408737,Municipio,Panamá,null
+LID280,Pozonegro,6.009566403479922,-73.67162548338776,Sitio espesifíco,Colombia,Posiblemente sitio en Velez
+LID281,Puebloviejo,10.993574661034579,-74.28385610899923,Municipio,Colombia,null
+LID282,Puente Real,5.877179828835786,-73.67873956885228,Sitio espesifíco,Colombia,Hoy posiblemente Puente Nacional en Santander.
+LID283,Puerto España,10.669690408218711,-61.51313182062263,Municipio,Trinidad y Tobago,null
+LID284,Purificación,3.85993817526364,-74.92726901258405,Municipio,Colombia,null
+LID285,Purno,5.209193446079777,-74.73597768987298,Sitio espesifíco,Colombia,Posiblemente cerca a Honda
+LID286,Quebradanegra,5.117460,-74.479344,Municipio,Colombia,null
+LID287,Quibdó,5.690596471723812,-76.66153229005337,Municipio,Colombia,null
+LID288,Quiebralomo,5.444402917368353,-75.68999601748062,Sitio espesifíco,Colombia,"Posiblemente en Riosucio, Caldas"
+LID289,Quito,-0.2200251920696862,-78.51208003634746,Municipio,Ecuador,null
+LID290,Ramiriquí,5.401349615166551,-73.33536735541847,Municipio,Colombia,null
+LID291,Ráquira,5.538122865711724,-73.63306254833228,Municipio,Colombia,null
+LID292,Remedios,7.028447986084863,-74.69379057169138,Municipio,Colombia,null
+LID293,Remolino,10.701563,-74.718005,Municipio,Colombia,null
+LID294,Riachuelo,6.303111399258973,-73.08729884439293,Sitio espesifíco,Colombia,Hoy vereda
+LID295,Riobamba,-1.6666446256092045,-78.65875144310232,Municipio,Ecuador,null
+LID296,Riohacha,11.551360467015671,-72.90962998545749,Municipio,Colombia,null
+LID297,Rionegro,6.153946614470493,-75.37408580613715,Municipio,Colombia,null
+LID299,Rioviejo,8.590434388679945,-73.84033315228724,Municipio,Colombia,null
+LID300,Sabanalarga,10.632432794999486,-74.92070663709208,Municipio,Colombia,null
+LID301,Saboyá,5.697866,-73.764864,Municipio,Colombia,null
+LID302,Sáchica,5.584511750124354,-73.5420922510616,Municipio,Colombia,null
+LID303,Salazar de las Palmas,7.774189131611076,-72.81355253594268,Municipio,Colombia,null
+LID304,Salsipuedes,9.104057640622012,-75.39940270082307,Sitio espesifíco,Colombia,"Posiblemente en Chinú, Córdoba"
+LID305,Samacá,5.492705605630776,-73.48649164413816,Municipio,Colombia,null
+LID306,San Andrés,12.576860420354281,-81.70502511405721,Isla,Colombia,null
+LID307,San Andrés de Guaca,6.810213887923477,-72.8504974413143,Municipio,Colombia,null
+LID308,San Antonio,10.237835726901784,-75.18797147806451,Sitio espesifíco,Colombia,Posiblemente cerca al pueblo Mahates
+LID309,San Antonio de Gibraltar,9.270734060411517,-71.12802784848928,Cambio histórico,Venezuela,Hoy Gibraltar
+LID310,San Antonio de Tena,4.61638970199246,-74.35199634279606,Municipio,Colombia,null
+LID311,San Antonio del Rodeo,null,null,Ilocalizable,Ilocalizable,Hacienda
+LID312,San Antonio del Tachira,7.817890741519774,-72.4422319437948,Municipio,Venezuela,null
+LID313,San Bartolomé,5.49032,-75.54144,Sitio espesifíco,Colombia,Río
+LID314,San Benito Abad,8.926580,-75.024184,Municipio,Colombia,null
+LID315,San Cayetano,5.301878015838487,-74.06964706305943,Municipio,Colombia,null
+LID316,San Cristóbal,6.283614609877145,-75.63278159860188,Sitio espesifíco,Colombia,Hoy localidad en Medellín
+LID317,San Cristóbal (Venezuela),7.772137721351908,-72.22030159004147,Municipio,Venezuela,null
+LID318,San Diego,10.334163985111465,-73.18165140940435,Municipio,Colombia,null
+LID319,San Estanislao,10.396572323480694,-75.1487853383659,Municipio,Colombia,null
+LID320,San Faustino,7.3731712456091865,-72.64913478248107,Sitio espesifíco,Colombia,Corregimiento Norte de Santander
+LID321,San Francisco,4.977095123921028,-74.29008790378629,Municipio,Colombia,null
+LID322,San Gil,6.554998635171481,-73.13356261227011,Municipio,Colombia,null
+LID323,San Gregorio de Puertoviejo,-1.0612035226902672,-80.44953874536986,Municipio,Ecuador,null
+LID324,San Ildefonso (España),40.898811684868434,-4.00488441654357,Sitio espesifíco,España,null
+LID325,San Jacinto,9.828765365249517,-75.12281089489468,Municipio,Colombia,null
+LID326,San Jerónimo,6.442693405744502,-75.72791374830662,Municipio,Colombia,null
+LID327,San José,5.080504,-75.792274,Municipio,Colombia,null
+LID328,San José de la Robada,6.637962408316192,-73.28744400083411,Cambio histórico,Colombia,"Hoy Galan, Santander"
+LID329,San José del Valle,6.448228530920482,-73.14458699561797,Sitio espesifíco,Colombia,Posiblemente Valle de San José
+LID330,San Juan de Chamí,5.295829369142184,-75.88246054257141,Cambio histórico,Colombia,Posiblemente Mistrató
+LID331,San Juan de la Vega,4.999838274010026,-74.33957647328653,Municipio,Colombia,Hoy la Vega
+LID332,San Juan de los Llanos,3.3715382349884364,-73.87239385643754,Cambio histórico,Colombia,Hoy San Juan de Arama 
+LID333,San Juan de Rioseco,4.84560843523842,-74.62238093571395,Municipio,Colombia,null
+LID334,San Juanito (puente),null,null,Ilocalizable,Ilocalizable,Era un puente 
+LID335,San Lorenzo,1.5034993406393327,-77.21513995733802,Municipio,Colombia,null
+LID336,San Lorenzo de Chagres,9.32292601927427,-80.00109270698677,Sitio espesifíco,Panamá,Fuerte
+LID337,San Lúcar de Barrameda,36.770613131298006,-6.353821957009924,Municipio,España,null
+LID338,San Luis,6.042929280441914,-74.99444654457822,Municipio,Colombia,null
+LID339,San Luis Gonzaga,10.491390334436714,-66.84254155581256,Sitio espesifíco,Venezuela,null
+LID340,San Martín,8.003193856822495,-73.51160110157187,Municipio,Colombia,null
+LID341,San Martín de los Llanos,3.6988822869547575,-73.69735359759736,Municipio,Colombia,null
+LID342,San Miguel,0.3309212073202071,-76.87625271165453,Municipio,Colombia,null
+LID343,San Miguel de Ibarra,0.3517703005146195,-78.11975824751505,Municipio,Ecuador,null
+LID344,San Miguel de Zapatosa,9.201016569076156,-73.81673137324167,Sitio espesifíco,Colombia,Posiblemente Ciénaga de Zapatosa
+LID345,San Pedro de las Posadas,6.459651385917521,-75.55981504705987,Cambio histórico,Colombia,Posiblemente San Pedro en Antioquia
+LID346,San Pedro de Pamplona,7.37334148261808,-72.64776148630581,Municipio,Colombia,Hoy Pamplona
+LID347,San Vicente,6.28402394087591,-75.33219718569865,Municipio,Colombia,null
+LID348,San Victorino,4.60020940443208,-74.0803008989066,Sitio espesifíco,Colombia,Barrio Bogotá
+LID349,San Zenón,9.247549670528143,-74.49590684777561,Municipio,Colombia,null
+LID350,Santa Agueda,5.081176507384273,-75.67893494037901,Sitio espesifíco,Colombia,Posiblemente ubicado en Caldas
+LID351,Santa Ana,9.323225622542147,-74.57255561012556,Municipio,Colombia,null
+LID352,Santa Marta,11.245105279553577,-74.21374934377154,Municipio,Colombia,null
+LID353,Santa Rosa de Osos,6.649513596241287,-75.46097553403784,Municipio,Colombia,null
+LID354,Santa Rosa de Viterbo,5.874353710011826,-72.9825489366113,Municipio,Colombia,null
+LID355,Santafé (Bogotá),4.5984112264850046,-74.07599347368696,Municipio,Colombia,null
+LID356,Santafé de Antioquia,6.556449494847267,-75.82779423081622,Municipio,Colombia,null
+LID357,Santiago,7.8644935647525465,-72.71720304665185,Municipio,Colombia,null
+LID358,Santiago de Barroblanco,5.169943236986854,-72.5500050832207,Sitio espesifíco,Colombia,Posiblemente en las cercanias de Aguazul
+LID359,Santiago de las Atalayas,5.169943236986854,-72.5500050832207,Cambio histórico,Colombia,Hoy Aguazul
+LID360,Santiago de Veraguas,8.08859806528369,-80.97611012168494,Municipio,Panamá,null
+LID361,Santo Ecce-Homo,5.683789874056153,-73.59115526629769,Sitio espesifíco,Colombia,Convento Santo Ecce Homo en Villa de Leyva Boyacá.
+LID362,Sasaima,4.964033240495221,-74.43459472708788,Municipio,Colombia,null
+LID363,Sativa,6.108763358350192,-72.70517084702361,Municipio,Colombia,Hoy Municipio Sátiva en Boyacá (Sátiva Norte y Sur).
+LID364,Serrezuela,4.733777616652094,-74.2612849682206,Cambio histórico,Colombia,Hoy Madrid Cundinamarca
+LID365,Servitá,6.833835954881465,-72.69994844227735,Cambio histórico,Colombia,null
+LID366,Sesquilé,5.045203276141747,-73.7963559217204,Municipio,Colombia,null
+LID367,Sevilla (España),37.3876434863956,-5.988537954725079,Municipio,España,null
+LID368,Siachoque,5.513316628016562,-73.24480181339278,Municipio,Colombia,null
+LID369,Sibaté,4.4921337607434895,-74.25941241709288,Municipio,Colombia,null
+LID370,Silos,7.204355758316267,-72.75746125393272,Municipio,Colombia,null
+LID371,Simacota,6.4429691080061255,-73.33809408117577,Municipio,Colombia,null
+LID372,Simití,7.957491017175969,-73.94656493266793,Municipio,Colombia,null
+LID373,Soacha,4.582570053459995,-74.22011265943381,Municipio,Colombia,null
+LID374,Soatá,6.33541463850661,-72.68071419630549,Municipio,Colombia,null
+LID375,Socotá,6.040443405538156,-72.63667502553112,Municipio,Colombia,null
+LID376,Sogamoso,5.71469243327441,-72.92782561037441,Municipio,Colombia,null
+LID377,Soledad,10.916973623150811,-74.79867205372099,Municipio,Colombia,null
+LID378,Somondoco,4.985987452915669,-73.43254256660578,Municipio,Colombia,null
+LID379,Sopetrán,6.500553344215233,-75.74261519635465,Municipio,Colombia,null
+LID380,Sopó,4.908197977738201,-73.94028248483744,Municipio,Colombia,null
+LID381,Sora,5.566198,-73.450261,Municipio,Colombia,null
+LID382,Soracá,5.50160229951095,-73.33349756752233,Municipio,Colombia,null
+LID383,Sotaquirá,5.765746531177815,-73.24790760581212,Municipio,Colombia,null
+LID384,Suaita,6.103460519573964,-73.44144626219044,Municipio,Colombia,null
+LID385,Suba,4.719352930172994,-74.07466779472776,Sitio espesifíco,Colombia,Hoy localidad en Bogotá
+LID386,Subachoque,4.928360148699093,-74.17389183421055,Municipio,Colombia,null
+LID387,Subacuta,null,null,Ilocalizable,Ilocalizable,null
+LID388,Suesca,5.103480175411284,-73.7989832691837,Municipio,Colombia,null
+LID389,Suni,5.33795649754816,-72.3016469053112,Cambio histórico,Colombia,null
+LID390,Supía,5.455358024078994,-75.64978278855402,Municipio,Colombia,null
+LID391,Suratá,7.367074164666359,-72.98322259217464,Municipio,Colombia,null
+LID392,Suta,5.246718570713917,-73.85287576213065,Municipio,Colombia,Hoy Sutatausa Cundinamarca.
+LID393,Sutamarchán,5.6206654904135505,-73.62037591748474,Municipio,Colombia,null
+LID394,Sutatausa,5.246782673987387,-73.85282211800696,Municipio,Colombia,null
+LID395,Sutatenza,5.022568364964556,-73.45231793147293,Municipio,Colombia,null
+LID396,Tabio,4.916833722766337,-74.09892264321702,Municipio,Colombia,null
+LID397,Taboga,8.800614372591884,-79.55593406307783,Isla,Panamá,null
+LID398,Tadó,5.264044022621565,-76.5623732484113,Municipio,Colombia,null
+LID399,Talaigua,9.304612431282035,-74.56434023171623,Municipio,Colombia,null
+LID400,Tamalameque,8.861239150474779,-73.81382444452784,Municipio,Colombia,null
+LID401,Támara,5.829768208814893,-72.1639936878217,Municipio,Colombia,null
+LID402,Tame,6.4628018197496395,-71.73135589950459,Municipio,Colombia,null
+LID403,Tasco,5.91059179445587,-72.7805364140004,Municipio,Colombia,null
+LID404,Tausa,5.196171814828661,-73.8858066246488,Municipio,Colombia,null
+LID405,Teguas,5.013863742797544,-73.1310639402015,Cambio histórico,Colombia,"Pueblo indígena, cerca al río Lengupa"
+LID406,Tenerife,9.8967051758761,-74.85924317479213,Municipio,Colombia,null
+LID407,Tenjo,4.872674515337452,-74.14513783636714,Municipio,Colombia,null
+LID408,Tenza,5.077118586112403,-73.41966282655576,Municipio,Colombia,null
+LID409,Tequía,null,null,Ilocalizable,Ilocalizable,null
+LID410,Tibaná,5.318206478361194,-73.3969661733254,Municipio,Colombia,null
+LID411,Tibasosa,5.745782225022453,-73.00352144104082,Municipio,Colombia,null
+LID412,Tibitó,null,null,Ilocalizable,Ilocalizable,Hacienda
+LID413,Timaná,1.9742554744677971,-75.93280539988034,Municipio,Colombia,null
+LID414,Tinjacá,5.579841226379525,-73.64666473580566,Municipio,Colombia,null
+LID415,Tipacoque,6.421248104871477,-72.69152001376617,Municipio,Colombia,null
+LID416,Tiribitá,5.053020843257471,-73.50475323846914,Municipio,Colombia,null
+LID417,Tobasía,5.85671992708742,-72.9440582439138,Municipio,Colombia,null
+LID418,Toca,5.564884688924924,-73.18479305853172,Municipio,Colombia,null
+LID419,Tocaima,4.458241094026464,-74.63399357453606,Municipio,Colombia,null
+LID420,Tocancipá,4.965814,-73.913549,Municipio,Colombia,null
+LID421,Tolú,9.524703213140329,-75.5837738905703,Municipio,Colombia,null
+LID422,Tona,7.202798571165228,-72.96592059868523,Municipio,Colombia,null
+LID423,Tópaga,5.768376,-72.832776,Municipio,Colombia,null
+LID424,Toro,4.609105298655705,-76.0839426991002,Municipio,Colombia,null
+LID425,Tota,5.561016,-72.985917,Municipio,Colombia,null
+LID426,Trinidad de los Muzos,5.532889103155001,-74.1054510530298,Municipio,Colombia,Posiblemente en Muzo
+LID427,Trinidad y Guayana,8.356529979609359,-60.24307463150841,País,Trinidad y Tobago,null
+LID428,Tuluá,4.085822,-76.197263,Municipio,Colombia,null
+LID429,Tumaco,1.8086344152115967,-78.76659985815768,Municipio,Colombia,null
+LID430,Tunja,5.532952928827296,-73.36152790640982,Municipio,Colombia,null
+LID431,Tunjuelo,4.5312334973174755,-74.13023943329951,Sitio espesifíco,Colombia,Río
+LID432,Tupía,3.40284,-76.30911,Sitio espesifíco,Colombia,null
+LID433,Túquerres,1.0883997149398035,-77.61915598902166,Municipio,Colombia,null
+LID434,Turbaco,10.331541590263177,-75.40790521307076,Municipio,Colombia,null
+LID435,Turmequé,5.324427123532315,-73.49061269707596,Municipio,Colombia,null
+LID436,Tuta,5.691406430012133,-73.22800752806438,Municipio,Colombia,null
+LID437,Ubaque,4.4824819479314035,-73.93489990150957,Municipio,Colombia,null
+LID438,Ubaté,5.306889374463801,-73.81486432530691,Municipio,Colombia,null
+LID439,Umbita,5.221359196809389,-73.45661256008071,Municipio,Colombia,null
+LID440,Une,4.403782975399714,-74.02480512785169,Municipio,Colombia,null
+LID441,Urrao,6.317956391540339,-76.13447069857696,Municipio,Colombia,null
+LID442,Usaquen,4.7030038916969525,-74.03583528247019,Sitio espesifíco,Colombia,Hoy localidad en Bogotá
+LID443,Usme,4.509104692124321,-74.11346727242064,Sitio espesifíco,Colombia,Hoy localidad en Bogotá
+LID444,Uvita,6.318159281055363,-72.56026011967892,Municipio,Colombia,null
+LID445,Valencia de Jesús,10.302772893763677,-73.39374747938157,Sitio espesifíco,Colombia,null
+LID446,Valle de Jesús María,5.876043032986137,-73.7836271532648,Sitio espesifíco,Colombia,null
+LID447,Valle del Patía,1.989319,-77.151325,Región,Colombia,null
+LID448,Valledupar,10.47986176603368,-73.24402857768364,Municipio,Colombia,null
+LID449,Varios,null,null,Ilocalizable,Ilocalizable,null
+LID450,Vega de Supía,5.458250800515089,-75.64909468307236,Sitio espesifíco,Colombia,null
+LID451,Vélez,6.012512,-73.671915,Municipio,Colombia,null
+LID452,Venadillo,4.722325122535069,-74.92649622670179,Municipio,Colombia,null
+LID453,Venezuela,6.96216546072494,-65.90003914175242,País,Venezuela,null
+LID454,Veraguas,8.254521496917606,-81.11007042159386,Departamento/Provincia,Panamá,null
+LID455,Vergara,5.119044085233791,-74.34519925580648,Municipio,Colombia,null
+LID456,Victoria,5.317461257224903,-74.91189194110908,Municipio,Colombia,null
+LID457,Villa de Leiva,5.634278637267507,-73.52373255598168,Municipio,Colombia,null
+LID458,Villa del Rosario,7.844593043107006,-72.47113010328616,Municipio,Colombia,null
+LID459,Villeta,5.0117205964206875,-74.47019515995395,Municipio,Colombia,null
+LID460,Viracachá,5.436974366044126,-73.29731462904472,Municipio,Colombia,null
+LID462,Yacopí,5.460420322753906,-74.33775210818041,Municipio,Colombia,null
+LID463,Yaguará,2.6629530242261414,-75.51605947572799,Municipio,Colombia,null
+LID464,Yolombó,6.6002101215886535,-75.01211377934834,Municipio,Colombia,null
+LID465,Yucal,10.1282,-74.95183,Sitio espesifíco,Colombia,null
+LID466,Zapatoca,6.817229462215184,-73.26878604362928,Municipio,Colombia,null
+LID467,Zaragoza,7.492187659552336,-74.86777022368864,Municipio,Colombia,null
+LID468,Zetaquirá,5.281967927270357,-73.16848421434014,Municipio,Colombia,null
+LID469,Zipacón,4.759841550536558,-74.37961901562568,Municipio,Colombia,null
+LID470,Zipaquirá,5.023869930967913,-74.00301010643146,Municipio,Colombia,null
+LID471,Cerro San Antonio,10.32473117029212,-74.86800558792828,Municipio,Colombia,null

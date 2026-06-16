@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Tablas y Filtros</title>
+</head>
+
+<body>
+
+    <nav class="topnav">
+
+  <a href="index.html" class="logo">
+    Crímenes Coloniales
+  </a>
+
+  <div class="nav-links">
+
+    <a href="index.html">
+      Inicio
+    </a>
+
+    <a href="tablas.html">
+     Tablas y filtros
+    </a>
+
+    <a href="about.html">
+      Sobre el proyecto
+    </a>
+
+  </div>
+  </nav>
+
+  <main class="container">
+
+    <section>
+
+  <h2>Tabla de Documentos</h2>
+
+ 
+  <div id="filtros-activos"></div>
+
+  <div class="filtros-tabla">
+
+    <select id="filtroLugar">
+      <option value="">Todos los lugares</option>
+    </select>
+
+    <select id="filtroCrimen">
+      <option value="">Todos los crimenes</option>
+    </select>
+
+    <input
+      type="text"
+      id="busqueda"
+      placeholder="Buscar..."
+    />
+
+  </div>
+
+  <div id="tablaContainer"></div>
+
+</section>
+
+
+    <script type="module" src="/src/main/tablasMain.js"></script>
+
+  </main>
+
+</body>
+
+</html>

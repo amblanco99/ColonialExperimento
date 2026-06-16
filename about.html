@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>About</title>
+</head>
+
+<body>
+
+<nav class="topnav">
+
+  <a href="index.html" class="logo">
+    Crímenes Coloniales
+  </a>
+
+  <div class="nav-links">
+
+    <a href="index.html">
+      Inicio
+    </a>
+
+    <a href="tablas.html">
+      Tablas y filtros
+    </a>
+
+    <a href="about.html">
+      Sobre el proyecto
+    </a>
+
+  </div>
+  </nav>
+
+  <main class="container">
+
+    <h1 class="section-mainTitle">Crimen y justicia en el Nuevo Reino de Granada: Un proyecto de humanidades digitales </h1>
+  
+
+    <p>
+    El proyecto se propone cuantificar y sistematizar los juicios criminales tramitados durante el periodo colonial en el Nuevo Reino de Granada con el fin de construir bases de datos relacionales que permitan analizar, en perspectiva agregada, las prácticas judiciales, las tipologías delictivas y las configuraciones sociales que emergen de la justicia penal de la época. 
+   <br>
+   Estas bases de datos permiten registrar información básica de cada expediente y clasificar los casos según variables sustantivas relevantes para el análisis socio-jurídico, como el tipo de delito, el perfil de las personas procesadas, la identidad de las víctimas y otras categorías analíticas. A continuación se describen las bases, sus metadatos y sus reglas para alimentarlas.  
+   </p>
+    <section class="descargas">
+
+      <h3>Descarga de bases de datos</h3>
+
+      <div class="botones-descarga">
+
+        <a
+          href="/data/documentos.csv"
+          download
+          class="btn-descarga"
+        >
+          Descargar documentos
+        </a>
+
+        <a
+          href="/data/metadatos.csv"
+          download
+          class="btn-descarga"
+        >
+          Descargar metadatos
+        </a>
+
+      </div>
+
+    </section>
+
+    <br>
+  
+   <div id="tablaMetadatos"></div>
+
+   <script type="module" src="/src/main/aboutmain.js"></script>
+
+  </main>
+
+</body>
+
+</html>

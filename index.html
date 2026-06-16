@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crímenes Coloniales</title>
+</head>
+
+<body>
+
+  <nav class="topnav">
+    <a href="index.html" class="logo">
+      Crímenes Coloniales
+    </a>
+
+    <div class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="tablas.html">Tablas y filtros</a>
+      <a href="about.html">Sobre el proyecto</a>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <h1 class="section-mainTitle">Crimen y justicia en el Nuevo Reino de Granada: un proyecto de humanidades digitales</h1>
+
+    <p>El proyecto se propone cuantificar y sistematizar los juicios criminales tramitados durante 
+       el periodo colonial en el Nuevo Reino de Granada con el fin de construir bases de datos relacionales 
+       que permitan analizar, en perspectiva agregada, las prácticas judiciales, las tipologías delictivas y 
+       las configuraciones sociales que emergen de la justicia penal de la época. <a href="about.html">Más sobre la metodología</a></p>
+    
+    <section>
+      <h2>Conteo de Personas y crímenes cometidos</h2>
+      <p>Aquí puedes encontrar las sumas totales de la base de datos...</p>
+      <div id="conteoInteractivo"></div>
+    </section>
+      
+    <section>
+      <h2>Tipos de Caso</h2>
+      <p>Aquí se explica los tipos de casos que se encuentran en el archivo, y se actualiza el número de casos totales y que tengan la codificación de un crímen</p>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="color-box azul"></div>
+          <span>No es un proceso penal con delito identificable</span>
+        </div>
+
+        <div class="legend-item">
+          <div class="color-box rosa"></div>
+          <span>Proceso judicial criminal identificable</span>
+        </div>
+      </div>
+    
+      <div id="tipoCaso"></div>
+    </section>
+
+    <section>
+      <h2>Distribución por Género</h2>
+      <p>Aquí se puede identificar la proporción de víctimas y perpetradores divididos por género y tiempo</p>
+
+      <div class="controls">
+        <select id="sigloSeleccionado"></select>
+        <select id="atributoSeleccionado"></select>
+      </div>
+
+      <div id="waffleGenero"></div>
+    </section>
+
+    <section>
+      <h2>Mujeres Mencionadas</h2>
+      <p>Aquí se puede evidenciar la mención de mujeres en el archivo. En este caso solo se incluyen menciones, 
+         no se toma en cuenta casos en los que las mujeres participan como víctimarias o perpetradoras. 
+      </p>
+      <div id="mujerM"></div>
+    </section>
+
+    <section>
+      <h2>Otros agentes</h2>
+      <p>En esta gráfica se puede observar la distribución de instituciones y poblaciones que estuvieron involucrados en casos críminales.</p>
+      <div id="chartPoblaInsti"></div>
+    </section>
+
+    <section>
+      <h2>Linajes</h2>
+      <p>Esta gráfica muestra la clasificación metodológica de los crímenes</p>
+      <div id="chartLinaje"></div>
+    </section>
+
+    <section>
+      <h2>Evolución de Crímenes</h2>
+      <p>Aquí se muestra los porcentajes cometidos a lo largo del tiempo de los crimenes y sus subcrímenes</p>
+
+      <label>Categoría:</label>
+      <select id="Nombre_Codigo"></select>
+
+      <div id="crimenesChart"></div>
+    </section>
+
+    <section>
+      <h2>Mapa</h2>
+      <p>Aquí se muestra la ubicación gráfica de los lugares y los crimenes cometidos</p>
+      
+      <div class="mapa-controles">
+        <label>
+          Siglo:
+          <select id="select-siglo"></select>
+        </label>
+        <label>
+          Crimen:
+          <select id="select-crimen"></select>
+        </label>
+      </div>
+      <div id="mapa-contenedor"></div>
+    </section>
+
+    <section>
+      <h2>Crímenes por género</h2>
+      <p>Esta gráfica muestras a los implicados en los crímenes y sus perfiles de agencia y género</p>
+      <div id="globitosPersonas"></div>
+    </section>
+
+    <section>
+      <h2>Relación de crímenes, en casos de más de un crímen</h2>
+      <p>Esta sección muestra cómo en cada caso los crímenes se relacionan entre sí</p>
+
+      <label>Siglo:
+        <select id="grafoSiglo"></select>
+      </label>
+      <label>Agente:
+        <select id="grafoAgente"></select>
+      </label>
+      <label>Atributo:
+        <select id="grafoAtributo"></select>
+      </label>
+      <label>Género:
+        <select id="grafoGenero"></select>
+      </label>
+
+      <div id="grafoCrimenes"></div>
+    </section>
+
+  </main>
+
+  <script type="module" src="/src/main/chartmain.js"></script>
+
+</body>
+</html>

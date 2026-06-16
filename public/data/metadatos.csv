@@ -1,0 +1,39 @@
+Metadato,Descripción,Tipo
+ID_Caso,"Es una ID númerica que representa cada proceso judicial. El número representa la agrupación de delitos que haga parte del mismo proceso; por ello el número será el mismo si pertenece al mismo, pero debe cambiar y NO repetirse si el caso es diferente.",id
+ID_Documento,"Es una ID alfanumerica que representa cada delito cometido dentro de un mismo proceso judicial. Se compone de número del ID_Caso; ya que debe coincidir para representar que pertenece al mismo proceso. Pero se realiza una distinción alfabetica (con una letra) para representar la diferencia entre cada delito. De esta manera, todos los ID_Documento son únicos, ninguno puede estar repetido.",id
+Descripción,Este dato es el resumen que elaborado por el archivo del que proviene la información. Este indica de manera sintética el delito investigado y los nombres de las principales personas involucradas en el proceso. La información se copia como tal desde el archivo.,texto
+Especificaciones,PENDIENTE,
+Estado,PENDIENTE,
+Código,Son una representación númerica de la categorización de los délitos. Sus instruciones y significados pueden encontrarse en la base llamada “Linaje crímenes”. ,categórico
+Sub_Código,Son una representación númerica de la subcategorización de los délitos. Sus instruciones y significados pueden encontrarse en la base llamada “Linaje crímenes”. ,"categórico, ordinal"
+Año,Fecha del documento,ordinal
+Lugar, El nombre del lugar y en entre paréntesis se coloca la versión contemporánea si es necesario o si aplica el caso.,categórico
+Contrademanda,Se marca la casilla se se menciona la ¿Posibilidad? de contrademanta.,categórico
+Source,Este es un ID único por documento para indicar de dónde se registra la información. El dato es el resultado de la unión de los metadatos: Archivo;Sección; Fondo; Legajo; Documento;Folios. El resultado se registra en la base de Documentos para generar una relación entre el documento y la fuente de información.,id
+Archivo,Hace referencia a la institución de donde se tomó la información. ,categórico
+Sección,Se registra la sección que aparezca en el índice del archivo.,categórico
+Fondo,Se registra el número de fondo que aparezca en el índice del archivo.,categórico
+Legajo,Se registra el número de legajo que aparezca en el índice del archivo.,categórico
+Documento,Se registra el número de documento que aparezca en el índice del archivo.,categórico
+Folios,Se registran los números de folios que aparecen en el índice del archivo. Separar los números de folios con un guion (-).,categórico
+Tipo de proceso,Se registra que tipo de proceso es. Es decir se selecciona si es un proceso judicial criminal identificable o no es un proceso penal con delito identificable. ,categórico
+Mujeres involucradas,"Aquí se registra si hubo una mujer directamente involucrada en el delito. Se marca la casilla si el hecho es verdadero. (Puede ser contraproducente, ya que no se tiene en cuenta cuántas participaron)",categórico
+Mujeres mencionadas,Se registra si existe la mención de una mujer; pero esta no está directamente involucrada en el caso. Se marca la casilla si el hecho es verdadero.,categórico
+ID_Agente_Caso,Es el ID único y alfanumérico que se le da a cada tipo de agente cuando se identifica su participación en cada caso.,id
+Atributo,Se registra si el agente es un perpetrador o una víctima. ,categórico
+Agente,Se selecciona entre cuatro categorías,categórico
+Género,"Se clasifica el género de la persona; se utiliza Hombre y Mujer cuando se puede deducir el género del nombre, pero cuando no es claro se utiliza Sin Información (Otro nombre podría funcionar mejor). Si al agente no se le puede asignar género por que es una entidad o una población se debe colocar null.",categórico
+Cantidad_Agente,Se coloca el número de agentes que corresponden a la descripción del tipo de agente por cada caso.,Númerico
+Conteo Mínimo,Se marca la casilla si es verdadero que se implementó el sistema de conteo mínimo.,categórico
+ID_Agente_Documento,Es el ID único y alfanumérico que se le da a cada agente cuando se identifica su participación en cada delito.,id
+Calidad,Se atribuye la raza del agente,categórico
+Labor,Se clasifica el oficio del agente.,categórico
+Path,Aquí se establece la jerarquía o el linaje de los códigos. Se comienza por 0 ya que es el nivel en general de los delitos y después se pueden expandir a los niveles que se consideren. Es importante registrar cada cambio de linaje con una barra inclinada (/). Por ejemplo: 0/1/1.1,Númerico
+Nombre,"Es el nombre general que llevará el delito, puede que tenga otros nombres en los documentos, pero así se le identificará primariamente en las bases de datos",categórico
+Sinónimos,"Aquí se registran los delitos que no llevan el nombre principal, así se registran las otras menciones en los documentos.",categórico
+Explicación,Aquí se describe en qué consisten los crímenes y cómo se clasifican aquí.,texto
+Nivel,Es una clasificación visual que ayuda a entender en qué nivel de la jerarquía se encuentra el delito. 0 es el más general y entre más aumenta más específica se vuelve la jerarquía.,ordinal
+ID_ Lugar,Es un ID único para diferenciar cada lugar; ya que hay varios municipios que tienen el mismo nombre pero se ubican en regiones diferentes.,id
+Latitud,La latitud que corresponda a la plaza principal del lugar.,Númerico
+Longitud,La longitud que corresponda a la plaza principal del lugar.,Númerico
+País_Contemporáneo,Se hace explícita la ubicación del país contemporáneo teniendo en cuenta que hablamos del Nuevo Reino de Granada.,categórico

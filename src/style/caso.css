@@ -1,0 +1,254 @@
+/* ── Tokens ──────────────────────────────────────────────── */
+:root {
+  --ink:          #1a1410;
+  --ink-light:    #4a3f35;
+  --parchment:    #f7f2e8;
+  --parchment-dark: #ede5d0;
+  --rule:         #c8b89a;
+  --accent:       #7a3b1e;
+  --accent-dim:   #a0622f;
+  --badge-bg:     #f0e6d0;
+  --font-display: 'IM Fell English', Georgia, serif;
+  --font-body:    'Source Sans 3', system-ui, sans-serif;
+  --font-mono:    'Source Code Pro', monospace;
+}
+
+/* ── Reset ───────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ── Header / nav ────────────────────────────────────────── */
+.site-header {
+  border-bottom: 2px solid var(--rule);
+  background: var(--parchment-dark);
+  padding: 0.75rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.back-link {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.15s;
+}
+.back-link:hover { color: var(--ink); }
+.back-link::before { content: '←'; font-size: 1rem; }
+
+.breadcrumb {
+  font-size: 0.8rem;
+  color: var(--ink-light);
+}
+
+/* ── Page wrapper ────────────────────────────────────────── */
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 3rem 2rem 5rem;
+}
+
+/* ── Case header ─────────────────────────────────────────── */
+.case-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+}
+
+.case-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: normal;
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--ink);
+  margin-bottom: 1.5rem;
+  max-width: 700px;
+}
+
+/* ── Meta pills ──────────────────────────────────────────── */
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 2.5rem;
+}
+
+.meta-pill {
+  background: var(--badge-bg);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-light);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.meta-pill .label {
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+/* ── Section divider ─────────────────────────────────────── */
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--accent);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.4rem;
+  margin: 2.5rem 0 1.25rem;
+  letter-spacing: 0.02em;
+}
+
+/* ── Crime cards ─────────────────────────────────────────── */
+.crimes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.crime-card {
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  background: #fff;
+  padding: 1.1rem 1.4rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem 1.5rem;
+  align-items: start;
+  transition: box-shadow 0.15s;
+}
+.crime-card:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.crime-doc-id {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+.crime-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.crime-sub {
+  font-size: 0.88rem;
+  color: var(--ink-light);
+  margin-top: 0.15rem;
+}
+
+.crime-badge {
+  background: var(--parchment-dark);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 0.2rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-light);
+  white-space: nowrap;
+  align-self: start;
+}
+
+/* ── Source block ────────────────────────────────────────── */
+.source-block {
+  margin-top: 0.9rem;
+  padding-top: 0.8rem;
+  border-top: 1px dashed var(--rule);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.4rem 1.2rem;
+}
+
+.source-field {
+  font-size: 0.78rem;
+}
+
+.sf-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--accent);
+  display: block;
+}
+
+.sf-value {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.source-ref {
+  grid-column: 1 / -1;
+  margin-top: 0.3rem;
+}
+
+.source-ref .sf-value {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  background: var(--parchment-dark);
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--rule);
+  display: inline-block;
+  word-break: break-all;
+}
+
+/* ── No source fallback ──────────────────────────────────── */
+.no-source {
+  font-size: 0.8rem;
+  color: var(--ink-light);
+  font-style: italic;
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px dashed var(--rule);
+}
+
+/* ── Estado carga / error ────────────────────────────────── */
+.state-msg {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--ink-light);
+  font-style: italic;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .page { padding: 2rem 1rem 4rem; }
+  .crime-card { grid-template-columns: 1fr; }
+  .crime-badge { justify-self: start; }
+}
