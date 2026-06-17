@@ -184,6 +184,55 @@ body {
   white-space: nowrap;
   align-self: start;
 }
+.agents-block {
+  margin: 1.5rem 0;
+  padding: 1.25rem 0;
+
+  border-top: 1px dashed #d4c6af;
+  border-bottom: 1px dashed #d4c6af;
+}
+
+.agent-group {
+  margin-bottom: 1.25rem;
+}
+
+.agent-group:last-child {
+  margin-bottom: 0;
+}
+
+.agent-role {
+  margin-bottom: .5rem;
+
+  font-size: .78rem;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: .08em;
+
+  color: #8b4c2b;
+}
+
+.agents-list {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.agent-person {
+  padding-left: .75rem;
+  border-left: 2px solid #d4c6af;
+}
+
+.agent-name {
+  font-weight: 600;
+}
+
+.agent-meta {
+  margin-top: .15rem;
+
+  font-size: .9rem;
+  color: #666;
+}
 
 /* ── Source block ────────────────────────────────────────── */
 .source-block {

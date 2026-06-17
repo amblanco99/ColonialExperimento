@@ -3,6 +3,7 @@ import { parseCSV, buildCasesMap } from '../tables/dataLoader.js';
 // ── Configuración de rutas ────────────────────────────────
 const CSV_CRIMENES = `${import.meta.env.BASE_URL}/data/crimenes.csv`;
 const CSV_FUENTES  = `${import.meta.env.BASE_URL}/data/Source.csv`;
+const CSV_Personas    = `${import.meta.env.BASE_URL}/data/Visualizaciones.csv`; 
 
 // ── Leer parámetro de URL ─────────────────────────────────
 const params  = new URLSearchParams(window.location.search);
@@ -20,15 +21,18 @@ if (!casoId) {
 
 async function loadCase(id) {
   try {
-    const [textCrimenes, textFuentes] = await Promise.all([
+    const [textCrimenes, textFuentes, textPersonas] = await Promise.all([
       fetch(CSV_CRIMENES).then(r => r.text()),
       fetch(CSV_FUENTES).then(r => r.text()),
+      fetch(CSV_Personas).then(r => r.text()),
     ]);
 
     const crimenes = parseCSV(textCrimenes);
-    const fuentes  = parseCSV(textFuentes);
+    const fuentes = parseCSV(textFuentes);
+    const personas = parseCSV(textPersonas);
+
     const casesMap = buildCasesMap(crimenes, fuentes);
-    const caso     = casesMap.get(id);
+    const caso = casesMap.get(id);
 
     if (!caso) {
       loading.textContent = `No se encontró el caso con ID "${id}".`;
@@ -37,7 +41,8 @@ async function loadCase(id) {
 
     loading.remove();
     bread.textContent = `Caso ${caso.id}`;
-    renderCase(caso);
+
+    renderCase(caso, personas);
 
   } catch (err) {
     loading.textContent = 'Error al cargar los datos. Revisa la consola.';
@@ -45,7 +50,7 @@ async function loadCase(id) {
   }
 }
 
-function renderCase(caso) {
+function renderCase(caso, personas) {
 
   // ── Encabezado del caso ─────────────────────────────────
   const header = document.createElement('div');
@@ -89,6 +94,82 @@ function renderCase(caso) {
     const card = document.createElement('article');
     card.className = 'crime-card';
 
+const agentesDocumento = personas.filter(
+  p => String(p.ID_Documento).trim() === String(doc.id_documento).trim()
+);
+
+let agentesHTML = "";
+
+if (agentesDocumento.length > 0) {
+
+  const grupos = {};
+
+  agentesDocumento.forEach(p => {
+    const atributo = p.Atributo || "Sin especificar";
+
+    if (!grupos[atributo]) {
+      grupos[atributo] = [];
+    }
+
+    grupos[atributo].push(p);
+  });
+
+  agentesHTML = `
+        <div class="agents-block">
+
+          <h4>Agentes involucrados</h4>
+
+          ${Object.entries(grupos)
+            .map(([atributo, personasGrupo]) => `
+
+              <div class="agent-group">
+
+                <div class="agent-role">
+                  ${atributo}
+                </div>
+
+                <div class="agents-list">
+
+                  ${personasGrupo
+                    .map(
+                      p => `
+                        <div class="agent-person">
+
+                          <div class="agent-name">
+                            ${p.Agente}
+                          </div>
+
+                          <div class="agent-meta">
+                            ${[
+                              p.Género,
+                              p.Calidad,
+                              p.Labor
+                            ]
+                              .filter(
+                                v =>
+                                  v &&
+                                  v !== "Sin especificar" &&
+                                  v !== "Sin información"&&
+                                  v !== "null"
+                              )
+                              .join(" · ")}
+                          </div>
+
+                        </div>
+                      `
+                    )
+                    .join("")}
+
+                </div>
+
+              </div>
+
+            `)
+            .join("")}
+
+        </div>
+      `;
+    }
     const fuenteHTML = doc.fuente
       ? `<div class="source-block">
           <div class="source-field">
@@ -123,9 +204,15 @@ function renderCase(caso) {
         <p class="crime-doc-id">Doc. ${doc.id_documento}</p>
         <p class="crime-name">${doc.crimen.trim()}</p>
         <p class="crime-sub">${doc.subcrimen.trim()}</p>
+
+        ${agentesHTML}
+
         ${fuenteHTML}
       </div>
-      <div class="crime-badge">Cód. ${doc.codigo}.${doc.sub_codigo}</div>
+
+      <div class="crime-badge">
+        Cód. ${doc.codigo}.${doc.sub_codigo}
+      </div>
     `;
 
     list.appendChild(card);
