@@ -148,8 +148,6 @@ if (agentesDocumento.length > 0) {
                               .filter(
                                 v =>
                                   v &&
-                                  v !== "Sin especificar" &&
-                                  v !== "Sin información"&&
                                   v !== "null"
                               )
                               .join(" · ")}
