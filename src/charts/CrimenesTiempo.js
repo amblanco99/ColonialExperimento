@@ -36,37 +36,49 @@ export async function crearCrimenesTiempo() {
 
   // ── EL conteo para las lineas ──────────────────────────────────────────────────────
   //
-  // Se calcula el porcentaje de cada siglo = todos los casos únicos del subcrímen dividido por los cuatro siglos
-  // El total es la suma de los 4 siglos para ese subcrimen, si no existen subcrimenes es la categoría principal del crímen.
+  // Se calcula el porcentaje de cada siglo = todos los casos únicos de todos los subcrímenes es dividido por los cuatro siglos
+  // El total es la suma de los 4 siglos para todo el crimen, si no existen subcrimenes es la categoría principal del crímen.
   //
   function buildSeries(crimen) {
-    const filtrados = datos.filter(d => d.Nombre_Codigo === crimen);
-    const subNombres = [...new Set(filtrados.map(d => d.Nombre_Sub_Codigo))].sort();
+  const filtrados = datos.filter(d => d.Nombre_Codigo === crimen);
+  const subNombres = [...new Set(filtrados.map(d => d.Nombre_Sub_Codigo))].sort();
 
-    return subNombres.map(sub => {
-      const filasSub = filtrados.filter(d => d.Nombre_Sub_Codigo === sub);
+  const totalCasosPorSiglo = {};
+  SIGLOS.forEach(s => {
+    const set = new Set(
+      filtrados
+        .filter(d => d.siglo === s)
+        .map(d => `${d.ID_Documento}|${d.Sub_Código}`)
+    );
+    totalCasosPorSiglo[s] = set.size;
+  });
 
-      const cuentasPorSiglo = {};
-      SIGLOS.forEach(s => {
-        const set = new Set(
-          filasSub
-            .filter(d => d.siglo === s)
-            .map(d => `${d.ID_Documento}|${d.Sub_Código}`)
-        );
-        cuentasPorSiglo[s] = set.size;
-      });
+  return subNombres.map(sub => {
+    const filasSub = filtrados.filter(d => d.Nombre_Sub_Codigo === sub);
 
-      const total = Object.values(cuentasPorSiglo).reduce((a, b) => a + b, 0);
-
-      const puntos = SIGLOS.map(s => ({
-        siglo: s,
-        cantidad: cuentasPorSiglo[s],
-        porcentaje: total > 0 ? (cuentasPorSiglo[s] / total) * 100 : 0,
-      }));
-
-      return { subcrimen: sub, total, puntos };
+    const cuentasPorSiglo = {};
+    SIGLOS.forEach(s => {
+      const set = new Set(
+        filasSub
+          .filter(d => d.siglo === s)
+          .map(d => `${d.ID_Documento}|${d.Sub_Código}`)
+      );
+      cuentasPorSiglo[s] = set.size;
     });
-  }
+
+    const total = Object.values(cuentasPorSiglo).reduce((a, b) => a + b, 0);
+
+    const puntos = SIGLOS.map(s => ({
+      siglo: s,
+      cantidad: cuentasPorSiglo[s],
+      porcentaje: totalCasosPorSiglo[s] > 0
+        ? (cuentasPorSiglo[s] / totalCasosPorSiglo[s]) * 100
+        : 0,
+    }));
+
+    return { subcrimen: sub, total, puntos };
+  });
+}
 
   // ── Paleta ────────────────────────────────────────────────────────────────
   const COLORES = [
