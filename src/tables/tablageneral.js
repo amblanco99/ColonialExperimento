@@ -20,7 +20,21 @@ export async function crearTabla() {
   const atributo   = params.get("atributo");
   const codigo     = params.get("codigo");
   const subcodigo  = params.get("subcodigo");
+  const lugarParam = params.get("lugar");
+  const fecha      = params.get("fecha");   // "Siglo XVII" o "1650", según "escala"
+  const escala     = params.get("escala");  // "siglo" | "decada"
   const vieneDeFiltro = params.toString() !== "";
+
+  // Mismo criterio de siglo/década usado en el dashboard de Tiempo, para
+  // poder interpretar el parámetro "fecha" que llega desde esa visualización.
+  const getSiglo = y => {
+    if (y >= 1500 && y <= 1599) return "Siglo XVI";
+    if (y >= 1600 && y <= 1699) return "Siglo XVII";
+    if (y >= 1700 && y <= 1799) return "Siglo XVIII";
+    if (y >= 1800 && y <= 1899) return "Siglo XIX";
+    return null;
+  };
+  const getDecada = y => Math.floor(y / 10) * 10;
 
   // =========================
   // CRUCE POR ID_Documento
@@ -30,11 +44,17 @@ export async function crearTabla() {
 
   if (vieneDeFiltro) {
     const vizFiltrada = dataViz.filter(d => {
-      const cumpleGenero    = !genero    || d.Género           === genero;
-      const cumpleAtributo  = !atributo  || d.Atributo         === atributo;
-      const cumpleCodigo    = !codigo    || d.Nombre_Codigo    === codigo;
-      const cumpleSubcodigo = !subcodigo || d.Nombre_Sub_Codigo === subcodigo;
-      return cumpleGenero && cumpleAtributo && cumpleCodigo && cumpleSubcodigo;
+      const cumpleGenero    = !genero     || d.Género             === genero;
+      const cumpleAtributo  = !atributo   || d.Atributo           === atributo;
+      const cumpleCodigo    = !codigo     || d.Nombre_Codigo      === codigo;
+      const cumpleSubcodigo = !subcodigo  || d.Nombre_Sub_Codigo  === subcodigo;
+      const cumpleLugar     = !lugarParam || d.Lugar?.trim()      === lugarParam;
+      const cumpleFecha     = !fecha || (
+        escala === "decada"
+          ? getDecada(+d.Año) === +fecha
+          : getSiglo(+d.Año) === fecha
+      );
+      return cumpleGenero && cumpleAtributo && cumpleCodigo && cumpleSubcodigo && cumpleLugar && cumpleFecha;
     });
 
     idDocumentosPermitidos = new Set(vizFiltrada.map(d => d.ID_Documento));
@@ -71,6 +91,8 @@ export async function crearTabla() {
     filtroLugar.append(option);
   });
 
+  if (lugarParam) filtroLugar.value = lugarParam;
+
   // =========================
   // OPCIONES CRIMEN
   // =========================
@@ -93,10 +115,12 @@ export async function crearTabla() {
     const contenedor = document.getElementById("filtros-activos");
     if (contenedor) {
       const etiquetas = [
-        genero    && `Género: <strong>${genero}</strong>`,
-        atributo  && `Atributo: <strong>${atributo}</strong>`,
-        codigo    && `Crimen: <strong>${codigo}</strong>`,
-        subcodigo && `Subcrimen: <strong>${subcodigo}</strong>`,
+        genero     && `Género: <strong>${genero}</strong>`,
+        atributo   && `Atributo: <strong>${atributo}</strong>`,
+        codigo     && `Crimen: <strong>${codigo}</strong>`,
+        subcodigo  && `Subcrimen: <strong>${subcodigo}</strong>`,
+        lugarParam && `Lugar: <strong>${lugarParam}</strong>`,
+        fecha      && `Fecha: <strong>${fecha}</strong>`,
       ].filter(Boolean);
 
       contenedor.innerHTML = `

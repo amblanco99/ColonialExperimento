@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Tiempo</title>
+</head>
+
+<body>
+
+<nav class="topnav">
+
+  <a href="index.html" class="logo">
+    Crímenes Coloniales
+  </a>
+
+  <div class="nav-links">
+
+    <a href="index.html">
+      Inicio
+    </a>
+
+    <a href="tablas.html">
+      Tablas y filtros
+    </a>
+
+     <a href="Tiempo.html">
+      Tiempo
+    </a>
+
+    <a href="about.html">
+      Sobre el proyecto
+    </a>
+
+  </div>
+  </nav>
+
+ <main class="container">
+
+    <h1 class="section-mainTitle">Tiempo</h1>
+
+    <div id="panel-filtros" class="controles"></div>
+
+    <div class="dashboard-visualizaciones" style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div id="mapa-contenedor" style="flex: 1; min-width: 350px;"></div>
+        <div id="crimenesChart" style="flex: 1; min-width: 450px;"></div>
+    </div>
+
+    <script type="module" src="/src/main/tiempomain.js"></script>
+</main>
+
+  </main>
+
+</body>
+
+</html>
