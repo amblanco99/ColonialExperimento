@@ -10,6 +10,7 @@ export default defineConfig({
         tablas: resolve(__dirname, 'tablas.html'),
         about: resolve(__dirname, 'about.html'),
         casos: resolve(__dirname, 'casos.html'),
+        tiempo: resolve(__dirname, 'Tiempo.html'),
       }
     }
   }
