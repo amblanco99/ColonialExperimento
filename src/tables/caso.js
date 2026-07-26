@@ -1,35 +1,60 @@
-import '/src/style/caso.css'
-
-import { parseCSV, buildCasesMap } from '../tables/dataLoader.js';
+import * as d3 from 'd3';
 
 const CSV_CRIMENES = `${import.meta.env.BASE_URL}/data/crimenes.csv`;
 const CSV_FUENTES  = `${import.meta.env.BASE_URL}/data/Source.csv`;
-const CSV_Personas    = `${import.meta.env.BASE_URL}/data/Visualizaciones.csv`; 
+const CSV_Personas    = `${import.meta.env.BASE_URL}/data/Visualizaciones.csv`;
 
-const params  = new URLSearchParams(window.location.search);
-const casoId  = params.get('caso');
+function buildCasesMap(crimenes, fuentes) {
+  const fuentesIdx = {};
+  fuentes.forEach(f => {
+    fuentesIdx[f.ID_Documento] = f;
+  });
+  const casesMap = new Map();
+  crimenes.forEach(row => {
+    const caseId = row.ID_Caso;
 
-const main    = document.getElementById('main-content');
-const loading = document.getElementById('loading-msg');
-const bread   = document.getElementById('breadcrumb-case');
-
-if (!casoId) {
-  loading.textContent = 'No se especificó un caso. Vuelve a la tabla.';
-} else {
-  loadCase(casoId);
+    if (!casesMap.has(caseId)) {
+      casesMap.set(caseId, {
+        id: caseId,
+        descripcion: row['Descripción'],
+        año: row['Año'],
+        lugar: row['Lugar'],
+        especificaciones: row['Especificaciones'],
+        documentos: [],
+      });
+    }
+    const caso = casesMap.get(caseId);
+    caso.documentos.push({
+      id_documento: row.ID_Documento,
+      crimen: row.crimen,
+      subcrimen: row.subcrimen,
+      fuente: fuentesIdx[row.ID_Documento] ?? null,
+    });
+  });
+  return casesMap;
 }
 
-async function loadCase(id) {
-  try {
-    const [textCrimenes, textFuentes, textPersonas] = await Promise.all([
-      fetch(CSV_CRIMENES).then(r => r.text()),
-      fetch(CSV_FUENTES).then(r => r.text()),
-      fetch(CSV_Personas).then(r => r.text()),
-    ]);
+export function inicializarCaso() {
+  const params  = new URLSearchParams(window.location.search);
+  const casoId  = params.get('caso');
 
-    const crimenes = parseCSV(textCrimenes);
-    const fuentes = parseCSV(textFuentes);
-    const personas = parseCSV(textPersonas);
+  const main    = document.getElementById('main-content');
+  const loading = document.getElementById('loading-msg');
+
+  if (!casoId) {
+    loading.textContent = 'No se especificó un caso. Vuelve a la tabla.';
+  } else {
+    loadCase(casoId, { main, loading });
+  }
+}
+
+async function loadCase(id, { main, loading }) {
+  try {
+    const [crimenes, fuentes, personas] = await Promise.all([
+      d3.csv(CSV_CRIMENES),
+      d3.csv(CSV_FUENTES),
+      d3.csv(CSV_Personas),
+    ]);
 
     const casesMap = buildCasesMap(crimenes, fuentes);
     const caso = casesMap.get(id);
@@ -40,9 +65,8 @@ async function loadCase(id) {
     }
 
     loading.remove();
-    bread.textContent = `Caso ${caso.id}`;
 
-    renderCase(caso, personas);
+    renderCase(caso, personas, main);
 
   } catch (err) {
     loading.textContent = 'Error al cargar los datos. Revisa la consola.';
@@ -50,11 +74,10 @@ async function loadCase(id) {
   }
 }
 
-function renderCase(caso, personas) {
+function renderCase(caso, personas, main) {
 
   const header = document.createElement('div');
   header.innerHTML = `
-    <p class="case-eyebrow">Expediente · ID ${caso.id}</p>
     <h1 class="case-title">${caso.descripcion}</h1>
     <div class="meta-row">
       <div class="meta-pill">
@@ -64,14 +87,6 @@ function renderCase(caso, personas) {
       <div class="meta-pill">
         <span class="label">Lugar</span>
         ${caso.lugar}
-      </div>
-      <div class="meta-pill">
-        <span class="label">Estado</span>
-        ${caso.especificaciones}
-      </div>
-      <div class="meta-pill">
-        <span class="label">Documentos</span>
-        ${caso.documentos.length}
       </div>
     </div>
   `;
@@ -138,15 +153,16 @@ if (agentesDocumento.length > 0) {
 
                           <div class="agent-meta">
                             ${[
-                              p.Género,
-                              p.Calidad,
-                              p.Labor
+                              { label: 'Género', valor: p.Género },
+                              { label: 'Calidad', valor: p.Calidad },
+                              { label: 'Labor', valor: p.Labor },
                             ]
                               .filter(
-                                v =>
-                                  v &&
-                                  v !== "null"
+                                c =>
+                                  c.valor &&
+                                  c.valor !== "null"
                               )
+                              .map(c => `<span data-tooltip="${c.label}">${c.valor}</span>`)
                               .join(" · ")}
                           </div>
 
@@ -180,33 +196,34 @@ if (agentesDocumento.length > 0) {
             <span class="sf-value">${doc.fuente.Fondo ?? '—'}</span>
           </div>
           <div class="source-field">
-            <span class="sf-label">Legajo / Doc.</span>
-            <span class="sf-value">${doc.fuente.Legajo ?? '—'} / ${doc.fuente.Documento ?? '—'}</span>
+            <span class="sf-label">Legajo</span>
+            <span class="sf-value">${doc.fuente.Legajo ?? '—'}</span>
+          </div>
+          <div class="source-field">
+            <span class="sf-label">Documento</span>
+            <span class="sf-value">${doc.fuente.Documento ?? '—'}</span>
           </div>
           <div class="source-field">
             <span class="sf-label">Folios</span>
-            <span class="sf-value">${doc.fuente.Folios ?? '—'} (${doc.fuente['Número_Folios'] ?? '?'} ff.)</span>
-          </div>
-          <div class="source-field source-ref">
-            <span class="sf-label">Referencia completa</span>
-            <span class="sf-value">${doc.fuente.Source ?? doc.source_id}</span>
+            <span class="sf-value">${doc.fuente.Folios ?? '—'}</span>
           </div>
         </div>`
       : `<p class="no-source">Fuente documental no disponible para este documento.</p>`;
 
     card.innerHTML = `
       <div class="crime-info">
-        <p class="crime-doc-id">Doc. ${doc.id_documento}</p>
-        <p class="crime-name">${doc.crimen.trim()}</p>
-        <p class="crime-sub">${doc.subcrimen.trim()}</p>
+        <div class="crime-fields">
+          <div class="crime-field">
+            <p class="crime-name" data-tooltip="Crimen">${doc.crimen.trim()}</p>
+          </div>
+          <div class="crime-field">
+            <p class="crime-sub" data-tooltip="Subcrimen">${doc.subcrimen.trim()}</p>
+          </div>
+        </div>
 
         ${agentesHTML}
 
         ${fuenteHTML}
-      </div>
-
-      <div class="crime-badge">
-        Cód. ${doc.codigo}.${doc.sub_codigo}
       </div>
     `;
 

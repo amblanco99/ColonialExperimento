@@ -2,12 +2,8 @@
 
 Visualización de datos sobre juicios criminales del periodo colonial en el
 Nuevo Reino de Granada. Sitio estático (Vite + JS vanilla + D3.js), sin
-framework de UI.
+framework.
 
-## Requisitos
-
-- Node.js 18+
-- npm
 
 ## Estructura del proyecto
 
@@ -17,8 +13,8 @@ portada de esa sección:
 ```
 index.html                  portada del sitio
 
-base-de-datos/index.html    Tablas y filtros
-base-de-datos/caso.html      └─ Detalle de un caso (?caso=<id>)
+base-de-datos/index.html    Tablas y filtros de la base de datos (Crímenes)
+base-de-datos/caso.html      └─ Detalle de un caso 
 about/index.html            Sobre el proyecto (portada)
 about/fuentes.html           └─ Fuentes
 about/delitos.html           └─ Delitos
@@ -35,10 +31,13 @@ public/data/           CSV/JSON fuente que consumen los gráficos (se sirven
 src/
   main/                un archivo *Main.js por página — el punto de entrada
                        que importa los CSS de esa página y llama a las
-                       funciones de src/charts/
+                       funciones de src/charts/. Excepción: `baseDeDatosMain.js`
+                       sirve tanto a `base-de-datos/index.html` como a
+                       `base-de-datos/caso.html` (mismo bloque), y decide
+                       cuál inicializar según qué elemento exista en el DOM.
   charts/              cada gráfico D3, exportado como una función que recibe
                        un id de contenedor y datos ya filtrados
-  tables/              carga y parseo de CSV (dataLoader.js) + tabla general
+  tables/              carga de CSV vía d3.csv + tabla general y detalle de caso
   ui/                  componentes de interfaz reutilizables entre páginas
                        (p. ej. el carrusel de preguntas)
   style/               CSS, ver más abajo
@@ -107,7 +106,7 @@ el navegador. Los principales:
   involucrado en un documento (género, atributo, tipo, año, crimen...).
   Lo usan casi todos los charts de `personas/` y `otrosAgentes`.
 - `crimenes.csv` / `Casos.csv` — un caso puede tener varios documentos y
-  varios crímenes; `casoMain.js` los cruza para armar el detalle de
+  varios crímenes; `src/tables/caso.js` los cruza para armar el detalle de
   `base-de-datos/caso.html`.
 - `Source.csv` — metadatos archivísticos (archivo, sección, fondo, folios)
   por documento.
@@ -116,7 +115,7 @@ el navegador. Los principales:
 - `Linaje.csv` — jerarquía de códigos de crimen (para el árbol de
   `Linaje.js`).
 
-## Deuda conocida / próximos pasos sugeridos
+## Pendiente
 
 - **Nav duplicado**: la barra de navegación (`<nav class="topnav">`) está
   copiada y pegada en cada archivo HTML. Cambiar un link significa editar
@@ -124,23 +123,3 @@ el navegador. Los principales:
   `composicion-social.html` y al mover cada página a su propia carpeta). Si
   el proyecto sigue creciendo, vale la pena moverlo a un componente que se
   inyecte por JS, o adoptar SSR/templating de Vite.
-- **Bug conocido en `about/`**: `about/fuentes.html`, `about/delitos.html`
-  y `about/documentacion-tecnica.html` cargan el mismo
-  `src/main/aboutmain.js`, que llama incondicionalmente a
-  `crearConteoCrimenes()`, `crearTiposCasos()` y `crearLinaje()` — pero cada
-  una de esas funciones busca un contenedor que solo existe en *una* de las
-  páginas. Al entrar a cualquiera de esas tres páginas, las llamadas para
-  los otros dos gráficos fallan en consola (buscan un id que no está en esa
-  página). No afecta lo que se ve porque el gráfico correspondiente sí
-  encuentra su contenedor y renderiza bien, pero conviene que `aboutmain.js`
-  verifique que el contenedor existe antes de llamar a cada función, o que
-  cada página tenga su propio `*Main.js`.
-- **Sin tests**: no hay ninguna prueba automatizada; la única verificación
-  hoy es visual (build + probar en el navegador).
-- **Convención de nombres mixta en datos**: en `public/data/` conviven
-  `Casos.csv`, `Linaje.csv`, `Lugar.csv`, `Source.csv` (con mayúscula) con
-  `crimenes.csv`, `metadatos.csv` (sin mayúscula). No se renombraron porque
-  son datos fuente compartidos con el equipo de investigación — antes de
-  tocarlos, confirmar con quien los mantiene.
-- `src/about/` es una carpeta vacía que quedó de un archivo eliminado; se
-  puede borrar con seguridad.
