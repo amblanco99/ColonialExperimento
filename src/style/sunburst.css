@@ -1,0 +1,39 @@
+/* =====================================================
+   SUNBURST "INSTITUCIONES/POBLACIONES POR ATRIBUTO" (SVG)
+===================================================== */
+.sunburst-svg {
+  max-width: 100%;
+  font-family: sans-serif;
+}
+
+.sunburst-arco--clicable {
+  cursor: pointer;
+}
+
+.sunburst-etiquetas {
+  pointer-events: none;
+  text-anchor: middle;
+  user-select: none;
+}
+
+.sunburst-etiqueta {
+  font-size: 12px;
+  fill: #222;
+}
+
+.sunburst-etiqueta-pct {
+  font-size: 10px;
+  fill: #555;
+}
+
+.sunburst-centro {
+  fill: none;
+  pointer-events: all;
+  cursor: pointer;
+}
+
+.sunburst-texto-central {
+  font-size: 13px;
+  fill: #555;
+  pointer-events: none;
+}

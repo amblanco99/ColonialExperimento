@@ -1,0 +1,69 @@
+/* =====================================================
+   ENVOLTORIOS Y SVG GENÉRICOS PARA GRÁFICOS D3 AD-HOC
+   (beeswarm, mariposa, participación en el tiempo, etc.)
+===================================================== */
+.grafico-wrapper {
+  position: relative;
+  overflow-x: auto;
+  width: 100%;
+}
+
+.grafico-wrapper--centrado {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.grafico-svg {
+  max-width: 100%;
+  height: auto;
+  font-family: system-ui, sans-serif;
+}
+
+.grafico-punto-clic {
+  cursor: pointer;
+}
+
+.grafico-vacio {
+  color: var(--ink-light);
+  font-style: italic;
+  padding: 2rem 0;
+}
+
+.agentes-vacio {
+  color: var(--ink-light);
+  font-style: italic;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.grafico-eje-texto {
+  font-size: 11px;
+  fill: #555;
+}
+
+.grafico-serie-linea {
+  fill: none;
+  stroke-width: 2;
+}
+
+.grafico-etiqueta-serie {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.grafico-linea-guia {
+  stroke: #999;
+  stroke-dasharray: 3, 3;
+  opacity: 0;
+}
+
+.grafico-linea-guia--visible {
+  opacity: 1;
+}
+
+.grafico-rect-hit {
+  fill: transparent;
+  cursor: crosshair;
+}

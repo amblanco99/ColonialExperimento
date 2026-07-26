@@ -1,0 +1,140 @@
+/* =====================================================
+   PANEL DE FILTROS DEL DASHBOARD "OTROS AGENTES"
+===================================================== */
+.ag-filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+
+.ag-filtros-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-light);
+  margin-bottom: 6px;
+}
+
+.ag-chip-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ag-chip {
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: #fff;
+  color: var(--ink-light);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.ag-chip:hover {
+  border-color: var(--accent-dim);
+}
+
+/* El color de fondo activo se fija por elemento vía --chip-color cuando
+   aplica (chips de tipo de agente); el resto usa el acento por defecto. */
+.ag-chip.ag-chip-activo {
+  background: var(--chip-color, var(--accent));
+  border-color: var(--chip-color, var(--accent));
+  color: #fff;
+}
+
+.ag-chip-crimenes {
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 4px 2px;
+  align-content: flex-start;
+}
+
+.ag-chip-small {
+  padding: 5px 11px;
+  font-size: 11.5px;
+}
+
+.ag-filtros-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.ag-filtros-grupo {
+  flex: 1 1 170px;
+  min-width: 150px;
+}
+
+.ag-filtros-grupo-crimen {
+  flex: 2 1 260px;
+  min-width: 220px;
+}
+
+.ag-filtros-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid var(--rule);
+  padding-top: 12px;
+}
+
+.ag-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.ag-leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-light);
+}
+
+.ag-leyenda-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.ag-btn-limpiar {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--rule);
+  background: #fff;
+  color: var(--ink-light);
+  font-size: 12px;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.ag-btn-limpiar:hover {
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
+
+@media (max-width: 720px) {
+  .ag-filtros-fila {
+    flex-direction: column;
+  }
+  .ag-filtros-grupo,
+  .ag-filtros-grupo-crimen {
+    flex-basis: auto;
+    min-width: 0;
+  }
+}

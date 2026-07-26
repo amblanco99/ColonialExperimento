@@ -89,8 +89,6 @@ export async function crearLinaje() {
         [-marginLeft, left.x - marginTop, width, height]
       );
 
-    // NODOS
-
     const node = gNode
       .selectAll("g")
       .data(nodes, d => d.id);
@@ -159,15 +157,13 @@ export async function crearLinaje() {
       .attr("fill-opacity", 0)
       .attr("stroke-opacity", 0);
 
-    // LINKS
-
     const link = gLink
       .selectAll("path")
       .data(links, d => d.target.id);
 
     const linkEnter = link.enter()
       .append("path")
-      .attr("d", d => {
+      .attr("d", () => {
 
         const o = {
           x: source.x0,

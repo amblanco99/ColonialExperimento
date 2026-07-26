@@ -18,7 +18,6 @@ export async function crearWaffleGenero() {
       "#003f5c"
     ]);
 
-
   const getSiglo = (year) => {
     const y = +year;
     if (y <= 1599) return "Siglo XVI"; 
@@ -28,12 +27,8 @@ export async function crearWaffleGenero() {
     return "Siglo XVI"; 
   };
 
-  // Filtrado inicial por Agente === "Persona"
   const personasFiltradas = casosyear.filter(d => d.Agente === "Persona");
 
-  // ========================================================
-  // NUEVA LÓGICA: OBTENER EL PRIMER REGISTRO HISTÓRICO DE CADA AGENTE
-  // ========================================================
   const primerRegistroPorAgente = new Map();
 
   personasFiltradas.forEach(d => {
@@ -52,7 +47,6 @@ export async function crearWaffleGenero() {
       }
     }
   });
-
 
   const dataWithCentury = Array.from(primerRegistroPorAgente.values()).map(d => ({
     ...d,
@@ -75,7 +69,6 @@ export async function crearWaffleGenero() {
   
   selectSiglo.innerHTML = "";
   selectAtributo.innerHTML = "";
-
 
   const siglos = [...new Set(dataWithCentury.map(d => d.siglo))].sort();
 

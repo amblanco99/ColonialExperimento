@@ -1,0 +1,175 @@
+/* =====================================================
+   PANELES DE FILTRO CON "CHIPS" (beeswarm/mariposa/participación)
+===================================================== */
+.filtros-chip-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.filtros-grupo-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-light);
+  margin-bottom: 6px;
+}
+
+.filtros-chip-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filtros-chip-fila--con-margen {
+  margin-top: 6px;
+}
+
+.filtro-chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: #fff;
+  color: var(--ink-light);
+  font-size: 12.5px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filtro-chip:hover {
+  border-color: var(--accent-dim);
+}
+
+.filtro-chip--activo {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.filtro-chip--genero {
+  font-weight: 700;
+  padding: 8px 20px;
+  font-size: 13.5px;
+}
+
+/* El color de fondo activo de un chip de género se fija por elemento vía
+   --chip-color (JS, dato-dependiente: cada género tiene su propio color). */
+.filtro-chip--genero.filtro-chip--activo {
+  background: var(--chip-color);
+  border-color: var(--chip-color);
+  color: #fff;
+}
+
+.filtro-chip--crimen {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 12px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.filtro-chip-quitar {
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.filtro-chip-quitar:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.filtros-barra-selectores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+  align-items: flex-start;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.filtros-barra-selectores--con-margen {
+  margin-bottom: 1rem;
+}
+
+.filtro-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 170px;
+  max-width: 220px;
+}
+
+.filtro-selector--ancho {
+  max-width: 240px;
+}
+
+.filtro-selector--crimen {
+  flex: 2 1 320px;
+  max-width: 420px;
+}
+
+.filtro-select-generico {
+  padding: 6px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--ink-light);
+  font-size: 12.5px;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.filtro-select-generico:hover,
+.filtro-select-generico:focus {
+  border-color: var(--accent-dim);
+}
+
+.filtro-nota {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--ink-light);
+  opacity: 0.8;
+  margin-top: 6px;
+}
+
+.filtro-nota--centrada {
+  text-align: center;
+  margin-top: 8px;
+}
+
+.leyenda-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 10px;
+}
+
+.leyenda-swatch-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-light);
+}
+
+.leyenda-swatch-color {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex: none;
+}

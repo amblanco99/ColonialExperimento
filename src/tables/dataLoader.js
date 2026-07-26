@@ -30,21 +30,12 @@ function parseCSVLine(line) {
   return result;
 }
 
-/**
- * Agrupa crímenes por ID_Caso y cruza con fuentes.
- * @param {Array} crimenes - filas del CSV principal
- * @param {Array} fuentes  - filas del CSV de sources
- * @returns {Map<string, Object>} mapa ID_Caso → objeto de caso
- */
 export function buildCasesMap(crimenes, fuentes) {
-  // Indexar fuentes por ID_Documento para O(1) lookup
   const fuentesIdx = {};
   fuentes.forEach(f => {
     fuentesIdx[f.ID_Documento] = f;
   });
-
   const casesMap = new Map();
-
   crimenes.forEach(row => {
     const caseId = row.ID_Caso;
 
@@ -58,9 +49,7 @@ export function buildCasesMap(crimenes, fuentes) {
         documentos: [],
       });
     }
-
     const caso = casesMap.get(caseId);
-
     caso.documentos.push({
       id_documento: row.ID_Documento,
       crimen: row.crimen,
@@ -71,10 +60,8 @@ export function buildCasesMap(crimenes, fuentes) {
       fuente: fuentesIdx[row.ID_Documento] ?? null,
     });
   });
-
   return casesMap;
 }
-
 export function buildTableRows(casesMap) {
   const rows = [];
   casesMap.forEach(caso => {

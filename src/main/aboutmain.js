@@ -1,5 +1,10 @@
 import '/src/style/style.css'
 
-import { crearMetadatos } from "../about/metadatos.js";
+import { crearConteoCrimenes } from '../charts/ConteoCrimenes.js'
+import { crearTiposCasos } from '../charts/TiposCasos.js'
+import { crearLinaje } from '../charts/Linaje.js'
 
-crearMetadatos()
+crearConteoCrimenes()
+crearTiposCasos()
+crearLinaje()
+

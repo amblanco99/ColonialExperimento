@@ -2,31 +2,23 @@ import * as d3 from "d3";
 
 export async function crearTabla() {
 
-  // =========================
-  // CARGAR AMBOS CSV
-  // =========================
-
   const [dataCrimenes, dataViz] = await Promise.all([
     d3.csv(`${import.meta.env.BASE_URL}/data/crimenes.csv`),
     d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`)
   ]);
 
-  // =========================
-  // LEER FILTROS DE URL
-  // =========================
-
   const params     = new URLSearchParams(window.location.search);
   const genero     = params.get("genero");
   const atributo   = params.get("atributo");
+  const agente     = params.get("agente");
   const codigo     = params.get("codigo");
   const subcodigo  = params.get("subcodigo");
   const lugarParam = params.get("lugar");
-  const fecha      = params.get("fecha");   // "Siglo XVII" o "1650", según "escala"
-  const escala     = params.get("escala");  // "siglo" | "decada"
+  const fecha      = params.get("fecha");
+  const escala     = params.get("escala");
+  const casosParam = params.get("casos");
   const vieneDeFiltro = params.toString() !== "";
 
-  // Mismo criterio de siglo/década usado en el dashboard de Tiempo, para
-  // poder interpretar el parámetro "fecha" que llega desde esa visualización.
   const getSiglo = y => {
     if (y >= 1500 && y <= 1599) return "Siglo XVI";
     if (y >= 1600 && y <= 1699) return "Siglo XVII";
@@ -36,16 +28,20 @@ export async function crearTabla() {
   };
   const getDecada = y => Math.floor(y / 10) * 10;
 
-  // =========================
-  // CRUCE POR ID_Documento
-  // =========================
-
   let idDocumentosPermitidos = null;
+  const idCasosPermitidos = casosParam
+    ? new Set(casosParam.split(",").map(s => s.trim()).filter(Boolean))
+    : null;
 
-  if (vieneDeFiltro) {
+  if (!idCasosPermitidos && vieneDeFiltro) {
     const vizFiltrada = dataViz.filter(d => {
-      const cumpleGenero    = !genero     || d.Género             === genero;
+      const cumpleGenero    = !genero || (
+        genero === "Sin información"
+          ? (!d.Género || d.Género.trim() === "" || d.Género === "Sin información")
+          : d.Género === genero
+      );
       const cumpleAtributo  = !atributo   || d.Atributo           === atributo;
+      const cumpleAgente    = !agente     || d.Agente             === agente;
       const cumpleCodigo    = !codigo     || d.Nombre_Codigo      === codigo;
       const cumpleSubcodigo = !subcodigo  || d.Nombre_Sub_Codigo  === subcodigo;
       const cumpleLugar     = !lugarParam || d.Lugar?.trim()      === lugarParam;
@@ -54,32 +50,22 @@ export async function crearTabla() {
           ? getDecada(+d.Año) === +fecha
           : getSiglo(+d.Año) === fecha
       );
-      return cumpleGenero && cumpleAtributo && cumpleCodigo && cumpleSubcodigo && cumpleLugar && cumpleFecha;
+      return cumpleGenero && cumpleAtributo && cumpleAgente && cumpleCodigo && cumpleSubcodigo && cumpleLugar && cumpleFecha;
     });
 
     idDocumentosPermitidos = new Set(vizFiltrada.map(d => d.ID_Documento));
   }
-
-  // =========================
-  // ELEMENTOS HTML
-  // =========================
 
   const tablaContainer = document.getElementById("tablaContainer");
   const filtroLugar    = document.getElementById("filtroLugar");
   const filtroCrimen   = document.getElementById("filtroCrimen");
   const busqueda       = document.getElementById("busqueda");
 
-  // =========================
-  // DATOS BASE (ya cruzados)
-  // =========================
-
-  const datosFiltradosPorViz = idDocumentosPermitidos
-    ? dataCrimenes.filter(d => idDocumentosPermitidos.has(d.ID_Documento))
-    : dataCrimenes;
-
-  // =========================
-  // OPCIONES LUGAR
-  // =========================
+  const datosFiltradosPorViz = idCasosPermitidos
+    ? dataCrimenes.filter(d => idCasosPermitidos.has(d.ID_Caso))
+    : idDocumentosPermitidos
+      ? dataCrimenes.filter(d => idDocumentosPermitidos.has(d.ID_Documento))
+      : dataCrimenes;
 
   const lugares = [...new Set(datosFiltradosPorViz.map(d => d.Lugar))]
     .filter(Boolean).sort();
@@ -93,10 +79,6 @@ export async function crearTabla() {
 
   if (lugarParam) filtroLugar.value = lugarParam;
 
-  // =========================
-  // OPCIONES CRIMEN
-  // =========================
-
   const crimenes = [...new Set(datosFiltradosPorViz.map(d => d.crimen))]
     .filter(Boolean).sort();
 
@@ -107,16 +89,14 @@ export async function crearTabla() {
     filtroCrimen.append(option);
   });
 
-  // =========================
-  // BADGE ORIGEN FILTRO
-  // =========================
-
   if (vieneDeFiltro) {
     const contenedor = document.getElementById("filtros-activos");
     if (contenedor) {
       const etiquetas = [
+        idCasosPermitidos && `Coincidencia de crímenes: <strong>${idCasosPermitidos.size} caso(s)</strong>`,
         genero     && `Género: <strong>${genero}</strong>`,
         atributo   && `Atributo: <strong>${atributo}</strong>`,
+        agente     && `Tipo de agente: <strong>${agente}</strong>`,
         codigo     && `Crimen: <strong>${codigo}</strong>`,
         subcodigo  && `Subcrimen: <strong>${subcodigo}</strong>`,
         lugarParam && `Lugar: <strong>${lugarParam}</strong>`,
@@ -126,14 +106,10 @@ export async function crearTabla() {
       contenedor.innerHTML = `
         <span class="origen-filtro">Filtrado desde visualización →</span>
         ${etiquetas.map(e => `<span class="badge-filtro">${e}</span>`).join("")}
-        <button onclick="window.location.href='tablas.html'">✕ Limpiar</button>
+        <button onclick="window.location.href='index.html'">✕ Limpiar</button>
       `;
     }
   }
-
-  // =========================
-  // RENDER TABLA
-  // =========================
 
   function renderTabla() {
     const lugar  = filtroLugar.value;
@@ -175,22 +151,14 @@ export async function crearTabla() {
     tablaContainer.querySelectorAll("tr[data-caso]").forEach(tr => {
       tr.addEventListener("click", () => {
         const casoId = tr.dataset.caso;
-        window.location.href = `./casos.html?caso=${encodeURIComponent(casoId)}`;
+        window.location.href = `caso.html?caso=${encodeURIComponent(casoId)}`;
       });
     });
   }
 
-  // =========================
-  // EVENTOS
-  // =========================
-
   filtroLugar.addEventListener("change", renderTabla);
   filtroCrimen.addEventListener("change", renderTabla);
   busqueda.addEventListener("input", renderTabla);
-
-  // =========================
-  // INICIAL
-  // =========================
 
   renderTabla();
 }

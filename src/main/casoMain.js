@@ -1,11 +1,11 @@
+import '/src/style/caso.css'
+
 import { parseCSV, buildCasesMap } from '../tables/dataLoader.js';
 
-// ── Configuración de rutas ────────────────────────────────
 const CSV_CRIMENES = `${import.meta.env.BASE_URL}/data/crimenes.csv`;
 const CSV_FUENTES  = `${import.meta.env.BASE_URL}/data/Source.csv`;
 const CSV_Personas    = `${import.meta.env.BASE_URL}/data/Visualizaciones.csv`; 
 
-// ── Leer parámetro de URL ─────────────────────────────────
 const params  = new URLSearchParams(window.location.search);
 const casoId  = params.get('caso');
 
@@ -52,7 +52,6 @@ async function loadCase(id) {
 
 function renderCase(caso, personas) {
 
-  // ── Encabezado del caso ─────────────────────────────────
   const header = document.createElement('div');
   header.innerHTML = `
     <p class="case-eyebrow">Expediente · ID ${caso.id}</p>
@@ -78,7 +77,6 @@ function renderCase(caso, personas) {
   `;
   main.appendChild(header);
 
-  // ── Título sección crímenes ─────────────────────────────
   const secTitle = document.createElement('h2');
   secTitle.className = 'section-title';
   secTitle.textContent = caso.documentos.length === 1
@@ -86,7 +84,6 @@ function renderCase(caso, personas) {
     : `Crímenes registrados (${caso.documentos.length})`;
   main.appendChild(secTitle);
 
-  // ── Tarjetas de crímenes ────────────────────────────────
   const list = document.createElement('div');
   list.className = 'crimes-list';
 

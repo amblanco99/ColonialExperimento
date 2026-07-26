@@ -1,25 +1,31 @@
 import * as d3 from "d3";
 import rewind from "@turf/rewind";
 
-// ── Paleta compartida (misma línea "archivo/pergamino" del mapa original) ────
-const PALETA = {
-  fondoPergamino: "#f4ecd8",
-  panel: "#efe4c8",
-  tierra: "#e8dcc0",
-  borde: "#6b4f2a",
-  tintaOscura: "#3a2d1a",
-  acentoLinea: "#bb4e99",
-  acentoSecundario: "#4e9bbb",
-};
-
-const COLORES_SERIE = [
+const SERIE_FALLBACK = [
   "#bb4e99", "#4e9bbb", "#e8a838", "#56b87e",
   "#e05a5a", "#7b5ea7", "#3ab8b0", "#d4784e",
   "#6a8fce", "#a05080",
 ];
 
+function leerVariableCss(nombre, fallback) {
+  const valor = getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
+  return valor || fallback;
+}
+
 export async function inicializarDashboard() {
-  // ── 1. Carga única de datos ────────────────────────────────────────────
+  const PALETA = {
+    fondoPergamino: leerVariableCss("--mapa-fondo-pergamino", "#f4ecd8"),
+    panel: leerVariableCss("--mapa-panel", "#efe4c8"),
+    tierra: leerVariableCss("--mapa-tierra", "#e8dcc0"),
+    borde: leerVariableCss("--mapa-borde", "#6b4f2a"),
+    tintaOscura: leerVariableCss("--mapa-tinta-oscura", "#3a2d1a"),
+    acentoLinea: leerVariableCss("--mapa-acento-linea", "#bb4e99"),
+    acentoSecundario: leerVariableCss("--mapa-acento-secundario", "#4e9bbb"),
+    tarjetaFondo: leerVariableCss("--mapa-tarjeta-fondo", "#fdf8ec"),
+  };
+
+  const COLORES_SERIE = SERIE_FALLBACK.map((valor, i) => leerVariableCss(`--mapa-serie-${i + 1}`, valor));
+
   const [NuevaGranadaRaw, rawViz, rawLugar, rawLinaje] = await Promise.all([
     d3.json(`${import.meta.env.BASE_URL}/data/NuevaGranada.json`),
     d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`),
@@ -29,7 +35,6 @@ export async function inicializarDashboard() {
 
   const NuevaGranada = rewind(NuevaGranadaRaw, { reverse: true });
 
-  // ── 2. Utilidades de tiempo ─────────────────────────────────────────────
   const SIGLOS = ["Siglo XVI", "Siglo XVII", "Siglo XVIII", "Siglo XIX"];
 
   const getSiglo = y => {
@@ -42,7 +47,6 @@ export async function inicializarDashboard() {
 
   const getDecada = y => Math.floor(y / 10) * 10;
 
-  // ── 3. Diccionario de coordenadas ───────────────────────────────────────
   const coordPorLugar = {};
   rawLugar.forEach(d => {
     const nombre = d.Lugar?.trim();
@@ -53,7 +57,6 @@ export async function inicializarDashboard() {
     }
   });
 
-  // ── 4. Limpieza y enriquecimiento de filas ──────────────────────────────
   const datosLimpios = rawViz
     .filter(d => d.Año && d.Nombre_Codigo && d.ID_Documento && d.Lugar && d.Nombre_Sub_Codigo)
     .map(d => ({
@@ -66,18 +69,8 @@ export async function inicializarDashboard() {
     }))
     .filter(d => d.siglo);
 
-  const datosParaMapa = datosLimpios.filter(
-    d => d.coords && !isNaN(d.coords[0]) && !isNaN(d.coords[1])
-  );
-
   const DECADAS = [...new Set(datosLimpios.map(d => d.decada))].sort((a, b) => a - b);
 
-  // ── 4b. Jerarquía de delitos (Linaje.csv) ───────────────────────────────
-  // "Delitos" es el nivel 0 (la raíz general): cuando un caso no tiene un
-  // subcrimen específico, Nombre_Sub_Codigo queda literalmente en "Delitos".
-  // Eso no es un subcrimen real y nunca debe listarse ni graficarse como tal.
-  // El orden correcto de los subcrímenes tampoco es alfabético: es el orden
-  // jerárquico en el que ya vienen las filas de Linaje.csv.
   const linajeFilas = rawLinaje.map(d => ({
     idCodigo: (d["ID_Código"] || "").trim(),
     nombre: (d.Nombre || "").trim(),
@@ -102,28 +95,25 @@ export async function inicializarDashboard() {
     return a.localeCompare(b);
   }
 
-  // ── 5. Resolver provincias ───────────────────────────────────────────────
   function getProvincia(coords) {
     const features = NuevaGranada.features ? NuevaGranada.features : [NuevaGranada];
     const feature = features.find(f => d3.geoContains(f, coords));
     return feature ? (feature.properties?.Nombre || "Desconocida") : "Desconocida";
   }
 
-  // ── 6. Listas para filtros (lugar y subcrimen) ──────────────────────────
   const lugaresLista = [...new Set(datosLimpios.map(d => d.lugar))].sort();
   const subcrimenesLista = [...new Set(
     datosLimpios.filter(d => !nombresGenerales.has(d.Nombre_Sub_Codigo)).map(d => d.Nombre_Sub_Codigo)
   )].sort(compararPorLinaje);
   const crimenesLista = [...new Set(datosLimpios.map(d => d.Nombre_Codigo))].sort();
 
-  // ── 7. Estado global compartido ─────────────────────────────────────────
   const estado = {
-    modoTiempo: "siglo",       // "siglo" | "decada" — "siglo" es el default
+    modoTiempo: "siglo",
     tiempoIdx: SIGLOS.indexOf("Siglo XVII"),
     crimen: "Todos",
     subcrimen: "Todos",
     lugar: "Todos",
-    lugaresFijados: new Set(), // pines de comparación (clic en el mapa)
+    lugaresFijados: new Set(),
   };
 
   function tiempoListaActual() {
@@ -136,16 +126,14 @@ export async function inicializarDashboard() {
     return estado.modoTiempo === "siglo" ? "siglo" : "decada";
   }
 
-  // ── 7b. Navegación a tablas.html con los filtros de la selección ────────
-  // Igual que en globitosPersonas.js: clic en una visualización pasa a la
-  // tabla de documentos ya filtrada. "overrides" es lo específico que se
-  // clicó (una fila de la cápsula, un nodo del grafo, un punto de la línea);
-  // lo que no se especifica cae en los filtros generales ya activos en el
-  // dashboard (lugar/crimen/subcrimen) y en la fecha (siglo/década) actual.
   function irATablasFiltradas(overrides = {}) {
-    // Con "in" (no "??"): pasar explícitamente null/"" fuerza que ese filtro
-    // quede AUSENTE aunque el dashboard tenga uno activo (p. ej. una fila
-    // "general" sin subcrimen real); omitir la clave sí hereda el default.
+    if (overrides.casos) {
+      const params = new URLSearchParams();
+      params.set("casos", overrides.casos.join(","));
+      window.location.href = `../base-de-datos/index.html?${params.toString()}`;
+      return;
+    }
+
     const lugar = "lugar" in overrides ? overrides.lugar : (estado.lugar !== "Todos" ? estado.lugar : null);
     const codigo = "codigo" in overrides ? overrides.codigo : (estado.crimen !== "Todos" ? estado.crimen : null);
     const subcodigo = "subcodigo" in overrides ? overrides.subcodigo : (estado.subcrimen !== "Todos" ? estado.subcrimen : null);
@@ -160,39 +148,30 @@ export async function inicializarDashboard() {
       params.set("fecha", fecha);
       params.set("escala", escala);
     }
-    window.location.href = `tablas.html?${params.toString()}`;
+    window.location.href = `../base-de-datos/index.html?${params.toString()}`;
   }
 
-  // Botón "Ver casos" reutilizable: en mapa, línea y grafo, un clic sobre un
-  // elemento de la visualización solo selecciona/resalta (sin navegar); este
-  // botón es la ÚNICA forma de pasar de ahí a tablas.html con esos filtros.
   function crearBotonVerCasos() {
     const boton = document.createElement("button");
     boton.type = "button";
-    boton.style.cssText = `
-      align-self:flex-start; padding:6px 14px; font-size:12px; border-radius:4px;
-      border:1px solid ${PALETA.acentoLinea}; background:${PALETA.acentoLinea};
-      color:#fff; cursor:pointer; font-family: Georgia, serif; font-weight:600;
-      display:none;
-    `;
+    boton.className = "btn-mapa-ver-casos";
     let handlerActivo = null;
     boton.addEventListener("click", () => {
       if (handlerActivo) handlerActivo();
     });
 
     function ocultar() {
-      boton.style.display = "none";
+      boton.classList.remove("btn-mapa--visible");
       handlerActivo = null;
     }
     function mostrar(texto, handler) {
       boton.textContent = `Ver casos: ${texto}`;
-      boton.style.display = "inline-block";
+      boton.classList.add("btn-mapa--visible");
       handlerActivo = handler;
     }
     return { boton, mostrar, ocultar };
   }
 
-  // ── 8. Filtro base compartido por crimen / subcrimen / lugar (dropdown) ──
   function datosFiltradosBase() {
     return datosLimpios.filter(d => {
       const okCrimen = estado.crimen === "Todos" || d.Nombre_Codigo === estado.crimen;
@@ -202,15 +181,11 @@ export async function inicializarDashboard() {
     });
   }
 
-  // ── 9. Referencia de crímenes en un lugar, para la cápsula del mapa ─────
   function datosReferenciaLugar(lugar) {
     const campo = campoTiempoActual();
     const valor = valorTiempoActual();
     const filas = datosFiltradosBase().filter(d => d.lugar === lugar && d[campo] === valor);
 
-    // Si el crimen elegido no tiene un subcrimen real para esa fila (Nombre_Sub_Codigo
-    // cae en el nivel general "Delitos"), se agrupa bajo el propio nombre del crimen
-    // en vez de mostrar "Delitos" como si fuera un subcrimen.
     const map = {};
     filas.forEach(d => {
       const key = estado.crimen === "Todos"
@@ -225,7 +200,6 @@ export async function inicializarDashboard() {
       .sort((a, b) => b.casos - a.casos);
   }
 
-  // ── 10. Agrupamiento del mapa para el instante de tiempo seleccionado ───
   function agruparMapaInstante() {
     const campo = campoTiempoActual();
     const valor = valorTiempoActual();
@@ -235,13 +209,11 @@ export async function inicializarDashboard() {
 
     const map = {};
     filas.forEach(d => {
-      const key = `${d.lugar}||${d.Nombre_Codigo}||${d["Sub_Código"]}`;
+      const key = d.lugar;
       if (!map[key]) {
         map[key] = {
           lugar: d.lugar,
           coords: d.coords,
-          Nombre_Codigo: d.Nombre_Codigo,
-          año: d.año,
           docs: new Set(),
         };
       }
@@ -254,90 +226,61 @@ export async function inicializarDashboard() {
     }));
   }
 
-  // ══════════════════════════════════════════════════════════════════════
-  // LAYOUT GENERAL DEL DASHBOARD
-  // ══════════════════════════════════════════════════════════════════════
   const mapaContenedor = document.getElementById("mapa-contenedor");
   if (!mapaContenedor) return;
   const contenedorLineasEl = document.getElementById("crimenesChart");
   const dashboardWrap = mapaContenedor.parentElement;
 
-  // Contenedor del grafo de relación entre crímenes (no existe en el HTML,
-  // se crea aquí igual que el resto de piezas dinámicas del dashboard).
   const contenedorGrafoEl = document.createElement("div");
   contenedorGrafoEl.id = "grafoRelacionContenedor";
 
-  // Este dashboard necesita mucho más ancho que el resto del sitio (editorial,
-  // centrado y angosto). Rompemos esa centralidad solo para esta página, para
-  // que ambas tarjetas (línea + mapa) quepan lado a lado con buen tamaño.
   const mainContenedor = document.querySelector("main.container");
   if (mainContenedor) {
-    mainContenedor.style.maxWidth = "1700px";
-    mainContenedor.style.width = "96%";
-    mainContenedor.style.alignItems = "stretch";
+    mainContenedor.classList.add("mapa-main-ancho");
   }
 
-  // Estilo de "tarjeta" reutilizable para envolver cada visualización
   function envolverEnTarjeta(el, titulo, subtitulo) {
     const tarjeta = document.createElement("div");
-    tarjeta.style.cssText = `
-      display:flex; flex-direction:column; gap:10px;
-      background:#fdf8ec; border:1px solid ${PALETA.borde};
-      border-radius:10px; padding:16px 18px;
-      box-shadow: 0 2px 6px rgba(58,45,26,0.10);
-      flex:1 1 460px; min-width:400px; box-sizing:border-box;
-    `;
+    tarjeta.className = "mapa-tarjeta";
     const encabezado = document.createElement("div");
-    encabezado.style.cssText = "display:flex; flex-direction:column; gap:2px;";
+    encabezado.className = "mapa-tarjeta-encabezado";
     const h = document.createElement("div");
     h.textContent = titulo;
-    h.style.cssText = `
-      font-family: Georgia, serif; font-size:15px; font-weight:700;
-      color:${PALETA.tintaOscura}; letter-spacing:0.01em;
-    `;
+    h.className = "mapa-tarjeta-titulo";
     encabezado.appendChild(h);
     if (subtitulo) {
       const sub = document.createElement("div");
       sub.textContent = subtitulo;
-      sub.style.cssText = `font-family: Georgia, serif; font-size:11.5px; color:${PALETA.borde}; opacity:0.85;`;
+      sub.className = "mapa-tarjeta-subtitulo";
       encabezado.appendChild(sub);
     }
     tarjeta.appendChild(encabezado);
     const divisor = document.createElement("div");
-    divisor.style.cssText = `height:1px; background:${PALETA.borde}; opacity:0.25;`;
+    divisor.className = "mapa-tarjeta-divisor";
     tarjeta.appendChild(divisor);
     tarjeta.appendChild(el);
     return tarjeta;
   }
 
-  // Panel de filtros: ahora es una barra HORIZONTAL arriba (sticky para seguir
-  // visible), en vez de una columna lateral, para liberar el ancho a las tarjetas.
   let panelFiltros = document.getElementById("panel-filtros");
   if (!panelFiltros) {
     panelFiltros = document.createElement("div");
     panelFiltros.id = "panel-filtros";
   }
 
-  // Fila de tarjetas: columna izquierda (línea de tiempo + grafo de relación,
-  // apiladas) junto al mapa. Se apilan todas verticalmente solo si no caben.
   let columnaViz = document.getElementById("columna-visualizaciones");
   if (!columnaViz) {
     columnaViz = document.createElement("div");
     columnaViz.id = "columna-visualizaciones";
   }
-  columnaViz.style.cssText = "display:flex; flex-direction:row; flex-wrap:wrap; gap:18px; width:100%; align-items:flex-start;";
+  columnaViz.classList.add("mapa-columna-viz");
 
   const columnaIzquierda = document.createElement("div");
   columnaIzquierda.id = "columna-izquierda";
-  columnaIzquierda.style.cssText = "display:flex; flex-direction:column; gap:18px; flex:1 1 460px; min-width:400px;";
+  columnaIzquierda.className = "mapa-columna-izquierda";
 
-  // Dentro de una columna en vertical, las tarjetas deben ocupar su alto
-  // natural (no repartirse el espacio como en la fila), así que se anula el
-  // flex-basis/min-width pensado para la fila horizontal.
   function paraColumnaVertical(tarjeta) {
-    tarjeta.style.flex = "0 0 auto";
-    tarjeta.style.width = "100%";
-    tarjeta.style.minWidth = "0";
+    tarjeta.classList.add("mapa-tarjeta--vertical");
     return tarjeta;
   }
 
@@ -364,28 +307,17 @@ export async function inicializarDashboard() {
   );
 
   if (dashboardWrap) {
-    dashboardWrap.style.display = "flex";
-    dashboardWrap.style.flexDirection = "column";
-    dashboardWrap.style.alignItems = "stretch";
-    dashboardWrap.style.flexWrap = "nowrap";
-    dashboardWrap.style.gap = "18px";
-    dashboardWrap.style.width = "100%";
-    // Orden: primero la barra de filtros (arriba), luego las tarjetas lado a lado (abajo)
+    dashboardWrap.classList.add("mapa-dashboard-wrap");
     dashboardWrap.appendChild(panelFiltros);
     dashboardWrap.appendChild(columnaViz);
   }
 
-  // Barra superior: selector de escala temporal (año / década / siglo).
-  // Modifica la lógica del resto del dashboard (mapa + gráfico de líneas).
   let barraModoTiempo = document.getElementById("barra-modo-tiempo");
   if (!barraModoTiempo) {
     barraModoTiempo = document.createElement("div");
     barraModoTiempo.id = "barra-modo-tiempo";
   }
-  barraModoTiempo.style.cssText = `
-    display:flex; gap:8px; justify-content:center;
-    margin-bottom:14px; font-family: Georgia, serif;
-  `;
+  barraModoTiempo.className = "mapa-barra-modo-tiempo";
 
   const MODOS_TIEMPO = [
     { modo: "decada", etiqueta: "Década" },
@@ -396,12 +328,7 @@ export async function inicializarDashboard() {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = etiqueta;
-    btn.style.cssText = `
-      padding:8px 22px; font-size:13px; border-radius:6px;
-      border:1px solid ${PALETA.borde}; background:${PALETA.fondoPergamino};
-      color:${PALETA.tintaOscura}; cursor:pointer; font-family: Georgia, serif;
-      font-weight:600; letter-spacing:0.02em;
-    `;
+    btn.className = "btn-mapa-modo";
     btn.addEventListener("click", () => cambiarModoTiempo(modo));
     botonesModoTiempo[modo] = btn;
     barraModoTiempo.appendChild(btn);
@@ -411,65 +338,37 @@ export async function inicializarDashboard() {
     dashboardWrap.parentElement.insertBefore(barraModoTiempo, dashboardWrap);
   }
 
-  mapaContenedor.style.flex = "0 0 auto";
-  mapaContenedor.style.width = "100%";
-  mapaContenedor.style.minWidth = "0";
+  mapaContenedor.classList.add("mapa-panel-ancho-completo");
   if (contenedorLineasEl) {
-    contenedorLineasEl.style.flex = "0 0 auto";
-    contenedorLineasEl.style.width = "100%";
-    contenedorLineasEl.style.minWidth = "0";
+    contenedorLineasEl.classList.add("mapa-panel-ancho-completo");
   }
 
-  panelFiltros.style.cssText = `
-    display:flex; flex-direction:row; flex-wrap:wrap; gap:14px 22px; align-items:flex-end;
-    width:100%; box-sizing:border-box;
-    background:${PALETA.panel}; border:1px solid ${PALETA.borde};
-    border-radius:10px; padding:14px 20px;
-    box-shadow: 0 2px 6px rgba(58,45,26,0.10);
-    font-family: Georgia, serif;
-    position: sticky; top: 75px; z-index: 40;
-  `;
+  panelFiltros.classList.add("panel-filtros-mapa");
 
-  // Título del panel de filtros (etiqueta a la izquierda de la barra horizontal)
   const tituloPanel = document.createElement("div");
   tituloPanel.textContent = "Filtros";
-  tituloPanel.style.cssText = `
-    font-size:14px; font-weight:700; color:${PALETA.tintaOscura};
-    align-self:center; flex:0 0 auto;
-    padding-right:16px; border-right:1px solid ${PALETA.borde};
-    border-right-color: rgba(107,79,42,0.3);
-  `;
+  tituloPanel.className = "panel-filtros-titulo";
   panelFiltros.appendChild(tituloPanel);
 
-  // -- combo buscable reutilizable (lugar / subcrimen) --
   function crearComboBuscable({ etiqueta, opciones, valorInicial, onChange, notaVacia }) {
     const wrap = document.createElement("div");
-    wrap.style.cssText = "position:relative; display:flex; flex-direction:column; gap:4px; flex:1 1 190px; width:auto; max-width:240px;";
+    wrap.className = "filtro-combo";
 
     const label = document.createElement("label");
     label.textContent = etiqueta;
-    label.style.cssText = `font-size:11px; color:${PALETA.borde}; letter-spacing:0.03em; text-transform:uppercase;`;
+    label.className = "filtro-label";
 
     const input = document.createElement("input");
     input.type = "text";
     input.value = valorInicial;
     input.readOnly = true;
-    input.style.cssText = `
-      padding:6px 10px; border:1px solid ${PALETA.borde}; border-radius:4px;
-      background:${PALETA.fondoPergamino}; color:${PALETA.tintaOscura};
-      font-size:13px; cursor:pointer; font-family: Georgia, serif;
-    `;
+    input.className = "filtro-combo-input";
 
     const lista = document.createElement("ul");
-    lista.style.cssText = `
-      position:absolute; top:100%; left:0; right:0; z-index:50;
-      max-height:220px; overflow-y:auto; margin:2px 0 0; padding:0;
-      list-style:none; background:#fdf8ec; border:1px solid ${PALETA.borde};
-      border-radius:4px; display:none; box-shadow:0 4px 10px rgba(0,0,0,0.25);
-    `;
+    lista.className = "filtro-combo-lista";
 
     const nota = document.createElement("div");
-    nota.style.cssText = `font-size:11.5px; font-style:italic; color:${PALETA.borde}; opacity:0.85; display:none;`;
+    nota.className = "filtro-combo-nota";
 
     let opcionesCompletas = ["Todos", ...opciones];
 
@@ -482,13 +381,11 @@ export async function inicializarDashboard() {
       filtradas.slice(0, 200).forEach(op => {
         const li = document.createElement("li");
         li.textContent = op;
-        li.style.cssText = "padding:6px 10px; font-size:13px; cursor:pointer;";
-        li.addEventListener("mouseenter", () => (li.style.background = PALETA.tierra));
-        li.addEventListener("mouseleave", () => (li.style.background = "transparent"));
+        li.className = "filtro-combo-item";
         li.addEventListener("mousedown", e => e.preventDefault());
         li.addEventListener("click", () => {
           input.value = op;
-          lista.style.display = "none";
+          lista.classList.remove("filtro-combo-lista--abierta");
           input.blur();
           onChange(op);
         });
@@ -501,7 +398,7 @@ export async function inicializarDashboard() {
       const valorActual = input.value;
       input.value = "";
       pintarLista("");
-      lista.style.display = "block";
+      lista.classList.add("filtro-combo-lista--abierta");
       input.dataset.valorPrevio = valorActual;
     });
 
@@ -509,7 +406,7 @@ export async function inicializarDashboard() {
 
     input.addEventListener("blur", () => {
       setTimeout(() => {
-        lista.style.display = "none";
+        lista.classList.remove("filtro-combo-lista--abierta");
         input.readOnly = true;
         if (!opcionesCompletas.includes(input.value)) {
           input.value = input.dataset.valorPrevio || valorInicial;
@@ -520,51 +417,41 @@ export async function inicializarDashboard() {
     wrap.append(label, input, lista, nota);
     panelFiltros.appendChild(wrap);
 
-    // Permite refrescar las opciones disponibles (p. ej. subcrímenes según el crimen elegido).
     function actualizarOpciones(nuevasOpciones) {
       opcionesCompletas = ["Todos", ...nuevasOpciones];
       input.value = "Todos";
       if (nuevasOpciones.length === 0) {
-        input.style.display = "none";
+        input.classList.add("filtro-combo-input--oculto");
         nota.textContent = notaVacia || "Sin opciones disponibles para la selección actual.";
-        nota.style.display = "block";
+        nota.classList.add("filtro-combo-nota--visible");
       } else {
-        input.style.display = "";
-        nota.style.display = "none";
+        input.classList.remove("filtro-combo-input--oculto");
+        nota.classList.remove("filtro-combo-nota--visible");
       }
     }
 
     return { wrap, actualizarOpciones };
   }
 
-  // -- control de tiempo: slider para el instante dentro de la escala activa --
-  // (la escala en sí —año/década/siglo— se elige en la barra superior)
-  // Va primero en el panel: la fecha es el filtro principal del dashboard.
   const wrapTiempo = document.createElement("div");
-  wrapTiempo.style.cssText = "display:flex; flex-direction:column; gap:6px; flex:1 1 240px; width:auto; max-width:300px;";
+  wrapTiempo.className = "mapa-wrap-tiempo";
 
   const labelTiempo = document.createElement("label");
   labelTiempo.textContent = "Fecha";
-  labelTiempo.style.cssText = `font-size:11px; color:${PALETA.borde}; letter-spacing:0.03em; text-transform:uppercase;`;
+  labelTiempo.className = "filtro-label";
 
   const slider = document.createElement("input");
   slider.type = "range";
-  slider.style.cssText = `width:100%; accent-color:${PALETA.acentoLinea};`;
+  slider.className = "mapa-slider";
 
-  // En modo "siglo" no hay slider: son solo 4 valores, así que se eligen con
-  // un botón por siglo en vez de arrastrar una barra espaciadora.
   const filaSiglos = document.createElement("div");
-  filaSiglos.style.cssText = "display:flex; gap:4px; width:100%;";
+  filaSiglos.className = "mapa-fila-siglos";
   const botonesSiglo = {};
   SIGLOS.forEach(siglo => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = siglo.replace("Siglo ", "");
-    btn.style.cssText = `
-      flex:1; padding:5px 4px; font-size:11px; border-radius:4px;
-      border:1px solid ${PALETA.borde}; background:${PALETA.fondoPergamino};
-      color:${PALETA.tintaOscura}; cursor:pointer; font-family: Georgia, serif;
-    `;
+    btn.className = "btn-mapa-siglo";
     btn.addEventListener("click", () => {
       estado.tiempoIdx = SIGLOS.indexOf(siglo);
       sincronizarSlider();
@@ -576,7 +463,7 @@ export async function inicializarDashboard() {
   });
 
   const etiquetaTiempo = document.createElement("div");
-  etiquetaTiempo.style.cssText = `text-align:center; font-size:13px; font-weight:700; color:${PALETA.tintaOscura};`;
+  etiquetaTiempo.className = "mapa-etiqueta-tiempo";
 
   function sincronizarSlider() {
     const lista = tiempoListaActual();
@@ -585,30 +472,24 @@ export async function inicializarDashboard() {
     slider.max = lista.length - 1;
     slider.step = 1;
     slider.value = estado.tiempoIdx;
-    slider.style.display = esSiglo ? "none" : "";
-    filaSiglos.style.display = esSiglo ? "flex" : "none";
+    slider.classList.toggle("mapa-slider--oculto", esSiglo);
+    filaSiglos.classList.toggle("mapa-fila-siglos--oculta", !esSiglo);
     etiquetaTiempo.textContent = valorTiempoActual();
     Object.entries(botonesModoTiempo).forEach(([modo, btn]) => {
-      const activo = estado.modoTiempo === modo;
-      btn.style.background = activo ? PALETA.acentoLinea : PALETA.fondoPergamino;
-      btn.style.color = activo ? "#fff" : PALETA.tintaOscura;
+      btn.classList.toggle("btn-mapa--activo", estado.modoTiempo === modo);
     });
     Object.entries(botonesSiglo).forEach(([siglo, btn]) => {
-      const activo = esSiglo && valorTiempoActual() === siglo;
-      btn.style.background = activo ? PALETA.acentoLinea : PALETA.fondoPergamino;
-      btn.style.color = activo ? "#fff" : PALETA.tintaOscura;
+      btn.classList.toggle("btn-mapa--activo", esSiglo && valorTiempoActual() === siglo);
     });
   }
 
-  // Convierte el instante actual (en cualquier escala) a un año representativo,
-  // para ubicar el instante equivalente más cercano al cambiar de escala.
   function añoRepresentativoActual() {
     const valor = valorTiempoActual();
     if (estado.modoTiempo === "siglo") {
       const base = { "Siglo XVI": 1550, "Siglo XVII": 1650, "Siglo XVIII": 1750, "Siglo XIX": 1850 };
       return base[valor] ?? 1650;
     }
-    return valor; // la década ya es numérica
+    return valor;
   }
 
   function indiceMasCercano(lista, valor) {
@@ -647,7 +528,6 @@ export async function inicializarDashboard() {
   wrapTiempo.append(labelTiempo, slider, filaSiglos, etiquetaTiempo);
   panelFiltros.appendChild(wrapTiempo);
 
-  // -- select simple de crimen general (pocas opciones) --
   function subcrimenesParaCrimen(crimen) {
     if (crimen === "Todos") return subcrimenesLista;
     return [...new Set(
@@ -658,16 +538,12 @@ export async function inicializarDashboard() {
   }
 
   const wrapCrimen = document.createElement("div");
-  wrapCrimen.style.cssText = "display:flex; flex-direction:column; gap:4px; flex:1 1 190px; width:auto; max-width:240px;";
+  wrapCrimen.className = "mapa-wrap-crimen";
   const labelCrimen = document.createElement("label");
   labelCrimen.textContent = "Crimen";
-  labelCrimen.style.cssText = `font-size:11px; color:${PALETA.borde}; letter-spacing:0.03em; text-transform:uppercase;`;
+  labelCrimen.className = "filtro-label";
   const selectCrimen = document.createElement("select");
-  selectCrimen.style.cssText = `
-    padding:6px 10px; border:1px solid ${PALETA.borde}; border-radius:4px;
-    background:${PALETA.fondoPergamino}; color:${PALETA.tintaOscura};
-    font-size:13px; font-family: Georgia, serif;
-  `;
+  selectCrimen.className = "filtro-select";
   ["Todos", ...crimenesLista].forEach(c => {
     const opt = document.createElement("option");
     opt.value = c;
@@ -685,7 +561,6 @@ export async function inicializarDashboard() {
   wrapCrimen.append(labelCrimen, selectCrimen);
   panelFiltros.appendChild(wrapCrimen);
 
-  // -- subcrímenes: solo se listan los que pertenecen al crimen elegido arriba --
   const comboSubcrimen = crearComboBuscable({
     etiqueta: "Subcrimen",
     opciones: subcrimenesParaCrimen(estado.crimen),
@@ -708,71 +583,76 @@ export async function inicializarDashboard() {
     },
   });
 
-  // -- botón para limpiar comparaciones fijadas --
   const btnLimpiarPines = document.createElement("button");
   btnLimpiarPines.type = "button";
   btnLimpiarPines.textContent = "Quitar comparaciones";
-  btnLimpiarPines.style.cssText = `
-    padding:8px 14px; font-size:12px; border-radius:4px;
-    border:1px solid ${PALETA.borde}; background:transparent;
-    color:${PALETA.borde}; cursor:pointer; font-family: Georgia, serif;
-    align-self:center; white-space:nowrap; display:none;
-  `;
+  btnLimpiarPines.className = "btn-mapa-limpiar";
   btnLimpiarPines.addEventListener("click", () => {
     estado.lugaresFijados.clear();
-    btnLimpiarPines.style.display = "none";
+    btnLimpiarPines.classList.remove("btn-mapa--visible");
     actualizarMapa();
     actualizarPanelSecundario(true);
   });
   panelFiltros.appendChild(btnLimpiarPines);
 
-  // -- aviso: el lugar seleccionado no tiene casos en la fecha actual --
   const avisoSinDatos = document.createElement("div");
-  avisoSinDatos.style.cssText = `
-    display:none; flex-basis:100%; width:100%; padding:8px 12px;
-    border:1px solid #a33; border-radius:4px; background:#f7dede;
-    color:#7a1f1f; font-family: Georgia, serif; font-size:12px;
-  `;
+  avisoSinDatos.className = "filtro-aviso-sin-datos";
   panelFiltros.appendChild(avisoSinDatos);
 
   function actualizarAvisoLugar() {
     if (estado.lugar === "Todos") {
-      avisoSinDatos.style.display = "none";
+      avisoSinDatos.classList.remove("filtro-aviso-sin-datos--visible");
       return;
     }
     const campo = campoTiempoActual();
     const valor = valorTiempoActual();
     const hayDatos = datosFiltradosBase().some(d => d.lugar === estado.lugar && d[campo] === valor);
     if (hayDatos) {
-      avisoSinDatos.style.display = "none";
+      avisoSinDatos.classList.remove("filtro-aviso-sin-datos--visible");
     } else {
       avisoSinDatos.textContent = `No hay datos para "${estado.lugar}" en ${valor}.`;
-      avisoSinDatos.style.display = "block";
+      avisoSinDatos.classList.add("filtro-aviso-sin-datos--visible");
     }
   }
 
   sincronizarSlider();
 
-  // ══════════════════════════════════════════════════════════════════════
-  // COMPONENTE 1: MAPA (visual principal, con cápsulas de tiempo)
-  // ══════════════════════════════════════════════════════════════════════
   const width = 760;
   const height = 820;
 
-  // Botón "Ver casos": aparece al seleccionar (clic) una fila de una cápsula
-  // (crimen/subcrimen de un lugar en la fecha activa); es la única forma de
-  // pasar de ahí a la tabla de documentos filtrada — el clic en sí solo
-  // selecciona/resalta esa fila dentro del mapa.
+  const RADIO_PUNTO = 2;
+  const PUNTO_COLOR = leerVariableCss("--mapa-punto-color", "#7b5ea7");
+  const rScale = d3.scaleLog().range([RADIO_PUNTO, 18]);
+  const colorScaleMap = d3.scaleSequentialLog(
+    d3.interpolateHcl(PALETA.acentoSecundario, PALETA.acentoLinea)
+  );
+  let escalarPorCantidad = false;
+
   const botonVerCasosMapa = crearBotonVerCasos();
-  botonVerCasosMapa.boton.style.marginBottom = "8px";
+  botonVerCasosMapa.boton.classList.add("btn-mapa-ver-casos--separado");
   mapaContenedor.appendChild(botonVerCasosMapa.boton);
+
+  const btnEscalarTamanio = document.createElement("button");
+  btnEscalarTamanio.type = "button";
+  btnEscalarTamanio.textContent = "Tamaño según cantidad de crímenes";
+  btnEscalarTamanio.className = "btn-mapa-escalar";
+  function actualizarEstiloBotonEscalar() {
+    btnEscalarTamanio.classList.toggle("btn-mapa--activo", escalarPorCantidad);
+  }
+  btnEscalarTamanio.addEventListener("click", () => {
+    escalarPorCantidad = !escalarPorCantidad;
+    actualizarEstiloBotonEscalar();
+    actualizarMapa();
+  });
+  actualizarEstiloBotonEscalar();
+  mapaContenedor.appendChild(btnEscalarTamanio);
 
   const svgMapa = d3.select(mapaContenedor)
     .append("svg")
     .attr("width", width)
     .attr("height", height)
     .attr("viewBox", [0, 0, width, height])
-    .attr("style", `max-width: 100%; height: auto; background-color: ${PALETA.fondoPergamino}; border-radius:6px;`);
+    .attr("class", "mapa-svg");
 
   const domainFeature = {
     type: "Feature",
@@ -795,11 +675,6 @@ export async function inicializarDashboard() {
   const gPuntos = gZoom.append("g").attr("class", "capa-puntos");
   const gCapsulas = gZoom.append("g").attr("class", "capa-capsulas");
 
-  const rScale = d3.scaleSqrt().range([0, 20]);
-  const colorScaleMap = d3.scaleSequential().interpolator(d3.interpolateReds);
-
-  // Lugar actualmente en hover (si hay uno), para poder redibujar su cápsula
-  // cuando cambia el zoom (su contraescala 1/k quedaría desactualizada si no).
   let lugarHoverActivo = null;
 
   const zoom = d3.zoom()
@@ -809,23 +684,17 @@ export async function inicializarDashboard() {
       const k = event.transform.k;
       gMapaBase.selectAll("path").attr("stroke-width", 0.5 / k);
       gPuntos.selectAll("circle").attr("stroke-width", 0.5 / k);
-      // Las cápsulas se contrarrestan con scale(1/k) para no cambiar de tamaño
-      // con el zoom: hay que recalcularlas en cada paso del zoom, si no,
-      // quedan con la escala del frame anterior.
       dibujarCapsulasFijadas();
       if (lugarHoverActivo) {
         gCapsulas.selectAll("g.capsula-hover").remove();
-        const gTemp = gCapsulas.append("g").attr("class", "capsula-hover").style("pointer-events", "none");
+        const gTemp = gCapsulas.append("g").attr("class", "capsula-hover");
         construirCapsula(gTemp, lugarHoverActivo.lugar, lugarHoverActivo.coords);
       }
     });
 
   svgMapa.call(zoom);
 
-  // Clic en una fila de la cápsula (un crimen o subcrimen del lugar/fecha
-  // activos): solo selecciona/resalta esa fila y muestra el botón "Ver casos"
-  // — el botón es la única forma de pasar de ahí a la tabla filtrada.
-  let seleccionFilaMapa = null; // { lugar, nombre }
+  let seleccionFilaMapa = null;
 
   function redibujarCapsulasVisibles() {
     dibujarCapsulasFijadas();
@@ -852,7 +721,6 @@ export async function inicializarDashboard() {
       if (estado.crimen === "Todos") {
         irATablasFiltradas({ lugar, codigo: nombreFila });
       } else if (nombreFila === estado.crimen) {
-        // Fila "general": el lugar no tiene subcrímenes propios para este crimen.
         irATablasFiltradas({ lugar, codigo: estado.crimen, subcodigo: null });
       } else {
         irATablasFiltradas({ lugar, codigo: estado.crimen, subcodigo: nombreFila });
@@ -860,30 +728,19 @@ export async function inicializarDashboard() {
     });
   }
 
-  // Tamaño de la cápsula según cuántas filas de crímenes va a mostrar, para
-  // poder calcular colisiones antes de dibujar (ver dibujarCapsulasFijadas).
   function medirCapsula(lugar) {
     const referencia = datosReferenciaLugar(lugar);
     const filasVisibles = referencia.slice(0, 5);
     const totalCasos = referencia.reduce((a, r) => a + r.casos, 0);
-    const anchoC = 175;
-    const altoC = totalCasos === 0 ? 46 : 30 + filasVisibles.length * 16;
+    const anchoC = 215;
+    const altoC = totalCasos === 0 ? 56 : 38 + filasVisibles.length * 20;
     return { referencia, filasVisibles, totalCasos, anchoC, altoC };
   }
 
-  // Cápsula única del mapa: reemplaza el antiguo tooltip de texto plano.
-  // Reúne en un solo lugar la gráfica de crímenes más comunes, la provincia,
-  // el lugar y la fecha (siglo/década activa), tanto al pasar el mouse como
-  // al fijar (clic) un lugar para comparar.
   function construirCapsula(g, lugar, coords, posOverride) {
     const { filasVisibles, totalCasos, anchoC, altoC } = medirCapsula(lugar);
     const provincia = getProvincia(coords);
 
-    // La cápsula vive dentro de gZoom, así que hereda su zoom (translate+scale).
-    // Para que el tamaño en pantalla se mantenga constante y legible sin
-    // importar el nivel de zoom, se contrarresta con scale(1/k): la posición
-    // (en unidades "modelo", pre-zoom) sigue moviéndose/escalando con el mapa,
-    // pero el contenido interno de la cápsula ya no.
     const k = d3.zoomTransform(svgMapa.node()).k;
     const px = projection(coords)[0];
     const py = projection(coords)[1];
@@ -891,12 +748,6 @@ export async function inicializarDashboard() {
     g.attr("transform", `translate(${destino.x}, ${destino.y}) scale(${1 / k})`);
     g.selectAll("*").remove();
 
-    // Si la cápsula se desplazó de su punto natural (para no superponerse con
-    // otra fijada), se dibuja una línea guía hasta el punto real en el mapa.
-    // OJO: "g" ya tiene translate(destino.x, destino.y) scale(1/k) aplicado, así
-    // que estas coordenadas deben ser LOCALES a esa cápsula (revirtiendo el
-    // translate y multiplicando por k), no absolutas del mapa — de lo contrario
-    // el desplazamiento no coincide y la línea no llega al punto real.
     const puntaLocalX = anchoC / 2;
     const puntaLocalY = altoC;
     const puntoLocalX = (px - destino.x) * k;
@@ -905,77 +756,61 @@ export async function inicializarDashboard() {
       g.append("line")
         .attr("x1", puntaLocalX).attr("y1", puntaLocalY + 4)
         .attr("x2", puntoLocalX).attr("y2", puntoLocalY)
-        .attr("stroke", PALETA.acentoLinea)
-        .attr("stroke-width", 1.2)
-        .attr("stroke-dasharray", "3,2");
+        .attr("class", "mapa-capsula-linea-guia");
       g.append("circle")
         .attr("cx", puntoLocalX).attr("cy", puntoLocalY).attr("r", 3)
-        .attr("fill", PALETA.acentoLinea);
+        .attr("class", "mapa-capsula-punto-guia");
     }
 
     g.append("rect")
       .attr("width", anchoC)
       .attr("height", altoC)
       .attr("rx", 5)
-      .attr("fill", PALETA.tintaOscura)
-      .attr("fill-opacity", 0.94)
-      // Habilita hit-testing en toda la cápsula (el grupo "g" tiene
-      // pointer-events:none) para que la cápsula-hover no se cierre justo
-      // cuando el mouse se mueve del punto hacia ella (ver manejarHoverPunto).
-      .style("pointer-events", "all");
+      .attr("class", "mapa-capsula-fondo mapa-capsula-fondo--interactivo");
 
     g.append("text")
-      .attr("x", 8).attr("y", 13)
-      .attr("fill", PALETA.fondoPergamino)
-      .style("font-size", "9px").style("font-weight", "700").style("font-family", "Georgia, serif")
-      .text(lugar.length > 22 ? lugar.slice(0, 20) + "…" : lugar);
+      .attr("x", 10).attr("y", 16)
+      .attr("class", "mapa-capsula-titulo")
+      .text(lugar.length > 26 ? lugar.slice(0, 24) + "…" : lugar);
 
     g.append("text")
-      .attr("x", 8).attr("y", 24)
-      .attr("fill", PALETA.acentoSecundario)
-      .style("font-size", "8px").style("font-family", "Georgia, serif")
+      .attr("x", 10).attr("y", 30)
+      .attr("class", "mapa-capsula-subtitulo")
       .text(`${provincia} · ${valorTiempoActual()}`);
 
     if (totalCasos === 0) {
       g.append("text")
-        .attr("x", anchoC / 2).attr("y", altoC - 12)
+        .attr("x", anchoC / 2).attr("y", altoC - 16)
         .attr("text-anchor", "middle")
-        .attr("fill", PALETA.fondoPergamino)
-        .style("font-size", "11px").style("font-style", "italic").style("font-family", "Georgia, serif")
+        .attr("class", "mapa-capsula-sin-casos")
         .text("Sin casos");
     } else {
       const maxCasos = d3.max(filasVisibles, d => d.casos) || 1;
-      const xBarra = d3.scaleLinear().domain([0, maxCasos]).range([0, 55]);
+      const xBarra = d3.scaleLinear().domain([0, maxCasos]).range([0, 60]);
       filasVisibles.forEach((r, i) => {
-        const yRow = 30 + i * 16;
+        const yRow = 38 + i * 20;
         const filaSeleccionada = !!(seleccionFilaMapa && seleccionFilaMapa.lugar === lugar && seleccionFilaMapa.nombre === r.nombre);
         g.append("text")
-          .attr("x", 8).attr("y", yRow + 8)
-          .attr("fill", PALETA.fondoPergamino)
-          .style("font-size", "9px").style("font-family", "Georgia, serif")
-          .style("font-weight", filaSeleccionada ? "700" : "400")
-          .text(r.nombre.length > 15 ? r.nombre.slice(0, 13) + "…" : r.nombre);
+          .attr("x", 10).attr("y", yRow + 10)
+          .attr("class", `mapa-capsula-fila-texto${filaSeleccionada ? " mapa-capsula-fila-texto--activa" : ""}`)
+          .text(r.nombre.length > 18 ? r.nombre.slice(0, 16) + "…" : r.nombre);
         g.append("rect")
-          .attr("x", 100).attr("y", yRow + 1)
-          .attr("width", xBarra(r.casos)).attr("height", 7).attr("rx", 2)
-          .attr("fill", PALETA.acentoLinea)
+          .attr("x", 122).attr("y", yRow + 2)
+          .attr("width", xBarra(r.casos)).attr("height", 9).attr("rx", 2)
+          .attr("class", "mapa-capsula-barra")
           .attr("stroke", filaSeleccionada ? "#fff" : "none")
           .attr("stroke-width", filaSeleccionada ? 1 : 0);
         g.append("text")
-          .attr("x", anchoC - 8).attr("y", yRow + 8)
+          .attr("x", anchoC - 10).attr("y", yRow + 10)
           .attr("text-anchor", "end")
-          .attr("fill", PALETA.fondoPergamino)
-          .style("font-size", "8px").style("font-family", "Georgia, serif")
+          .attr("class", "mapa-capsula-fila-conteo")
           .text(r.casos);
 
-        // Fila clicable: solo selecciona/resalta esta fila (lugar + crimen o
-        // subcrimen). El botón "Ver casos" es lo que realmente navega.
         g.append("rect")
-          .attr("x", 0).attr("y", yRow - 2)
-          .attr("width", anchoC).attr("height", 16)
+          .attr("x", 0).attr("y", yRow - 3)
+          .attr("width", anchoC).attr("height", 20)
+          .attr("class", "mapa-capsula-fila-clic")
           .attr("fill", filaSeleccionada ? "rgba(255,255,255,0.16)" : "transparent")
-          .style("pointer-events", "all")
-          .style("cursor", "pointer")
           .on("mouseenter", function () { if (!filaSeleccionada) d3.select(this).attr("fill", "rgba(255,255,255,0.08)"); })
           .on("mouseleave", function () { if (!filaSeleccionada) d3.select(this).attr("fill", "transparent"); })
           .on("click", event => {
@@ -987,29 +822,30 @@ export async function inicializarDashboard() {
 
     g.append("path")
       .attr("d", `M${anchoC / 2 - 5},${altoC} L${anchoC / 2 + 5},${altoC} L${anchoC / 2},${altoC + 8} Z`)
-      .attr("fill", PALETA.tintaOscura)
-      .attr("fill-opacity", 0.94);
+      .attr("class", "mapa-capsula-fondo");
   }
 
   function actualizarMapa() {
     const datos = agruparMapaInstante();
-    rScale.domain([0, d3.max(datos, d => d.count) || 1]);
-    colorScaleMap.domain(d3.extent(datos, d => d.año));
+    const minCasos = d3.min(datos, d => d.count) || 1;
+    const maxCasosCrudo = d3.max(datos, d => d.count) || 1;
+    const maxCasos = maxCasosCrudo > minCasos ? maxCasosCrudo : minCasos + 1;
+    rScale.domain([minCasos, maxCasos]);
+    colorScaleMap.domain([minCasos, maxCasos]);
+    const radioDe = d => (escalarPorCantidad ? rScale(d.count) : RADIO_PUNTO);
+    const colorDe = d => (escalarPorCantidad ? colorScaleMap(d.count) : PUNTO_COLOR);
 
     const puntos = gPuntos.selectAll("circle")
-      .data(datos, d => `${d.lugar}||${d.Nombre_Codigo}`);
+      .data(datos, d => d.lugar);
 
     puntos.join(
       enter => enter.append("circle")
+        .attr("class", "mapa-punto")
         .attr("cx", d => projection(d.coords)[0])
         .attr("cy", d => projection(d.coords)[1])
         .attr("r", 0)
-        .attr("fill", d => colorScaleMap(d.año))
-        .attr("fill-opacity", 0.65)
-        .attr("stroke", PALETA.fondoPergamino)
-        .attr("stroke-width", 0.5)
-        .style("cursor", "pointer")
-        .call(enter => enter.transition().duration(220).attr("r", d => rScale(d.count)))
+        .attr("fill", colorDe)
+        .call(enter => enter.transition().duration(220).attr("r", radioDe))
         .on("mouseenter", (event, d) => manejarHoverPunto(event, d, true))
         .on("mouseleave", (event, d) => manejarHoverPunto(event, d, false))
         .on("click", (event, d) => alternarPin(d.lugar)),
@@ -1017,8 +853,8 @@ export async function inicializarDashboard() {
         .call(update => update.transition().duration(180)
           .attr("cx", d => projection(d.coords)[0])
           .attr("cy", d => projection(d.coords)[1])
-          .attr("r", d => rScale(d.count))
-          .attr("fill", d => colorScaleMap(d.año))),
+          .attr("r", radioDe)
+          .attr("fill", colorDe)),
       exit => exit.transition().duration(150).attr("r", 0).remove()
     );
 
@@ -1032,11 +868,7 @@ export async function inicializarDashboard() {
       if (!estado.lugaresFijados.has(d.lugar)) {
         lugarHoverActivo = { lugar: d.lugar, coords: d.coords };
         gCapsulas.selectAll("g.capsula-hover").remove();
-        // mouseenter/mouseleave propios: si el cursor se mueve del punto hacia
-        // la cápsula (para hacer clic en una fila), no debe cerrarse a mitad
-        // de camino — solo se oculta con un pequeño margen si de verdad la deja.
         const gTemp = gCapsulas.append("g").attr("class", "capsula-hover")
-          .style("pointer-events", "none")
           .on("mouseenter", cancelarOcultarCapsulaHover)
           .on("mouseleave", programarOcultarCapsulaHover);
         construirCapsula(gTemp, d.lugar, d.coords);
@@ -1069,12 +901,11 @@ export async function inicializarDashboard() {
     } else {
       estado.lugaresFijados.add(lugar);
     }
-    btnLimpiarPines.style.display = estado.lugaresFijados.size > 0 ? "inline-block" : "none";
+    btnLimpiarPines.classList.toggle("btn-mapa--visible", estado.lugaresFijados.size > 0);
     dibujarCapsulasFijadas();
     actualizarPanelSecundario(true);
   }
 
-  // ¿Se superponen dos rectángulos de cápsula (con un pequeño margen de aire)?
   function seSuperponen(a, b, margen = 4) {
     return !(
       a.x + a.w + margen < b.x ||
@@ -1088,14 +919,8 @@ export async function inicializarDashboard() {
     gCapsulas.selectAll("g.capsula-fija").remove();
     const datosActuales = agruparMapaInstante();
     const GAP = 10;
-    const cajasOcupadas = []; // en píxeles reales de pantalla, no en unidades "modelo"
+    const cajasOcupadas = [];
 
-    // El tamaño de cápsula (anchoC/altoC) es fijo EN PANTALLA (ver construirCapsula,
-    // que la contrarresta con scale(1/k)). Por eso la detección de colisiones y
-    // la cascada de desplazamiento se calculan aquí en píxeles reales de pantalla
-    // (aplicando la transformación de zoom actual), y solo al final se convierte
-    // la posición elegida de vuelta a unidades "modelo" para ubicar la cápsula
-    // dentro de gZoom.
     const t = d3.zoomTransform(svgMapa.node());
     const k = t.k;
 
@@ -1109,9 +934,6 @@ export async function inicializarDashboard() {
       const py = projection(coords)[1];
       const [sx, sy] = t.apply([px, py]);
 
-      // Posición natural: justo arriba del punto. Si ya hay otra cápsula fijada
-      // ahí, se va desplazando en cascada (alternando lados, y subiendo más)
-      // hasta encontrar un hueco de pantalla libre, para que no se superpongan.
       let caja = { x: sx - anchoC / 2, y: sy - altoC - 16, w: anchoC, h: altoC };
       let intento = 0;
       while (cajasOcupadas.some(c => seSuperponen(c, caja)) && intento < 24) {
@@ -1126,41 +948,29 @@ export async function inicializarDashboard() {
       }
       cajasOcupadas.push(caja);
 
-      // Volver a unidades "modelo" (coordenadas pre-zoom dentro de gZoom).
       const destino = { x: (caja.x - t.x) / k, y: (caja.y - t.y) / k };
 
-      const g = gCapsulas.append("g").attr("class", "capsula-fija").style("pointer-events", "none");
+      const g = gCapsulas.append("g").attr("class", "capsula-fija");
       construirCapsula(g, lugar, coords, destino);
       g.select("rect").attr("stroke", PALETA.acentoLinea).attr("stroke-width", 1.5);
     });
   }
 
-  // ══════════════════════════════════════════════════════════════════════
-  // COMPONENTE 2: PANEL SECUNDARIO (detalle sincronizado con el mapa)
-  // ══════════════════════════════════════════════════════════════════════
   const contenedorLineas = document.getElementById("crimenesChart");
   let timerRef = null;
 
   if (contenedorLineas) {
-    contenedorLineas.style.position = "relative";
+    contenedorLineas.classList.add("mapa-contenedor-lineas");
 
-    // Botón "Ver casos": aparece al seleccionar (clic) un punto de la línea;
-    // es la única forma de pasar de ahí a la tabla de documentos filtrada.
-    // Se coloca FUERA de contenedorLineas (que se vacía en cada render).
     const botonVerCasosLinea = crearBotonVerCasos();
     if (contenedorLineas.parentElement) {
       contenedorLineas.parentElement.insertBefore(botonVerCasosLinea.boton, contenedorLineas);
     }
-    let seleccionPuntoLinea = null; // "serieNombre||tiempo"
-    let lineGroupsPorSerie = new Map(); // nombre de serie -> selección d3 de su grupo
+    let seleccionPuntoLinea = null;
+    let lineGroupsPorSerie = new Map();
 
     const tooltipLineas = document.createElement("div");
-    tooltipLineas.style.cssText = `
-      position:absolute; pointer-events:none; background:${PALETA.tintaOscura};
-      color:#fff; padding:6px 10px; border-radius:4px; font-size:12px;
-      font-family: system-ui, sans-serif; opacity:0; transition:opacity 0.1s;
-      z-index:10; max-width:220px;
-    `;
+    tooltipLineas.className = "tooltip-grafico tooltip-grafico--sans";
 
     const MARGIN = { top: 60, right: 170, bottom: 50, left: 55 };
     const WIDTH = 700, HEIGHT = 300;
@@ -1186,13 +996,10 @@ export async function inicializarDashboard() {
       const lista = tiempoListaActual();
       const campo = campoTiempoActual();
       const filtrados = datosFiltradosBase();
-      // "Delitos" (nivel general, sin subcrimen específico) nunca se grafica como subcrimen.
       const filtradosConSubcrimen = filtrados.filter(d => !nombresGenerales.has(d.Nombre_Sub_Codigo));
       const subNombres = [...new Set(filtradosConSubcrimen.map(d => d.Nombre_Sub_Codigo))].sort(compararPorLinaje);
 
       if (subNombres.length === 0) {
-        // Este crimen no tiene subcrímenes propios: una sola serie con el
-        // nombre del crimen (no "Delitos", no "Todos los crímenes").
         const puntos = lista.map(t => {
           const set = new Set(filtrados.filter(d => d[campo] === t).map(d => `${d.ID_Documento}|${d.Sub_Código}`));
           const cantidad = set.size;
@@ -1236,8 +1043,6 @@ export async function inicializarDashboard() {
       contenedorLineas.innerHTML = "";
       contenedorLineas.appendChild(tooltipLineas);
 
-      // Cada render reconstruye el SVG desde cero: la selección/resaltado
-      // anterior queda referida a elementos que ya no existen.
       seleccionPuntoLinea = null;
       lineGroupsPorSerie = new Map();
       botonVerCasosLinea.ocultar();
@@ -1251,8 +1056,6 @@ export async function inicializarDashboard() {
       const lista = tiempoListaActual();
       const totalGeneral = series.reduce((a, s) => a + s.total, 0);
 
-      // Acción final del botón "Ver casos": tabla de documentos filtrada por
-      // esa fecha y por lo que representa la serie del punto seleccionado.
       function irDesdeLineaSerie(serie, tiempo) {
         if (enModoComparacion) {
           irATablasFiltradas({ lugar: serie.nombre, fecha: tiempo, escala: campoTiempoActual() });
@@ -1265,8 +1068,6 @@ export async function inicializarDashboard() {
         }
       }
 
-      // Clic en un punto: solo resalta su serie (atenúa las demás) y muestra
-      // el botón "Ver casos" — el clic en sí no navega.
       function aplicarResaltadoLinea() {
         if (!seleccionPuntoLinea) {
           lineGroupsPorSerie.forEach(grp => grp.style("opacity", 1));
@@ -1294,12 +1095,7 @@ export async function inicializarDashboard() {
 
       if (totalGeneral === 0) {
         const aviso = document.createElement("div");
-        aviso.style.cssText = `
-          display:flex; align-items:center; justify-content:center;
-          height:300px; color:${PALETA.borde}; font-family: Georgia, serif;
-          font-style:italic; font-size:15px; border:1px dashed ${PALETA.borde};
-          border-radius:6px; background:${PALETA.fondoPergamino};
-        `;
+        aviso.className = "mapa-aviso-vacio";
         aviso.textContent = "Sin casos con los filtros actuales";
         contenedorLineas.appendChild(aviso);
         return;
@@ -1309,13 +1105,11 @@ export async function inicializarDashboard() {
 
       const svgLine = d3.create("svg")
         .attr("viewBox", `0 0 ${WIDTH} ${HEIGHT}`)
-        .attr("style", "max-width: 100%; height: auto; overflow: visible; display:block;")
-        .style("font-family", "system-ui, sans-serif")
+        .attr("class", "mapa-linea-svg")
         .on("click", () => limpiarSeleccionLinea());
 
       const g = svgLine.append("g").attr("transform", `translate(${MARGIN.left},${MARGIN.top})`);
       const x = d3.scalePoint().domain(lista).range([0, IW]).padding(0.2);
-      // Solo números enteros (frecuencias/conteos de casos), nunca porcentajes.
       const valores = series.flatMap(s => s.puntos.map(p => p.cantidad));
       const yMax = d3.max(valores) || 1;
       const yTope = Math.ceil(yMax * 1.15) || 1;
@@ -1323,25 +1117,25 @@ export async function inicializarDashboard() {
 
       g.append("g")
         .call(d3.axisLeft(y).ticks(5).tickSize(-IW).tickFormat(""))
-        .call(gg => { gg.select(".domain").remove(); gg.selectAll("line").attr("stroke", "#e8e8e8"); });
+        .call(gg => { gg.select(".domain").remove(); gg.selectAll("line").attr("class", "mapa-linea-grid-linea"); });
 
-      // En año/década se muestran solo el primer y último valor del eje para
-      // evitar acumulación de etiquetas; en siglo (pocas categorías) se ven todas.
       const ejeXTiempo = d3.axisBottom(x).tickSize(0);
       if (estado.modoTiempo !== "siglo" && lista.length > 2) {
         ejeXTiempo.tickValues([lista[0], lista[lista.length - 1]]);
       }
+      const haySigloXIXTruncado = estado.modoTiempo === "siglo" && lista.includes("Siglo XIX");
+      ejeXTiempo.tickFormat(d => (d === "Siglo XIX" ? `${d} *` : d));
       g.append("g")
         .attr("transform", `translate(0,${IH})`)
         .call(ejeXTiempo)
         .call(gg => {
-          gg.select(".domain").attr("stroke", "#ccc");
-          gg.selectAll("text").style("font-size", lista.length > 6 ? "9px" : "12px").style("fill", "#555").attr("dy", "1.4em");
+          gg.select(".domain").attr("class", "mapa-linea-eje-dominio");
+          gg.selectAll("text").attr("class", "mapa-linea-eje-x-texto").style("font-size", lista.length > 6 ? "9px" : "12px").attr("dy", "1.4em");
         });
 
       g.append("g")
         .call(d3.axisLeft(y).ticks(5).tickFormat(d3.format("d")))
-        .call(gg => { gg.select(".domain").remove(); gg.selectAll("text").style("font-size", "11px").style("fill", "#666"); });
+        .call(gg => { gg.select(".domain").remove(); gg.selectAll("text").attr("class", "mapa-linea-eje-y-texto"); });
 
       const tituloTexto = enModoComparacion
         ? `Comparando ${series.length} lugar(es) fijado(s)`
@@ -1349,13 +1143,20 @@ export async function inicializarDashboard() {
 
       svgLine.append("text")
         .attr("x", MARGIN.left + IW / 2).attr("y", 22)
-        .attr("text-anchor", "middle").style("font-size", "14px").style("font-weight", "700").style("fill", "#222")
+        .attr("text-anchor", "middle").attr("class", "mapa-linea-titulo")
         .text(tituloTexto);
 
       svgLine.append("text")
         .attr("x", MARGIN.left + IW / 2).attr("y", 40)
-        .attr("text-anchor", "middle").style("font-size", "11px").style("fill", "#999")
+        .attr("text-anchor", "middle").attr("class", "mapa-linea-subtitulo")
         .text(`${totalGeneral} registros únicos · ${estado.modoTiempo === "siglo" ? "por siglo" : "por década"}`);
+
+      if (haySigloXIXTruncado) {
+        svgLine.append("text")
+          .attr("x", MARGIN.left + IW).attr("y", HEIGHT - 8)
+          .attr("text-anchor", "end").attr("class", "mapa-linea-nota")
+          .text("* Siglo XIX: solo hasta 1824");
+      }
 
       const lineGen = d3.line().x(d => x(d.tiempo)).y(d => y(d.cantidad)).curve(d3.curveLinear);
 
@@ -1364,33 +1165,29 @@ export async function inicializarDashboard() {
         const color = colorScaleLine(serie.nombre);
         const lineGroup = g.append("g");
         lineGroupsPorSerie.set(serie.nombre, lineGroup);
-        // Si ya había una selección activa (p. ej. al redibujar solo esta serie
-        // tras el resaltado inicial), respeta la opacidad correspondiente.
         if (seleccionPuntoLinea) {
           const nombreSerieActiva = seleccionPuntoLinea.split("||")[0];
           lineGroup.style("opacity", serie.nombre === nombreSerieActiva ? 1 : 0.2);
         }
 
         lineGroup.append("path")
-          .datum(serie.puntos).attr("fill", "none").attr("stroke", color)
-          .attr("stroke-width", 2.2).attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
+          .datum(serie.puntos).attr("class", "mapa-linea-trazo").attr("stroke", color)
           .attr("d", lineGen);
 
         serie.puntos.forEach(p => {
           lineGroup.append("circle")
             .attr("cx", x(p.tiempo)).attr("cy", y(p.cantidad)).attr("r", 4)
-            .attr("fill", "white").attr("stroke", color).attr("stroke-width", 2);
+            .attr("class", "mapa-linea-punto").attr("stroke", color);
           lineGroup.append("circle")
             .attr("cx", x(p.tiempo)).attr("cy", y(p.cantidad)).attr("r", 10)
-            .attr("fill", "transparent").style("pointer-events", "all")
-            .style("cursor", "pointer")
-            .on("mouseenter", () => { tooltipLineas.innerHTML = p.etiqueta.replace(/\n/g, "<br/>"); tooltipLineas.style.opacity = 1; })
+            .attr("class", "mapa-linea-punto-hit")
+            .on("mouseenter", () => { tooltipLineas.innerHTML = p.etiqueta.replace(/\n/g, "<br/>"); tooltipLineas.classList.add("tooltip-grafico--visible"); })
             .on("mousemove", event => {
               const rect = contenedorLineas.getBoundingClientRect();
               tooltipLineas.style.left = (event.clientX - rect.left + 12) + "px";
               tooltipLineas.style.top = (event.clientY - rect.top + 12) + "px";
             })
-            .on("mouseleave", () => (tooltipLineas.style.opacity = 0))
+            .on("mouseleave", () => tooltipLineas.classList.remove("tooltip-grafico--visible"))
             .on("click", event => {
               event.stopPropagation();
               seleccionarPuntoLinea(serie, p.tiempo);
@@ -1400,7 +1197,7 @@ export async function inicializarDashboard() {
         const ultimoPunto = [...serie.puntos].reverse().find(p => p.cantidad > 0) || serie.puntos[serie.puntos.length - 1];
         lineGroup.append("text")
           .attr("x", x(ultimoPunto.tiempo) + 8).attr("y", y(ultimoPunto.cantidad) + 4)
-          .style("font-size", "11px").style("fill", color).style("font-weight", "600")
+          .attr("class", "mapa-linea-etiqueta-serie").style("fill", color)
           .text(serie.nombre.length > 22 ? serie.nombre.slice(0, 20) + "…" : serie.nombre);
       }
 
@@ -1409,8 +1206,7 @@ export async function inicializarDashboard() {
         const color = colorScaleLine(series[idx].nombre);
         const lineGroup = g.append("g");
         const pathLine = lineGroup.append("path")
-          .datum(series[idx].puntos).attr("fill", "none").attr("stroke", color)
-          .attr("stroke-width", 2.2).attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
+          .datum(series[idx].puntos).attr("class", "mapa-linea-trazo").attr("stroke", color)
           .attr("d", lineGen);
         const totalLength = pathLine.node().getTotalLength();
         pathLine.attr("stroke-dasharray", `${totalLength} ${totalLength}`).attr("stroke-dashoffset", totalLength)
@@ -1440,14 +1236,6 @@ export async function inicializarDashboard() {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════
-  // COMPONENTE 3: GRAFO DE RELACIÓN ENTRE CRÍMENES
-  // Coocurrencia de crímenes cometidos por un mismo agente (adaptado de
-  // charts/grafoRelacioncrimenes.js). Del filtro general del dashboard solo
-  // le afecta la fecha (siglo/década activa arriba) — Crimen/Subcrimen/Lugar
-  // no aplican aquí. Tiene sus propios filtros exclusivos (Agente, Atributo,
-  // Género), separados del panel de filtros principal.
-  // ══════════════════════════════════════════════════════════════════════
   const estadoGrafo = { agente: "Todos", atributo: "Todos", genero: "Todos" };
 
   const agentesLista = [...new Set(datosLimpios.map(d => d.Agente))].filter(Boolean).sort();
@@ -1456,16 +1244,12 @@ export async function inicializarDashboard() {
 
   function crearSelectGrafo(etiqueta, opciones, onChange) {
     const wrap = document.createElement("div");
-    wrap.style.cssText = "display:flex; flex-direction:column; gap:3px; flex:1 1 130px; min-width:110px;";
+    wrap.className = "mapa-wrap-select-grafo";
     const label = document.createElement("label");
     label.textContent = etiqueta;
-    label.style.cssText = `font-size:10px; color:${PALETA.borde}; letter-spacing:0.03em; text-transform:uppercase;`;
+    label.className = "filtro-label filtro-label--chico";
     const select = document.createElement("select");
-    select.style.cssText = `
-      padding:5px 8px; border:1px solid ${PALETA.borde}; border-radius:4px;
-      background:${PALETA.fondoPergamino}; color:${PALETA.tintaOscura};
-      font-size:12px; font-family: Georgia, serif;
-    `;
+    select.className = "filtro-select filtro-select--compacto";
     ["Todos", ...opciones].forEach(op => {
       const opt = document.createElement("option");
       opt.value = op;
@@ -1479,21 +1263,17 @@ export async function inicializarDashboard() {
   }
 
   const filaFiltrosGrafo = document.createElement("div");
-  filaFiltrosGrafo.style.cssText = "display:flex; flex-wrap:wrap; gap:10px 14px; margin-bottom:4px;";
+  filaFiltrosGrafo.className = "mapa-fila-filtros-grafo";
   filaFiltrosGrafo.append(
     crearSelectGrafo("Agente", agentesLista, valor => { estadoGrafo.agente = valor; dibujarGrafo(); }),
     crearSelectGrafo("Atributo", atributosLista, valor => { estadoGrafo.atributo = valor; dibujarGrafo(); }),
     crearSelectGrafo("Género", generosLista, valor => { estadoGrafo.genero = valor; dibujarGrafo(); })
   );
 
-  // Botón "Ver casos": aparece cuando se selecciona (clic) un nodo o un
-  // vínculo del grafo, para ir a la tabla de documentos filtrada por esa
-  // selección — sin perder la posibilidad de aislar/resaltar la conexión
-  // dentro del propio grafo antes de decidir navegar.
   const botonVerCasosGrafo = crearBotonVerCasos();
 
   const areaGrafo = document.createElement("div");
-  areaGrafo.style.cssText = "position:relative; width:100%;";
+  areaGrafo.className = "mapa-area-grafo";
 
   contenedorGrafoEl.append(filaFiltrosGrafo, botonVerCasosGrafo.boton, areaGrafo);
 
@@ -1502,12 +1282,7 @@ export async function inicializarDashboard() {
   const GRAFO_PADDING = 40;
 
   const tooltipGrafo = document.createElement("div");
-  tooltipGrafo.style.cssText = `
-    position:absolute; pointer-events:none; background:${PALETA.tintaOscura};
-    color:#fff; padding:6px 10px; border-radius:4px; font-size:12px;
-    font-family: Georgia, serif; opacity:0; transition:opacity 0.1s;
-    z-index:10; max-width:220px;
-  `;
+  tooltipGrafo.className = "tooltip-grafico";
 
   let simulationGrafoRef = null;
 
@@ -1544,8 +1319,8 @@ export async function inicializarDashboard() {
       const codigo = d.Código;
       const nombre = d.Nombre_Codigo;
       if (!idAgente || !codigo) return;
-      if (!agenteCrimenes.has(idAgente)) agenteCrimenes.set(idAgente, new Set());
-      agenteCrimenes.get(idAgente).add(codigo);
+      if (!agenteCrimenes.has(idAgente)) agenteCrimenes.set(idAgente, { codigos: new Set(), idCaso: d.ID_Caso });
+      agenteCrimenes.get(idAgente).codigos.add(codigo);
       if (!crimenInfo.has(codigo)) crimenInfo.set(codigo, { nombre, count: 0 });
       crimenInfo.get(codigo).count += 1;
     });
@@ -1553,7 +1328,8 @@ export async function inicializarDashboard() {
     const nodes = Array.from(crimenInfo, ([codigo, info]) => ({ id: codigo, nombre: info.nombre, count: info.count }));
 
     const edgeMap = new Map();
-    agenteCrimenes.forEach(codigosSet => {
+    const casosPorEdge = new Map();
+    agenteCrimenes.forEach(({ codigos: codigosSet, idCaso }) => {
       const codigos = Array.from(codigosSet);
       if (codigos.length < 2) return;
       for (let i = 0; i < codigos.length; i++) {
@@ -1561,12 +1337,14 @@ export async function inicializarDashboard() {
           const [a, b] = [codigos[i], codigos[j]].sort();
           const key = `${a}|${b}`;
           edgeMap.set(key, (edgeMap.get(key) || 0) + 1);
+          if (!casosPorEdge.has(key)) casosPorEdge.set(key, new Set());
+          if (idCaso) casosPorEdge.get(key).add(idCaso);
         }
       }
     });
     const links = Array.from(edgeMap, ([key, weight]) => {
       const [source, target] = key.split("|");
-      return { source, target, weight };
+      return { source, target, weight, casos: [...(casosPorEdge.get(key) || [])] };
     });
 
     const adyacencia = new Map();
@@ -1575,7 +1353,7 @@ export async function inicializarDashboard() {
 
     const vinculadosPorCodigo = new Map();
     nodes.forEach(n => vinculadosPorCodigo.set(n.id, new Set()));
-    agenteCrimenes.forEach((codigosSet, idAgente) => {
+    agenteCrimenes.forEach(({ codigos: codigosSet }, idAgente) => {
       if (codigosSet.size < 2) return;
       codigosSet.forEach(codigo => vinculadosPorCodigo.get(codigo)?.add(idAgente));
     });
@@ -1585,12 +1363,7 @@ export async function inicializarDashboard() {
 
     if (nodes.length === 0) {
       const aviso = document.createElement("div");
-      aviso.style.cssText = `
-        display:flex; align-items:center; justify-content:center;
-        height:220px; color:${PALETA.borde}; font-family: Georgia, serif;
-        font-style:italic; font-size:14px; border:1px dashed ${PALETA.borde};
-        border-radius:6px; background:${PALETA.fondoPergamino};
-      `;
+      aviso.className = "mapa-aviso-vacio mapa-aviso-vacio--compacto";
       aviso.textContent = "Sin casos con los filtros actuales";
       areaGrafo.appendChild(aviso);
       return;
@@ -1598,8 +1371,7 @@ export async function inicializarDashboard() {
 
     const svg = d3.create("svg")
       .attr("viewBox", `0 0 ${GRAFO_WIDTH} ${GRAFO_HEIGHT}`)
-      .attr("style", "max-width:100%; height:auto; display:block;")
-      .style("font-family", "Georgia, serif");
+      .attr("class", "mapa-grafo-svg");
 
     const radiusScale = d3.scaleSqrt().domain([0, d3.max(nodes, d => d.count) || 1]).range([7, 32]);
     const linkScale = d3.scaleLinear().domain([1, d3.max(links, d => d.weight) || 1]).range([1, 7]);
@@ -1618,26 +1390,22 @@ export async function inicializarDashboard() {
     simulationGrafoRef = simulation;
 
     const link = svg.append("g").selectAll("line").data(links).join("line")
+      .attr("class", "mapa-grafo-link")
       .attr("stroke", PALETA.borde).attr("stroke-opacity", 0.35)
       .attr("stroke-width", d => linkScale(d.weight));
 
     const node = svg.append("g").selectAll("circle").data(nodes).join("circle")
+      .attr("class", "mapa-grafo-nodo")
       .attr("r", d => radiusScale(d.count))
       .attr("fill", d => color(d.id))
       .attr("stroke", PALETA.fondoPergamino).attr("stroke-width", 1.5)
-      .style("cursor", "pointer")
       .call(dragGrafo(simulation));
 
     const label = svg.append("g").selectAll("text").data(nodes).join("text")
       .text(d => d.nombre)
-      .attr("font-size", 10).attr("text-anchor", "middle")
-      .attr("dy", d => -radiusScale(d.count) - 6)
-      .attr("fill", PALETA.tintaOscura)
-      .style("pointer-events", "none");
+      .attr("class", "mapa-grafo-etiqueta")
+      .attr("dy", d => -radiusScale(d.count) - 6);
 
-    // Clic en un nodo o vínculo: resalta/aísla esa conexión dentro del propio
-    // grafo (como antes) y muestra un botón "Ver casos" para recién ahí
-    // navegar a la tabla de documentos filtrada.
     let seleccionNodo = null;
     let seleccionLink = null;
 
@@ -1697,7 +1465,7 @@ export async function inicializarDashboard() {
       aplicarResaltado();
       const nombreOrigen = d.source.nombre || d.source;
       const nombreDestino = d.target.nombre || d.target;
-      botonVerCasosGrafo.mostrar(`${nombreOrigen} ↔ ${nombreDestino}`, () => irATablasFiltradas({ codigo: nombreOrigen }));
+      botonVerCasosGrafo.mostrar(`${nombreOrigen} ↔ ${nombreDestino}`, () => irATablasFiltradas({ casos: d.casos }));
     });
 
     svg.on("click", () => limpiarSeleccionGrafo());
@@ -1706,27 +1474,26 @@ export async function inicializarDashboard() {
       .on("mouseenter", (event, d) => {
         const vinculados = vinculadosPorCodigo.get(d.id)?.size || 0;
         tooltipGrafo.innerHTML = `<strong>${d.nombre}</strong><br/>Casos: ${d.count}<br/>Vínculos con otros crímenes: ${vinculados}`;
-        tooltipGrafo.style.opacity = 1;
+        tooltipGrafo.classList.add("tooltip-grafico--visible");
       })
       .on("mousemove", event => {
         const rect = areaGrafo.getBoundingClientRect();
         tooltipGrafo.style.left = (event.clientX - rect.left + 12) + "px";
         tooltipGrafo.style.top = (event.clientY - rect.top + 12) + "px";
       })
-      .on("mouseleave", () => (tooltipGrafo.style.opacity = 0));
+      .on("mouseleave", () => tooltipGrafo.classList.remove("tooltip-grafico--visible"));
 
     link
-      .style("pointer-events", "stroke")
       .on("mouseenter", (event, d) => {
         tooltipGrafo.innerHTML = `${d.source.nombre || d.source} ↔ ${d.target.nombre || d.target}<br/>Agentes en común: <strong>${d.weight}</strong>`;
-        tooltipGrafo.style.opacity = 1;
+        tooltipGrafo.classList.add("tooltip-grafico--visible");
       })
       .on("mousemove", event => {
         const rect = areaGrafo.getBoundingClientRect();
         tooltipGrafo.style.left = (event.clientX - rect.left + 12) + "px";
         tooltipGrafo.style.top = (event.clientY - rect.top + 12) + "px";
       })
-      .on("mouseleave", () => (tooltipGrafo.style.opacity = 0));
+      .on("mouseleave", () => tooltipGrafo.classList.remove("tooltip-grafico--visible"));
 
     simulation.on("tick", () => {
       nodes.forEach(d => {
@@ -1746,7 +1513,6 @@ export async function inicializarDashboard() {
     dibujarGrafo();
   }
 
-  // ── Render inicial ───────────────────────────────────────────────────
   actualizarMapa();
   actualizarPanelSecundario(true);
   actualizarGrafoRelacion();

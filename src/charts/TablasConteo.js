@@ -41,16 +41,6 @@ export async function crearConteoInteractivo() {
 
   const personasUnicas = Array.from(primerRegistroPorAgente.values());
 
-  function contarCrimenesUnicos(filas) {
-    const set = new Set();
-    filas.forEach(d => {
-      if (d.ID_Documento && d.Código) {
-        set.add(`${d.ID_Documento}|${d.Código}`);
-      }
-    });
-    return set.size;
-  }
-
   const siglosInteres = [
     "Siglo XVI",
     "Siglo XVII",
@@ -58,73 +48,88 @@ export async function crearConteoInteractivo() {
     "Siglo XIX"
   ];
 
-  // ==========================================
-  // PERSONAS Y COLECTIVOS POR SIGLO (Modificado)
-  // ==========================================
-  const estructuraPersonas = {};
-  const estructuraColectivos = {}; // <-- Nueva estructura para guardar colectivos por siglo
+  const generosInteres = ["Mujer", "Hombre", "Sin información"];
 
-  siglosInteres.forEach(siglo => {
-    // Datos filtrados por el siglo actual
-    const dataSiglo = personasUnicas.filter(d => getSiglo(d.Año) === siglo);
-    const datosCompletosSiglo = datos.filter(d => getSiglo(d.Año) === siglo);
+  const atributosInteres = [
+    { key: "victimas", label: "Víctima", nombre: "Víctimas" },
+    { key: "perpetradores", label: "Perpetrador", nombre: "Perpetradores" },
+    { key: "complices", label: "Cómplice", nombre: "Cómplices" }
+  ];
 
-    // 1. Procesar Colectivos por Siglo (Tomando como referencia el filtro de personas)
-    estructuraColectivos[siglo] = {
-      instituciones: contarPersonasUnicas(datosCompletosSiglo.filter(d => d.Agente === "Institución")),
-      poblacionC: contarPersonasUnicas(datosCompletosSiglo.filter(d => d.Agente === "Población Completa")),
-      poblacionI: contarPersonasUnicas(datosCompletosSiglo.filter(d => d.Agente === "Población Indígena Completa"))
-    };
-    estructuraColectivos[siglo].total = 
-      estructuraColectivos[siglo].instituciones + 
-      estructuraColectivos[siglo].poblacionC + 
-      estructuraColectivos[siglo].poblacionI;
+  const tiposAgenteInteres = [
+    { key: "instituciones", label: "Institución", nombre: "Instituciones" },
+    { key: "poblacionI", label: "Población Indígena Completa", nombre: "Población Indígena" },
+    { key: "poblacionC", label: "Población Completa", nombre: "Población General" }
+  ];
 
-    // 2. Procesar Roles de Personas (Se mantiene igual)
-    const procesarRol = (rol) => {
-      const miembrosRol = dataSiglo.filter(d => d.Atributo === rol);
-      return {
-        total: contarPersonasUnicas(miembrosRol),
-        mujeres: contarPersonasUnicas(miembrosRol.filter(d => d.Género === "Mujer")),
-        hombres: contarPersonasUnicas(miembrosRol.filter(d => d.Género === "Hombre")),
-        sin: contarPersonasUnicas(miembrosRol.filter(d => d.Género === "Sin información" || !d.Género || d.Género.trim() === ""))
+  const coincideGenero = (valor, genero) => {
+    if (genero === "Sin información") {
+      return !valor || valor.trim() === "" || valor === "Sin información";
+    }
+    return valor === genero;
+  };
+
+  const estructuraColectivos = {};
+
+  tiposAgenteInteres.forEach(({ key, label }) => {
+    const dataTipo = datos.filter(d => d.Agente === label);
+
+    const atributos = {};
+    atributosInteres.forEach(({ key: atribKey, label: atribLabel }) => {
+      const dataAtributo = dataTipo.filter(d => d.Atributo === atribLabel);
+
+      const siglos = {};
+      siglosInteres.forEach(siglo => {
+        siglos[siglo] = contarPersonasUnicas(dataAtributo.filter(d => getSiglo(d.Año) === siglo));
+      });
+
+      atributos[atribKey] = {
+        total: contarPersonasUnicas(dataAtributo),
+        siglos
       };
-    };
+    });
 
-    estructuraPersonas[siglo] = {
-      total: dataSiglo.length, 
-      victimas: procesarRol("Víctima"),
-      perpetradores: procesarRol("Perpetrador"),
-      complices: procesarRol("Cómplice")
+    estructuraColectivos[key] = {
+      total: contarPersonasUnicas(dataTipo),
+      atributos
     };
   });
 
-  // ==========================
-  // CRÍMENES POR SIGLO
-  // ==========================
-  const estructuraCrimenes = {};
-  siglosInteres.forEach(siglo => {
-    const crimenesSiglo = datos.filter(d => getSiglo(d.Año) === siglo);
-    estructuraCrimenes[siglo] = contarCrimenesUnicos(crimenesSiglo);
+  const estructuraPersonas = {};
+
+  generosInteres.forEach(genero => {
+    const dataGenero = personasUnicas.filter(d => coincideGenero(d.Género, genero));
+
+    const atributos = {};
+    atributosInteres.forEach(({ key, label }) => {
+      const dataAtributo = dataGenero.filter(d => d.Atributo === label);
+
+      const siglos = {};
+      siglosInteres.forEach(siglo => {
+        siglos[siglo] = contarPersonasUnicas(dataAtributo.filter(d => getSiglo(d.Año) === siglo));
+      });
+
+      atributos[key] = {
+        total: contarPersonasUnicas(dataAtributo),
+        siglos
+      };
+    });
+
+    estructuraPersonas[genero] = {
+      total: contarPersonasUnicas(dataGenero),
+      atributos
+    };
   });
 
-  // ==========================
-  // OBJETO FINAL
-  // ==========================
   const conteo = {
     personas: estructuraPersonas,
     totalPersonas: personasUnicas.length,
-    colectivos: estructuraColectivos, // <-- Cambiado: Ahora contiene la estructura por siglos
-    totalColectivos: contarPersonasUnicas(datos.filter(d => d.Agente === "Institución" || d.Agente === "Población Completa" || d.Agente === "Población Indígena Completa")),
-    crimenes: estructuraCrimenes,
-    totalCrimenes: contarCrimenesUnicos(datos)
+    colectivos: estructuraColectivos,
+    totalColectivos: contarPersonasUnicas(datos.filter(d => d.Agente === "Institución" || d.Agente === "Población Completa" || d.Agente === "Población Indígena Completa"))
   };
 
   console.log(conteo);
 
-  // ==========================
-  // RENDERIZADO EN DOM
-  // ==========================
   const container = document.getElementById("conteoInteractivo");
   if (!container) return;
 
@@ -145,10 +150,17 @@ export async function crearConteoInteractivo() {
 
   const root = container.querySelector(".col-root");
 
+  function irATabla(filtros) {
+    const params = new URLSearchParams();
+    Object.entries(filtros).forEach(([clave, valor]) => {
+      if (valor) params.set(clave, valor);
+    });
+    window.location.href = `../base-de-datos/index.html?${params.toString()}`;
+  }
+
   function renderHome() {
     root.innerHTML = "";
 
-    // Card de Personas
     const personasCard = document.createElement("div");
     personasCard.className = "card";
     personasCard.innerHTML = `
@@ -156,20 +168,19 @@ export async function crearConteoInteractivo() {
         Personas
         <span style="float:right; font-size:1rem;">Total: ${conteo.totalPersonas}</span>
       </div>
-      ${Object.keys(conteo.personas).map(s => `
-        <div class="row row-clickable" data-siglo="${s}">
-          <span>${s}</span>
-          <span class="val-bold">${conteo.personas[s].total}</span>
+      ${generosInteres.map(g => `
+        <div class="row row-clickable" data-genero="${g}">
+          <span>${g}</span>
+          <span class="val-bold">${conteo.personas[g].total}</span>
         </div>
       `).join("")}
     `;
     root.append(personasCard);
 
     personasCard.querySelectorAll(".row-clickable").forEach(row => {
-      row.addEventListener("click", () => { renderSiglo(row.dataset.siglo); });
+      row.addEventListener("click", () => { renderAtributo(row.dataset.genero); });
     });
 
-    // Card de Otros Agentes / Colectivos (Modificado a interactivo por siglo)
     const institucionesCard = document.createElement("div");
     institucionesCard.className = "card";
     institucionesCard.innerHTML = `
@@ -177,120 +188,129 @@ export async function crearConteoInteractivo() {
         Otros agentes
         <span style="float:right; font-size:1rem;">Total: ${conteo.totalColectivos}</span>
       </div>
-      ${Object.keys(conteo.colectivos).map(s => `
-        <div class="row row-clickable" data-siglo="${s}">
-          <span>${s}</span>
-          <span class="val-bold">${conteo.colectivos[s].total}</span>
+      ${tiposAgenteInteres.map(({ key, nombre }) => `
+        <div class="row row-clickable" data-tipo="${key}">
+          <span>${nombre}</span>
+          <span class="val-bold">${conteo.colectivos[key].total}</span>
         </div>
       `).join("")}
     `;
     root.append(institucionesCard);
 
     institucionesCard.querySelectorAll(".row-clickable").forEach(row => {
-      row.addEventListener("click", () => { renderSigloColectivos(row.dataset.siglo); });
+      row.addEventListener("click", () => { renderAtributoColectivos(row.dataset.tipo); });
     });
-
-    // Card de Crímenes
-    const crimenCard = document.createElement("div");
-    crimenCard.className = "card";
-    crimenCard.innerHTML = `
-      <div class="total-header">
-        Crímenes
-        <span style="float:right; font-size:1rem;">Total: ${conteo.totalCrimenes}</span>
-      </div>
-      ${Object.keys(conteo.crimenes).map(s => `
-        <div class="row">
-          <span>${s}</span>
-          <span class="val-bold">${conteo.crimenes[s]}</span>
-        </div>
-      `).join("")}
-    `;
-    root.append(crimenCard);
   }
 
-  // Vista de Personas por Siglo (Se mantiene igual)
-  function renderSiglo(siglo) {
+  function renderAtributo(genero) {
     root.innerHTML = "";
-    const s = conteo.personas[siglo];
+    const g = conteo.personas[genero];
 
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
       <div class="btn-back">← Volver</div>
-      <div class="total-header">Personas - ${siglo}</div>
-      <div class="row row-clickable" data-rol="victimas">
-        <span>Víctimas</span>
-        <span class="val-bold">${s.victimas.total}</span>
-      </div>
-      <div class="row row-clickable" data-rol="perpetradores">
-        <span>Perpetradores</span>
-        <span class="val-bold">${s.perpetradores.total}</span>
-      </div>
-      <div class="row row-clickable" data-rol="complices">
-        <span>Cómplices</span>
-        <span class="val-bold">${s.complices.total}</span>
-      </div>
+      <div class="total-header">Personas - ${genero}</div>
+      ${atributosInteres.map(({ key, nombre }) => `
+        <div class="row row-clickable" data-rol="${key}">
+          <span>${nombre}</span>
+          <span class="val-bold">${g.atributos[key].total}</span>
+        </div>
+      `).join("")}
     `;
     root.append(card);
 
     card.querySelector(".btn-back").addEventListener("click", renderHome);
     card.querySelectorAll(".row-clickable").forEach(row => {
-      row.addEventListener("click", () => { renderGenero(siglo, row.dataset.rol); });
+      row.addEventListener("click", () => { renderSiglo(genero, row.dataset.rol); });
     });
   }
 
-  // Nueva función para renderizar el desglose de colectivos por siglo elegido
-  function renderSigloColectivos(siglo) {
+  function renderAtributoColectivos(tipoKey) {
     root.innerHTML = "";
-    const col = conteo.colectivos[siglo];
+    const t = conteo.colectivos[tipoKey];
+    const { nombre } = tiposAgenteInteres.find(a => a.key === tipoKey);
 
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
       <div class="btn-back">← Volver</div>
-      <div class="total-header">Otros Agentes - ${siglo}</div>
-      <div class="row">
-        <span>Instituciones</span>
-        <span class="val-bold">${col.instituciones}</span>
-      </div>
-      <div class="row">
-        <span>Población Indígena</span>
-        <span class="val-bold">${col.poblacionI}</span>
-      </div>
-      <div class="row">
-        <span>Población General</span>
-        <span class="val-bold">${col.poblacionC}</span>
-      </div>
+      <div class="total-header">Otros Agentes - ${nombre}</div>
+      ${atributosInteres.map(({ key, nombre: nombreAtributo }) => `
+        <div class="row row-clickable" data-rol="${key}">
+          <span>${nombreAtributo}</span>
+          <span class="val-bold">${t.atributos[key].total}</span>
+        </div>
+      `).join("")}
     `;
     root.append(card);
     card.querySelector(".btn-back").addEventListener("click", renderHome);
+    card.querySelectorAll(".row-clickable").forEach(row => {
+      row.addEventListener("click", () => { renderSigloColectivos(tipoKey, row.dataset.rol); });
+    });
   }
 
-  function renderGenero(siglo, rolId) {
+  function renderSigloColectivos(tipoKey, rolId) {
     root.innerHTML = "";
-    const stats = conteo.personas[siglo][rolId];
-    const nombres = { victimas: "Víctimas", perpetradores: "Perpetradores", complices: "Cómplices" };
+    const stats = conteo.colectivos[tipoKey].atributos[rolId];
+    const { label: agenteLabel, nombre: tipoNombre } = tiposAgenteInteres.find(a => a.key === tipoKey);
+    const { label: atributoLabel, nombre: rolNombre } = atributosInteres.find(a => a.key === rolId);
 
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
       <div class="btn-back">← Volver</div>
-      <div class="total-header">${nombres[rolId]} (${siglo})</div>
-      <div class="row">
-        <span>Mujeres</span>
-        <span class="val-bold">${stats.mujeres}</span>
-      </div>
-      <div class="row">
-        <span>Hombres</span>
-        <span class="val-bold">${stats.hombres}</span>
-      </div>
-      <div class="row">
-        <span>Sin información</span>
-        <span class="val-bold">${stats.sin}</span>
-      </div>
+      <div class="total-header">${rolNombre} (${tipoNombre})</div>
+      ${siglosInteres.map(siglo => `
+        <div class="row row-clickable" data-siglo="${siglo}">
+          <span>${siglo}</span>
+          <span class="val-bold">${stats.siglos[siglo]}</span>
+        </div>
+      `).join("")}
     `;
     root.append(card);
-    card.querySelector(".btn-back").addEventListener("click", () => renderSiglo(siglo));
+    card.querySelector(".btn-back").addEventListener("click", () => renderAtributoColectivos(tipoKey));
+    card.querySelectorAll(".row-clickable").forEach(row => {
+      row.addEventListener("click", () => {
+        irATabla({
+          agente: agenteLabel,
+          atributo: atributoLabel,
+          fecha: row.dataset.siglo,
+          escala: "siglo"
+        });
+      });
+    });
+  }
+
+  function renderSiglo(genero, rolId) {
+    root.innerHTML = "";
+    const stats = conteo.personas[genero].atributos[rolId];
+    const { label, nombre } = atributosInteres.find(a => a.key === rolId);
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="btn-back">← Volver</div>
+      <div class="total-header">${nombre} (${genero})</div>
+      ${siglosInteres.map(siglo => `
+        <div class="row row-clickable" data-siglo="${siglo}">
+          <span>${siglo}</span>
+          <span class="val-bold">${stats.siglos[siglo]}</span>
+        </div>
+      `).join("")}
+    `;
+    root.append(card);
+    card.querySelector(".btn-back").addEventListener("click", () => renderAtributo(genero));
+    card.querySelectorAll(".row-clickable").forEach(row => {
+      row.addEventListener("click", () => {
+        irATabla({
+          genero,
+          atributo: label,
+          fecha: row.dataset.siglo,
+          escala: "siglo"
+        });
+      });
+    });
   }
 
   renderHome();
