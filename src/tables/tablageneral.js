@@ -2,6 +2,11 @@ import * as d3 from "d3";
 
 export async function crearTabla() {
 
+  const tablaContainerInicial = document.getElementById("tablaContainer");
+  if (tablaContainerInicial) {
+    tablaContainerInicial.innerHTML = `<p class="cargando">Cargando...</p>`;
+  }
+
   const [dataCrimenes, dataViz] = await Promise.all([
     d3.csv(`${import.meta.env.BASE_URL}/data/crimenes.csv`),
     d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`)

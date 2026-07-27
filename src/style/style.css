@@ -342,6 +342,14 @@ a.card p {
   cursor: pointer;
 }
 
+.cargando {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--ink-light);
+  text-align: center;
+  padding: 2rem 0;
+}
+
 .fila-clickeable:hover {
   background-color: var(--badge-bg) !important;
 }
