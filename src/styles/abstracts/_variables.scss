@@ -1,0 +1,6 @@
+// Marcador de posición. Los tokens reales llegan en la fase 4a, extraídos de
+// src/style/style.css.
+//
+// IMPORTANTE (ver MIGRATION.md, sección 3): las 26 propiedades que JS lee en
+// runtime con getComputedStyle deben seguir emitiéndose como custom properties
+// en :root. Las variables SCSS son la fuente de verdad; :root es la salida.

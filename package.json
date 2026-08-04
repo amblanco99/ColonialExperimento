@@ -10,15 +10,23 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "dev:astro": "astro dev",
+    "build:astro": "astro build",
+    "preview:astro": "astro preview",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/d3": "^7.4.3",
+    "@types/d3-sankey": "^0.12.5",
+    "astro": "^7.1.6",
     "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.7.0",
     "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
+    "sass": "^1.102.0",
     "vite": "^8.0.12"
   },
   "dependencies": {
