@@ -1,0 +1,45 @@
+---
+// El ÚNICO sitio del repo donde vive el marcado del nav. Antes estaba copiado a
+// mano en 10 páginas y había derivado en orden, indentación y espacios.
+//
+// Orden: el mayoritario de las 9 páginas, con "Sobre el proyecto" al final.
+// index.html lo tenía en tercer lugar; al haber un solo componente hay que elegir
+// uno, y eso reordena visiblemente el menú de la portada (ver MIGRATION.md).
+//
+// El texto de los enlaces se copia literal, incluido "Composicion social" sin
+// tilde. Esto es un port, no una corrección de contenido.
+
+export type SeccionActiva = 'inicio' | 'base-de-datos' | 'tiempo' | 'personas' | 'about';
+
+interface Props {
+  active?: SeccionActiva;
+}
+
+const { active } = Astro.props;
+
+// BASE_URL ya termina en '/', así que los segmentos van SIN barra inicial.
+// Con barra saldría '//', el mismo error que arrastran las 17 rutas de datos.
+const base = import.meta.env.BASE_URL;
+
+const enlaces = [
+  { id: 'inicio', texto: 'Inicio', href: `${base}index.html` },
+  { id: 'base-de-datos', texto: 'Tablas y filtros', href: `${base}base-de-datos/index.html` },
+  { id: 'tiempo', texto: 'Tiempo', href: `${base}tiempo/index.html` },
+  { id: 'personas', texto: 'Composicion social', href: `${base}personas/index.html` },
+  { id: 'about', texto: 'Sobre el proyecto', href: `${base}about/index.html` },
+] as const satisfies ReadonlyArray<{ id: SeccionActiva; texto: string; href: string }>;
+---
+
+<nav class="topnav">
+  <a href={`${base}index.html`} class="logo">Crímenes Coloniales</a>
+
+  <div class="nav-links">
+    {
+      enlaces.map((enlace) => (
+        <a href={enlace.href} aria-current={active === enlace.id ? 'page' : undefined}>
+          {enlace.texto}
+        </a>
+      ))
+    }
+  </div>
+</nav>

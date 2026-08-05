@@ -228,3 +228,32 @@ instalaría bien mientras `build` siga siendo Vite y reventaría justo al hacer 
   color de acento. **Se porta tal cual; no se corrige**, porque corregirlo cambiaría el
   renderizado.
 - ESLint no tiene parser de `.astro` configurado.
+
+### Dos vulnerabilidades altas, ambas solo de build
+
+Aparecieron al instalar Astro en la fase 1. **Ninguna llega al output publicado**, así que no
+se tocan durante la migración.
+
+| | `postcss` 8.5.15 | `brace-expansion` 5.0.8 |
+|---|---|---|
+| Aviso | [GHSA-r28c-9q8g-f849](https://github.com/advisories/GHSA-r28c-9q8g-f849) y [GHSA-fxqj-rqcc-2cmp](https://github.com/advisories/GHSA-fxqj-rqcc-2cmp) — path traversal vía `sourceMappingURL` | [GHSA-rgw5-rvv9-x895](https://github.com/advisories/GHSA-rgw5-rvv9-x895) — DoS por arrays intermedios sin límite |
+| CVSS | 7.5 | 7.5 |
+| Ruta | `vite` → `postcss` | `eslint` → `minimatch` → `brace-expansion` |
+| Tipo | devDependency | devDependency |
+| Rango vulnerable | `<=8.5.22` | `>=4.0.0 <5.0.9` |
+| Arreglo sin romper | sí (parche) | sí (parche) |
+
+`npm ls --omit=dev --all` no devuelve ninguno de los dos: el árbol de producción son solo
+`d3`, `@observablehq/plot`, `@turf/rewind` y `d3-sankey`. Son herramientas de Node que nunca
+entran al bundle del navegador. Además, el aviso de postcss exige procesar CSS controlado por
+un atacante, y todo el CSS de aquí está en el repo.
+
+**Detalle importante:** el cambio de lockfile que se descartó antes del pre-vuelo era
+justamente el parche de seguridad — subía `postcss` a 8.5.25 (por encima del rango vulnerable)
+y `brace-expansion` a 5.0.9 (la primera versión corregida). No era ruido de un `npm install`
+ajeno, sino npm recogiendo parches publicados dentro de los rangos semver existentes.
+Descartarlo mantuvo limpio el historial, pero el parche se fue con él y el `npm i` de la fase 1
+no lo recuperó, porque el lockfile fija esas versiones.
+
+Al terminar la migración, en un commit aparte: o `npm audit fix`, o reponer esos bumps de forma
+deliberada.
