@@ -301,6 +301,30 @@ Para cada una de las 10 páginas restantes, además de `npm run check` y `npm ru
   color de acento. **Se porta tal cual; no se corrige**, porque corregirlo cambiaría el
   renderizado.
 - ESLint no tiene parser de `.astro` configurado.
+- **250 KB de JavaScript para un solo gráfico.** `about/fuentes.html` solo dibuja
+  `crearTiposCasos`, pero su bundle pesa 250.714 bytes porque arrastra d3 entero y
+  `@observablehq/plot`. **No es una regresión:** hoy pasa lo mismo, solo que repartido en un
+  bundle común que además incluía los otros dos gráficos. Lo que cambia es que los scripts por
+  página lo vuelven visible y medible. Vale la pena revisarlo después de la fase 7 (importar
+  solo los módulos de d3 que se usan, en vez de `import * as d3`).
+- **Evaluar Playwright para pruebas de regresión visual después de la fase 7.** Durante la
+  migración se descartó a propósito: es una dependencia nueva y una superficie de fallo nueva a
+  mitad del port, y las 9 páginas se revisan en un teléfono de verdad, que además detecta cosas
+  que un viewport headless no.
+
+### Estado verificado antes de la fase 5b
+
+La fase 5b corrige las 17 rutas de datos. Para que tenga contra qué comparar, este es el estado
+comprobado en el bundle publicado de `about/fuentes.html` (fase 3):
+
+```
+/ColonialExperimento//data/Casos.csv
+```
+
+La doble barra viene de `TiposCasos.js:6`, que construye la URL como
+`` `${import.meta.env.BASE_URL}/data/Casos.csv` `` cuando `BASE_URL` ya termina en `/`.
+Funciona porque los servidores normalizan `//`. Después de la fase 5b esa misma comprobación
+tiene que devolver `/ColonialExperimento/data/Casos.csv`.
 
 ### Dos vulnerabilidades altas, ambas solo de build
 
