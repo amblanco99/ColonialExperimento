@@ -24,8 +24,16 @@ export default defineConfig({
       preprocessorOptions: {
         scss: {
           // loadPaths permite escribir @use "abstracts/variables" desde cualquier
-          // archivo, sin rutas relativas frágiles. Se resuelve desde la raíz del
-          // proyecto, que es desde donde Astro ejecuta siempre.
+          // archivo, sin rutas relativas frágiles.
+          //
+          // OJO: esta ruta es relativa al cwd, no a este archivo. Da por hecho
+          // que Astro se ejecuta desde la raíz del proyecto, que es lo normal
+          // (npm run ... siempre lo hace). Antes se resolvía de forma absoluta
+          // con fileURLToPath(new URL(..., import.meta.url)), lo que no dependía
+          // del cwd, pero eso obligaba a importar 'node:url' y por tanto a
+          // instalar @types/node solo para que `astro check` no fallara. Si
+          // algún día el build se lanza desde otro directorio, esto se rompe y
+          // hay que volver a la forma absoluta.
           loadPaths: ['src/styles'],
 
           // Inyecta los tokens en cada .scss para no repetir el @use en todos.

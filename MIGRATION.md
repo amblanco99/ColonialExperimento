@@ -234,6 +234,32 @@ D3 corre solo en el navegador, importado desde un `<script>` a nivel de página,
 fijado en `node-version: 20`. Se sube a 22 en el pre-vuelo, no en el cambio final: si no, CI
 instalaría bien mientras `build` siga siendo Vite y reventaría justo al hacer el cambio.
 
+### Lista de la fase 7
+
+- `dev`, `build` y `preview` pasan a Astro; se quitan los alias `:astro`.
+- `outDir` vuelve a `dist`, porque `deploy.yml` sube `path: dist`.
+- Se borran las 11 páginas HTML de la raíz, `src/main/`, `src/style/` y `vite.config.js`.
+- **Quitar de `tsconfig.json` los excludes de `src/charts`, `src/main`, `src/tables` y
+  `src/ui`.** Se pusieron porque era código condenado que solo ensuciaba la salida; una vez
+  borrados esos directorios, los excludes apuntan a rutas inexistentes y confunden.
+  **Después de quitarlos, `npm run check` tiene que seguir dando 0.** Si no da 0, es que algo
+  que se movió a `src/scripts/` en la fase 5 nunca llegó a chequearse de verdad.
+- Se limpian las entradas ya obsoletas de `.prettierignore`.
+- Comprobar que `dist/` contiene las 11 rutas antes de mezclar a `main`.
+
+### Verificación por página (fase 3)
+
+Para cada una de las 10 páginas restantes, además de `npm run check` y `npm run build:astro`:
+
+1. **Diff del texto visible contra el original.** Se extrae el texto de ambos HTML quitando
+   `<head>` y etiquetas, y se comparan. Lo único que puede diferir es el orden del nav. Es el
+   control estándar de cada página, no algo puntual.
+2. **Buscar enlaces relativos en el cuerpo, no solo en el nav.** `index.html` tenía un enlace
+   a `about/index.html` dentro de un párrafo; se asume que hay más. Todo enlace interno se
+   construye desde `BASE_URL`, sin barra inicial en el segmento.
+3. **Reportar los comentarios HTML que aparezcan** y de qué lado de la regla caen (contenido
+   que se copia, o nota del autor que hay que preguntar), en vez de decidirlo en silencio.
+
 ---
 
 ## 8. Trabajo posterior (no se toca en esta migración)
