@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Igual que documentacion-tecnica: cargaba aboutmain.js pero no tiene ninguno
+// de los tres contenedores de gráficos (#conteoCrimenes, #tipoCaso,
+// #chartLinaje), así que no lleva script.
+
+// Los enlaces de las tarjetas eran relativos entre hermanos ("fuentes.html").
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="Fuentes y metodología" active="about">
+  <main class="container">
+    <h1 class="section-mainTitle">Fuentes y metodología</h1>
+
+    <p>
+      El proyecto se propone cuantificar y sistematizar los juicios criminales tramitados durante
+      el periodo colonial en el Nuevo Reino de Granada con el fin de construir bases de datos
+      relacionales que permitan analizar, en perspectiva agregada, las prácticas judiciales, las
+      tipologías delictivas y las configuraciones sociales que emergen de la justicia penal de la
+      época.
+      <br />
+      Estas bases de datos permiten registrar información básica de cada expediente y clasificar
+      los casos según variables sustantivas relevantes para el análisis socio-jurídico, como el
+      tipo de delito, el perfil de las personas procesadas, la identidad de las víctimas y otras
+      categorías analíticas. A continuación se describen las bases, sus metadatos y sus reglas
+      para alimentarlas.
+    </p>
+
+    <div class="cards-container">
+      <a href={`${base}about/fuentes.html`} class="card">
+        <h3>Fuentes</h3>
+        <p>Archivos y repositorios documentales que alimentan las bases de datos.</p>
+      </a>
+
+      <a href={`${base}about/delitos.html`} class="card">
+        <h3>Delitos</h3>
+        <p>Tipología delictiva y criterios de clasificación de los casos.</p>
+      </a>
+
+      <a href={`${base}about/documentacion-tecnica.html`} class="card">
+        <h3>Documentación técnica</h3>
+        <p>Metodología de codificación y estructura de las bases de datos.</p>
+      </a>
+    </div>
+  </main>
+</BaseLayout>

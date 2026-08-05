@@ -169,13 +169,32 @@ páginas reciben la hoja global por la misma vía.
   (un `TODO`, un recordatorio, código comentado), **se marca y se pregunta**, no se decide
   sobre la marcha.
 
-### Meta viewport — commit aparte (fase 3.5)
+### Meta viewport — fase 3.5, ahora una revisión y no un commit
 
-Solo `index.html` y `base-de-datos/caso.html` tienen `<meta name="viewport">`. Como
+Solo `index.html` y `base-de-datos/caso.html` tenían `<meta name="viewport">`. Como
 `BaseLayout` lo da a las 11, los breakpoints móviles (`style.css:590`, más 600/640/720px en
 otros archivos) **empiezan a aplicarse en 9 páginas que nunca los habían visto**.
 
-Páginas a revisar en teléfono antes de ese commit:
+**El plan original era aislarlo en un commit propio. Eso ya no es posible.** `BaseLayout` lleva
+la etiqueta desde la fase 2, así que cada página la recibe en el momento en que se porta, no
+en un commit posterior. Cuando se detectó, `index.html` y `about/documentacion-tecnica.html` ya
+habían salido con ella. Se acepta el hecho en vez de deshacerlo.
+
+Consecuencias, para quien venga después:
+
+- **La etiqueta llega página a página, en el commit de cada página.** No existe ni existirá un
+  commit "fase 3.5" que se pueda revertir por separado.
+- **Se perdió la opción de revertir el cambio de forma aislada.** Quien bisecte una regresión
+  en móvil llegará al commit de esa página concreta, donde el viewport está mezclado con el
+  port del marcado. No es el commit de la fase 3.5, porque no lo hay.
+- **La fase 3.5 pasa a ser una puerta de verificación**, no un commit: cuando termine la fase 3,
+  se revisan las 9 páginas en teléfono de una pasada, antes de empezar la fase 4.
+- Además, cada página de esa lista se mira a ancho de teléfono **en el momento de portarla**,
+  para repartir el trabajo en vez de acumularlo al final.
+
+**Sigue sin tocarse el CSS.** Lo que se vea mal se anota abajo, en trabajo posterior.
+
+Lista de la puerta de verificación:
 
 1. `about/index.html`
 2. `about/fuentes.html`
@@ -220,8 +239,8 @@ D3 corre solo en el navegador, importado desde un `<script>` a nivel de página,
 | 0 | Este documento | **en curso** |
 | 1 | Scaffold: Astro, sass, TS, Prettier | pendiente |
 | 2 | `BaseLayout` + `Nav` + `Footer` | pendiente |
-| 3 | Páginas, una a una, de la más simple a la más compleja | pendiente |
-| 3.5 | Meta viewport | pendiente |
+| 3 | Páginas, una a una, de la más simple a la más compleja | en curso |
+| 3.5 | Revisión en móvil de las 9 páginas (ya no es un commit) | pendiente |
 | 4a | Tokens, base, `global.scss` | pendiente |
 | 4b | Las otras 10 hojas → `src/styles/pages/` | pendiente |
 | 5a | Mover D3 a `src/scripts/*.ts` sin tocar contenido | pendiente |
