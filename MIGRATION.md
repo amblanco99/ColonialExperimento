@@ -206,6 +206,20 @@ Lista de la puerta de verificación:
 8. `personas/personas.html`
 9. `personas/otrosAgentes.html`
 
+**Dónde el análisis de CSS deja de bastar.** En las páginas de solo texto se puede predecir
+razonablemente lo que hará el breakpoint leyendo las reglas. En las que llevan gráfico, no: hay
+que mirarlas. Por orden de prioridad:
+
+- **`tiempo/index.html`** — el mapa (760×820) y el gráfico de líneas, más paneles de filtro
+  construidos por JS que no existen en el HTML.
+- **`personas/otrosAgentes.html`** — cuatro gráficos, uno de ellos el sankey, que es el único
+  que scrollea en horizontal en vez de encogerse.
+- **`about/fuentes.html`** — Observable Plot con ancho fijo de 600 y sin `viewBox`, así que no
+  se comporta como los demás.
+
+El resto de páginas con gráfico caen en el patrón general descrito arriba (se encogen y pierden
+legibilidad), y con mirar una basta para saber cómo están todas.
+
 Lo que se vea mal se anota abajo como trabajo posterior. **No se corrige CSS en esta
 migración.**
 
@@ -311,6 +325,43 @@ Para cada una de las 10 páginas restantes, además de `npm run check` y `npm ru
   migración se descartó a propósito: es una dependencia nueva y una superficie de fallo nueva a
   mitad del port, y las 9 páginas se revisan en un teléfono de verdad, que además detecta cosas
   que un viewport headless no.
+
+### Todos los gráficos tienen ancho fijo (sistemático, no por página)
+
+Barrido completo de `src/charts/`, `src/tables/` y `src/ui/`. **Ningún módulo mide su
+contenedor para decidir su tamaño.** Los 8 usos de `getBoundingClientRect()` que hay son todos
+para colocar el tooltip (`tooltip.style.left = event.clientX - rect.left + 12`), ninguno para
+dimensionar. No hay `clientWidth`, `offsetWidth` ni `innerWidth` en todo el código.
+
+| Archivo | Línea | Valor | ¿Deriva del contenedor? |
+|---|---|---|---|
+| `Linaje.js` | 7 | `width = 928` | no |
+| `AgentesSankey.js` | 68 | `width = 820` | no (wrapper con `overflow-x:auto`) |
+| `TiempoCrimenesMapa.js` | 620-621 | `width = 760`, `height = 820` (mapa) | no |
+| `TiempoCrimenesMapa.js` | 976 | `WIDTH = 700`, `HEIGHT = 300` (líneas) | no |
+| `AgentesButterfly.js` | 30 | `WIDTH = 700` | no |
+| `ButterflyGenero.js` | 155 | `WIDTH = 700` | no |
+| `TiposCasos.js` | 10 | `width: 600` (Observable Plot) | no |
+| `InstitucionesAtributo.js` | 38 | `width = 550` | no |
+| `WaffleGenero.js` | 180-185 | `cellSize = 35`, `legendWidth = 500` | no |
+| `BeeswarmGenero.js` | 239 | `IW = Math.max(700, (maxAño - minAño) * PX_POR_AÑO)` | no — deriva de los **datos**, con mínimo 700 |
+| `AgentesBeeswarm.js` | 30 | `IW = Math.max(700, (maxAño - minAño) * PX_POR_AÑO)` | no — igual |
+| `ParticipacionTiempo.js` | 263 | `IW = Math.max(500, (MAX_DÉCADA - MIN_DÉCADA) / 10 * PX_POR_DÉCADA)` | no — igual, mínimo 500 |
+| `ConteoCrimenes.js` | 46 | `max-width: 800px` (HTML, no SVG) | no |
+| `TablasConteo.js` | 138 | `max-width: 800px` (HTML, no SVG) | no |
+
+**Qué significa para la revisión en móvil.** 10 de los 12 módulos SVG llevan `viewBox`, y
+`style.css:128` aplica `svg { max-width: 100%; height: auto }`. Así que **el fallo esperable no
+es que se desborden, sino que se encojan**: un gráfico de 928 px dentro de un viewport de
+375 px se escala a ~40%, y el texto se escala con él. El problema es de **legibilidad**, no de
+maquetación, y es el mismo en todas las páginas con gráfico.
+
+Las dos excepciones: `AgentesSankey.js:128` pone su wrapper en `overflow-x:auto`, así que ese
+scrollea en vez de encogerse; y `TiposCasos.js` usa Observable Plot, que no emite `viewBox`.
+
+Esto es exactamente lo que se quería saber antes de la puerta: **es un problema sistemático,
+uno solo, no nueve distintos.** Arreglarlo es trabajo posterior (gráficos responsivos), no
+parte de este port.
 
 ### Estado verificado antes de la fase 5b
 
