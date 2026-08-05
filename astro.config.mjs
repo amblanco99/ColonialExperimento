@@ -1,8 +1,5 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import { fileURLToPath } from 'node:url';
-
-const rutaEstilos = fileURLToPath(new URL('./src/styles', import.meta.url));
 
 export default defineConfig({
   // GitHub Pages sirve el sitio en una subruta. OJO: BASE_URL termina en '/',
@@ -27,8 +24,9 @@ export default defineConfig({
       preprocessorOptions: {
         scss: {
           // loadPaths permite escribir @use "abstracts/variables" desde cualquier
-          // archivo, sin rutas relativas frágiles.
-          loadPaths: [rutaEstilos],
+          // archivo, sin rutas relativas frágiles. Se resuelve desde la raíz del
+          // proyecto, que es desde donde Astro ejecuta siempre.
+          loadPaths: ['src/styles'],
 
           // Inyecta los tokens en cada .scss para no repetir el @use en todos.
           // Se salta abstracts/ porque inyectarlo dentro del propio _variables.scss

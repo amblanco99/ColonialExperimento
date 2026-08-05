@@ -1,5 +1,17 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "dist-astro", "node_modules"]
+  "exclude": [
+    "dist",
+    "dist-astro",
+    "node_modules",
+
+    // Código heredado que se borra en la fase 7. En la fase 5a se mueve a
+    // src/scripts/*.ts y ahí sí entra al chequeo; mientras tanto solo ensucia
+    // la salida con avisos de archivos condenados.
+    "src/charts",
+    "src/main",
+    "src/tables",
+    "src/ui"
+  ]
 }
