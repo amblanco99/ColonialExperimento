@@ -141,6 +141,34 @@ Con cambio visual, aprobado explícitamente:
   otras 9 páginas lo ponen al final. Al existir un solo `Nav.astro` hay que elegir uno: se
   adopta el orden mayoritario de las 9. **Esto reordena visiblemente el menú de la portada.**
 
+### El CSS de index.html cambia de mecanismo
+
+`index.html` era la única página que cargaba la hoja global con una etiqueta directa:
+
+```html
+<link rel="stylesheet" href="/src/style/style.css" />
+```
+
+Las otras 10 la recibían a través del `import` de su módulo JS. Ahora `BaseLayout` la importa
+y Astro la empaqueta y versiona, así que en el HTML publicado sale como
+`/ColonialExperimento/_astro/<nombre>.<hash>.css`.
+
+Los estilos son los mismos; lo que cambia es la URL y el momento en que se resuelve. **Si más
+adelante aparece una regresión de estilos en la portada y se bisecta hasta la fase 2, es por
+esto.** El efecto secundario bueno es que `index.html` deja de ser la excepción: ahora las 11
+páginas reciben la hoja global por la misma vía.
+
+### Comentarios HTML: qué se conserva y qué no
+
+- **Los comentarios que ya están en las 11 páginas se copian literalmente.** Son parte del
+  contenido que se porta, y decidir cuáles sobran es otra tarea.
+- **Lo que escribamos nosotros va en el frontmatter**, nunca como comentario HTML. Astro
+  publica los comentarios HTML: en la fase 2 se colaron tres notas explicativas al output de
+  todas las páginas antes de detectarlo.
+- **Si un comentario del original parece una nota del autor para sí mismo** y no contenido
+  (un `TODO`, un recordatorio, código comentado), **se marca y se pregunta**, no se decide
+  sobre la marcha.
+
 ### Meta viewport — commit aparte (fase 3.5)
 
 Solo `index.html` y `base-de-datos/caso.html` tienen `<meta name="viewport">`. Como
@@ -257,3 +285,8 @@ no lo recuperó, porque el lockfile fija esas versiones.
 
 Al terminar la migración, en un commit aparte: o `npm audit fix`, o reponer esos bumps de forma
 deliberada.
+
+**Regla que sale de aquí:** antes de descartar cualquier cambio de lockfile que llegue de
+fuera, correr `npm audit` contra él. Lo que parece ruido de ordenación puede ser un parche de
+seguridad, y desde dentro del diff las dos cosas se ven igual. Se descartó este por mantener
+limpio el historial de la migración, sin comprobar qué arreglaba.
