@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Los enlaces de las tarjetas eran relativos entre hermanos ("personas.html").
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="Composición social de los procesos (personas e instituciones)" active="personas">
+  <main class="container">
+    <h1 class="section-mainTitle">
+      Composición social de los procesos (personas e instituciones)
+    </h1>
+
+    <section>
+      <h2>Conteo de Personas y agentes</h2>
+      <p>Aquí puedes encontrar las sumas totales de la base de datos...</p>
+      <div id="conteoInteractivo"></div>
+
+      <div class="cards-container">
+        <a href={`${base}personas/personas.html`} class="card">
+          <h3>Personas</h3>
+          <p>
+            ¿Quieres saber más sobre la composición social de las personas involucradas en los
+            crímenes?
+          </p>
+        </a>
+
+        <a href={`${base}personas/otrosAgentes.html`} class="card">
+          <h3>Otros agentes</h3>
+          <p>
+            ¿Quieres saber más sobre la composición social de los otros agentes involucrados en
+            los crímenes?
+          </p>
+        </a>
+      </div>
+    </section>
+
+    <script>
+      import { crearConteoInteractivo } from '../../charts/TablasConteo.js';
+
+      crearConteoInteractivo();
+    </script>
+  </main>
+</BaseLayout>
