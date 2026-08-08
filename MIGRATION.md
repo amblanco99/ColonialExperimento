@@ -363,6 +363,46 @@ Esto es exactamente lo que se quería saber antes de la puerta: **es un problema
 uno solo, no nueve distintos.** Arreglarlo es trabajo posterior (gráficos responsivos), no
 parte de este port.
 
+### PENDIENTE DE DECISIÓN: dos bytes NUL en AgentesSankey.js
+
+`src/charts/AgentesSankey.js` contiene **dos bytes NUL (0x00)**, y es el único archivo del
+repo que los tiene (comprobado comparando el tamaño de cada archivo con y sin NUL; `file(1)` lo
+clasifica como `data` en vez de texto). Forman un par unir/separar coherente:
+
+```
+línea 42:  const clave = `${source}\0${target}`;
+línea 59:  const [source, target] = clave.split("\0");
+```
+
+Como delimitador **funciona**: un NUL no aparece nunca en los datos, así que evita colisiones.
+Lo que no se sabe es si fue deliberado. Dos indicios en contra: el propio archivo usa `||` como
+separador en las líneas 49 y 51 para claves compuestas, y el NUL está escrito como byte crudo y
+no como el escape `\0`, que sería lo normal si se hubiera querido a propósito.
+
+**Consecuencias prácticas, ya observadas:**
+
+- `grep` trata el archivo como binario y **oculta las coincidencias** salvo con `-a`. Durante la
+  fase 3 esto dio dos falsos negativos antes de detectarse.
+- Hay que vigilarlo en la **fase 5a** (el byte debe sobrevivir al pasar a `.ts`) y sobre todo en
+  la **fase 6**: hay que comprobar qué hace Prettier con un NUL crudo dentro de un template
+  literal. Si lo normaliza o lo elimina, el sankey deja de agrupar bien y **no falla de forma
+  visible**: `split` sobre un separador que ya no existe devuelve un array de un elemento y los
+  enlaces salen mal.
+
+Se porta tal cual y **no se toca**. Queda marcado para preguntar, según la regla de no decidir
+en silencio sobre cosas que parecen notas o rarezas del autor original.
+
+### Astro mete el CSS en línea cuando es pequeño
+
+`base-de-datos/index.html` importa `caso.css` además de la hoja global. En el HTML publicado
+**no aparece como un segundo `<link>`**: Astro lo incrusta como `<style>` dentro de la página
+(`build.inlineStylesheets: 'auto'`). Comprobado que las reglas están (`.state-msg`,
+`.site-header`, `.back-link`, `.case-title`, `.crime-card`, `.agent-role`) y que **no** están en
+las páginas que no deben tenerlas.
+
+Anotado porque verificar las cadenas de CSS por página mirando solo las etiquetas `<link>` da un
+falso negativo. Hay que buscar las reglas en el HTML, no el archivo.
+
 ### Estado verificado antes de la fase 5b
 
 La fase 5b corrige las 17 rutas de datos. Para que tenga contra qué comparar, este es el estado
