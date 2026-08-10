@@ -26,6 +26,14 @@ export const PALETA_GENERO = {
   "Sin información": leerVariableCss("--genero-sin-info", "#003f5c"),
 };
 
+export const PALETA_ATRIBUTO = {
+  "Víctima": "#2f7d5c",
+  "Perpetrador": "#c1443e",
+  "Cómplice": "#6b5b95",
+};
+
+export const ATRIBUTOS_ORDEN = ["Víctima", "Perpetrador", "Cómplice"];
+
 export const SIGLOS = ["Siglo XVI", "Siglo XVII", "Siglo XVIII", "Siglo XIX"];
 
 export function getSiglo(año) {

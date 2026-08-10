@@ -41,103 +41,44 @@
   </div>
   </nav>
 
-  <main class="container">
+  <main class="container personas-main-ancho">
 
     <h1 class="section-mainTitle">Personas</h1>
 
-    <section class="pw-carousel-section">
+    <div class="vista-toggle" role="tablist" aria-label="Modo de visualización">
+      <button type="button" class="vista-toggle-btn vista-toggle-btn--activo" id="vistaBtnDashboard" role="tab" aria-selected="true" aria-controls="vistaDashboard">Dashboard</button>
+      <button type="button" class="vista-toggle-btn" id="vistaBtnHistoria" role="tab" aria-selected="false" aria-controls="vistaHistoria">Historia</button>
+    </div>
 
-      <div class="pw-carousel" id="personasCarrusel">
+    <section class="personas-dashboard-seccion" id="vistaDashboard">
 
-        <div class="pw-wheel-row">
+      <div id="personasFiltrosTop" class="personas-filtros-top"></div>
 
-          <button class="pw-arrow pw-arrow-prev" type="button" id="pwPrev" aria-label="Pregunta anterior">‹</button>
+      <div class="personas-grid">
 
-          <div class="pw-wheel" id="pwWheel" role="tablist" aria-label="Preguntas sobre personas">
-
-            <button class="pw-card" type="button" role="tab" data-index="0">
-              <span class="pw-card-num">01</span>
-              <span class="pw-card-q">¿En qué delitos aparece con más frecuencia cada género?</span>
-            </button>
-
-            <button class="pw-card" type="button" role="tab" data-index="1">
-              <span class="pw-card-num">02</span>
-              <span class="pw-card-q">¿Cuándo son víctimas y cuándo son acusadas según el género?</span>
-            </button>
-
-            <button class="pw-card" type="button" role="tab" data-index="2">
-              <span class="pw-card-num">03</span>
-              <span class="pw-card-q">¿Cómo cambia la participación a lo largo del tiempo?</span>
-            </button>
-
-            <button class="pw-card" type="button" role="tab" data-index="3">
-              <span class="pw-card-num">04</span>
-              <span class="pw-card-q">¿Cómo se distribuye el género entre víctimas y perpetradores?</span>
-            </button>
-
+        <div class="personas-columna">
+          <div class="personas-tarjeta">
+            <div id="butterflyFiltros"></div>
+            <div id="butterflyGenero"></div>
           </div>
-
-          <button class="pw-arrow pw-arrow-next" type="button" id="pwNext" aria-label="Pregunta siguiente">›</button>
-
         </div>
 
-        <div class="pw-stage" id="pwStage">
-
-          <div class="pw-slide" data-index="0">
-            <h2>¿En qué delitos aparece con más frecuencia cada género?</h2>
-            <p>Cada punto es una persona involucrada en un delito de un documento. Usa los filtros para acotar por
-               género (activa varios para comparar), década, atributo, crimen y subcrimen.</p>
-            <div class="pw-chart-wide">
-              <div id="beeswarmFiltros"></div>
-              <div id="beeswarmGenero"></div>
-            </div>
+        <div class="personas-columna">
+          <div class="personas-tarjeta">
+            <div id="participacionLineaGeneral"></div>
           </div>
 
-          <div class="pw-slide" data-index="1">
-            <h2>¿Cuándo son víctimas y cuándo son acusadas teniendo en cuenta el género?</h2>
-            <p>Cada fila es un siglo. A la izquierda y a la derecha se compara la cantidad de personas por
-               atributo (víctima, perpetrador o cómplice) para el género elegido; usa los chips para cambiar de
-               género y los selectores para definir qué atributo va en cada lado. Por defecto se muestra el
-               resumen de todos los crímenes; para ver un crimen en particular, elígelo en el selector.</p>
-            <div class="pw-chart-wide">
-              <div id="butterflyFiltros"></div>
-              <div id="butterflyGenero"></div>
-            </div>
+          <div class="personas-tarjeta">
+            <div id="delitosGeneroSunburst"></div>
           </div>
-
-          <div class="pw-slide" data-index="2">
-            <h2>¿Cómo cambia la participación a lo largo del tiempo?</h2>
-            <p>Usa los mismos filtros de género, atributo y crimen del resto de esta página; por defecto se
-               muestran los crímenes más frecuentes. El bump chart muestra cómo cambia el ranking de cada
-               crimen década a década.</p>
-            <div class="pw-chart-wide">
-              <div id="participacionFiltros"></div>
-              <div id="participacionBump"></div>
-            </div>
-          </div>
-
-          <div class="pw-slide" data-index="3">
-            <h2>Distribución por Género</h2>
-            <p>Aquí se puede identificar la proporción de víctimas y perpetradores divididos por género y tiempo</p>
-            <div class="pw-chart-wide">
-              <div class="controls">
-                <select id="sigloSeleccionado"></select>
-                <select id="atributoSeleccionado"></select>
-              </div>
-              <div id="waffleGenero"></div>
-            </div>
-          </div>
-
         </div>
 
       </div>
 
     </section>
 
-    <section>
-      <h2>Mujeres Mencionadas</h2>
-      <p>PENDIENTE
-      </p>
+    <section class="vista-historia" id="vistaHistoria" hidden>
+      <p class="vista-historia-placeholder">Próximamente.</p>
     </section>
 
     <script type="module" src="/src/main/personasDetalleMain.js"></script>

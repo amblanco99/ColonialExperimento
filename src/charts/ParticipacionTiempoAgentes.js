@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { PALETA_GENERO } from "./agentesComun.js";
+import { PALETA_TIPO } from "./agentesComun.js";
 import { crearBotonVerCasos, irATablasFiltradas } from "./verCasos.js";
 
 const MARGIN_LINEA = { top: 30, right: 20, bottom: 36, left: 50 };
@@ -8,19 +8,19 @@ const ALTO_LINEA = 380;
 const DURACION_LINEA = 700;
 const PAUSA_LINEA = 130;
 
-function contarPorDecada(filas, decadas, generos) {
-  const idsPorGeneroDecada = new Map(
-    generos.map(g => [g, new Map(decadas.map(dc => [dc, new Set()]))])
+function contarPorDecada(eventos, decadas, tipos) {
+  const idsPorTipoDecada = new Map(
+    tipos.map(t => [t, new Map(decadas.map(dc => [dc, new Set()]))])
   );
-  filas.forEach(d => {
-    const mapaDecada = idsPorGeneroDecada.get(d.genero);
+  eventos.forEach(d => {
+    const mapaDecada = idsPorTipoDecada.get(d.tipo);
     const set = mapaDecada && mapaDecada.get(d.década);
     if (set) set.add(d.idAgente);
   });
   const conteos = new Map();
-  idsPorGeneroDecada.forEach((mapaDecada, genero) => {
+  idsPorTipoDecada.forEach((mapaDecada, tipo) => {
     const serie = decadas.map(dc => ({ década: dc, valor: mapaDecada.get(dc).size }));
-    conteos.set(genero, serie);
+    conteos.set(tipo, serie);
   });
   return conteos;
 }
@@ -37,7 +37,7 @@ function crearTooltip(padreRelativo) {
   return { tooltip, mover };
 }
 
-export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, generosActivos, etiquetaCrimen }) {
+export function dibujarParticipacionTiempoAgentes({ chartContainerId, eventos, decadas, tiposActivos, crimenActivo }) {
   const chartContainer = document.getElementById(chartContainerId);
   if (!chartContainer) return;
 
@@ -48,26 +48,25 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
 
   chartContainer.innerHTML = "";
 
-  if (generosActivos.length === 0) {
-    chartContainer.innerHTML = `<p class="grafico-vacio">Elige al menos un género para mostrar.</p>`;
+  if (tiposActivos.length === 0) {
+    chartContainer.innerHTML = `<p class="grafico-vacio">Elige al menos un tipo de agente para mostrar.</p>`;
     return;
   }
 
-  const crimenActivo = etiquetaCrimen === "Todos los crímenes" ? null : etiquetaCrimen;
   const botonVerCasos = crearBotonVerCasos();
   chartContainer.appendChild(botonVerCasos.boton);
 
   function dibujarLeyenda(padre) {
     const leyenda = document.createElement("div");
     leyenda.className = "leyenda-swatches";
-    generosActivos.forEach(g => {
+    tiposActivos.forEach(t => {
       const item = document.createElement("div");
       item.className = "leyenda-swatch-item";
       const swatch = document.createElement("span");
       swatch.className = "leyenda-swatch-color";
-      swatch.style.background = PALETA_GENERO[g];
+      swatch.style.background = PALETA_TIPO[t];
       const texto = document.createElement("span");
-      texto.textContent = g;
+      texto.textContent = t;
       item.appendChild(swatch);
       item.appendChild(texto);
       leyenda.appendChild(item);
@@ -75,11 +74,11 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
     padre.appendChild(leyenda);
   }
 
-  function dibujarLinea(padre, conteosPorGenero) {
+  function dibujarLinea(padre, conteosPorTipo) {
     const IW = WIDTH_LINEA - MARGIN_LINEA.left - MARGIN_LINEA.right;
     const IH = ALTO_LINEA - MARGIN_LINEA.top - MARGIN_LINEA.bottom;
 
-    const maxValor = d3.max(generosActivos, g => d3.max(conteosPorGenero.get(g), d => d.valor)) || 1;
+    const maxValor = d3.max(tiposActivos, t => d3.max(conteosPorTipo.get(t), d => d.valor)) || 1;
 
     const x = d3.scaleLinear().domain(d3.extent(decadas)).range([0, IW]);
     const y = d3.scaleLinear().domain([0, maxValor]).nice().range([IH, 0]);
@@ -90,38 +89,38 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
 
     const { tooltip, mover } = crearTooltip(wrapper);
 
-    let seleccionGenero = null;
+    let seleccionTipo = null;
     let seleccionPuntoClave = null;
-    const gruposPorGenero = new Map();
+    const gruposPorTipo = new Map();
 
     function aplicarResaltadoLinea() {
-      gruposPorGenero.forEach((grp, genero) => {
-        grp.style("opacity", !seleccionGenero || genero === seleccionGenero ? 1 : 0.2);
+      gruposPorTipo.forEach((grp, tipo) => {
+        grp.style("opacity", !seleccionTipo || tipo === seleccionTipo ? 1 : 0.2);
       });
     }
 
     function limpiarSeleccionLinea() {
-      seleccionGenero = null;
+      seleccionTipo = null;
       seleccionPuntoClave = null;
       botonVerCasos.ocultar();
       aplicarResaltadoLinea();
     }
 
-    function seleccionarGenero(genero) {
-      seleccionGenero = seleccionGenero === genero ? null : genero;
+    function seleccionarTipo(tipo) {
+      seleccionTipo = seleccionTipo === tipo ? null : tipo;
       seleccionPuntoClave = null;
       botonVerCasos.ocultar();
       aplicarResaltadoLinea();
     }
 
-    function seleccionarPunto(genero, década) {
-      const clave = `${genero}||${década}`;
+    function seleccionarPunto(tipo, década) {
+      const clave = `${tipo}||${década}`;
       if (seleccionPuntoClave === clave) { limpiarSeleccionLinea(); return; }
       seleccionPuntoClave = clave;
-      seleccionGenero = genero;
+      seleccionTipo = tipo;
       aplicarResaltadoLinea();
-      botonVerCasos.mostrar(`${genero} · ${década}`, () => irATablasFiltradas({
-        genero,
+      botonVerCasos.mostrar(`${tipo} · ${década}`, () => irATablasFiltradas({
+        agente: tipo,
         codigo: crimenActivo,
         fecha: década,
         escala: "decada",
@@ -153,11 +152,11 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
       .y(d => y(d.valor))
       .curve(d3.curveMonotoneX);
 
-    function dibujarSerieInstante(genero) {
-      const serie = conteosPorGenero.get(genero);
-      const color = PALETA_GENERO[genero];
+    function dibujarSerieInstante(tipo) {
+      const serie = conteosPorTipo.get(tipo);
+      const color = PALETA_TIPO[tipo];
       const grupo = g.append("g").attr("class", "lineas-grupo-serie");
-      gruposPorGenero.set(genero, grupo);
+      gruposPorTipo.set(tipo, grupo);
 
       grupo.append("path")
         .datum(serie)
@@ -173,7 +172,7 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
         .attr("class", "lineas-trazo-hit")
         .on("click", event => {
           event.stopPropagation();
-          seleccionarGenero(genero);
+          seleccionarTipo(tipo);
         });
 
       grupo.selectAll(null)
@@ -186,9 +185,9 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
         .attr("class", "lineas-punto")
         .on("mouseenter", (event, d) => {
           tooltip.innerHTML = `
-            <strong>${etiquetaCrimen}</strong><br/>
-            ${genero} · década de ${d.década}<br/>
-            ${d.valor.toLocaleString("es")} persona(s)
+            <strong>${tipo}</strong><br/>
+            década de ${d.década}<br/>
+            ${d.valor.toLocaleString("es")} agente(s)
           `;
           tooltip.classList.add("tooltip-grafico--visible");
           mover(event);
@@ -197,17 +196,17 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
         .on("mouseleave", () => tooltip.classList.remove("tooltip-grafico--visible"))
         .on("click", (event, d) => {
           event.stopPropagation();
-          seleccionarPunto(genero, d.década);
+          seleccionarPunto(tipo, d.década);
         });
 
       aplicarResaltadoLinea();
     }
 
     function revelarSecuencial(idx) {
-      if (idx >= generosActivos.length) return;
-      const genero = generosActivos[idx];
-      const serie = conteosPorGenero.get(genero);
-      const color = PALETA_GENERO[genero];
+      if (idx >= tiposActivos.length) return;
+      const tipo = tiposActivos[idx];
+      const serie = conteosPorTipo.get(tipo);
+      const color = PALETA_TIPO[tipo];
       const grupoTemp = g.append("g");
       const pathTemp = grupoTemp.append("path")
         .datum(serie)
@@ -222,7 +221,7 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
         .transition().duration(DURACION_LINEA).ease(d3.easeLinear).attr("stroke-dashoffset", 0)
         .on("end", () => {
           grupoTemp.remove();
-          dibujarSerieInstante(genero);
+          dibujarSerieInstante(tipo);
           chartContainer._timerLineas = d3.timeout(() => revelarSecuencial(idx + 1), PAUSA_LINEA);
         });
     }
@@ -232,10 +231,10 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
   }
 
   dibujarLeyenda(chartContainer);
-  dibujarLinea(chartContainer, contarPorDecada(datos, decadas, generosActivos));
+  dibujarLinea(chartContainer, contarPorDecada(eventos, decadas, tiposActivos));
 
   const nota = document.createElement("p");
   nota.className = "filtro-nota";
-  nota.textContent = `${datos.length.toLocaleString("es")} participación(es) registradas en "${etiquetaCrimen}".`;
+  nota.textContent = `${eventos.length.toLocaleString("es")} evento(s) registrados con los filtros actuales.`;
   chartContainer.appendChild(nota);
 }

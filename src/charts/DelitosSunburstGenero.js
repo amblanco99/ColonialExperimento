@@ -1,45 +1,42 @@
 import * as d3 from "d3";
-import { PALETA_TIPO, PALETA_ATRIBUTO } from "./agentesComun.js";
+import { PALETA_GENERO, PALETA_ATRIBUTO } from "./agentesComun.js";
 import { crearBotonVerCasos, irATablasFiltradas } from "./verCasos.js";
 
-export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionado) {
+export function dibujarDelitosSunburstGenero(containerId, filas, crimenSeleccionado) {
   const contenedor = document.getElementById(containerId);
   if (!contenedor) return;
   contenedor.innerHTML = "";
+  contenedor.className = "";
 
   const hayCrimenFijado = !!crimenSeleccionado && crimenSeleccionado !== "Todos";
-  const eventosHierarchy = hayCrimenFijado
-    ? eventosFiltrados.filter(d => d.crimen === crimenSeleccionado && d.subcrimen)
-    : eventosFiltrados;
+  const filasHierarchy = hayCrimenFijado
+    ? filas.filter(d => d.crimen === crimenSeleccionado && d.subcrimen)
+    : filas;
 
-  if (eventosHierarchy.length === 0) {
-    contenedor.innerHTML = hayCrimenFijado
-      ? `<p class="agentes-vacio">"${crimenSeleccionado}" no tiene subcrímenes registrados para esta selección.</p>`
-      : `<p class="agentes-vacio">No hay datos para esta selección.</p>`;
+  if (filasHierarchy.length === 0) {
+    const vacio = document.createElement("p");
+    vacio.className = "grafico-vacio";
+    vacio.textContent = hayCrimenFijado
+      ? `"${crimenSeleccionado}" no tiene subcrímenes registrados para los géneros activos.`
+      : "No hay datos para los géneros activos.";
+    contenedor.appendChild(vacio);
     return;
   }
 
   const nestedMap = hayCrimenFijado
-    ? d3.rollup(eventosHierarchy, v => v.length, d => d.tipo, d => d.atributo, d => d.subcrimen)
-    : d3.rollup(eventosHierarchy, v => v.length, d => d.tipo, d => d.atributo, d => d.crimen);
+    ? d3.rollup(filasHierarchy, v => v.length, d => d.genero, d => d.atributo, d => d.subcrimen)
+    : d3.rollup(filasHierarchy, v => v.length, d => d.genero, d => d.atributo, d => d.crimen);
 
   function mapToNode(name, value) {
-    if (typeof value === "number") {
-      return { name, value };
-    }
-    return {
-      name,
-      children: Array.from(value, ([k, v]) => mapToNode(k, v)),
-    };
+    if (typeof value === "number") return { name, value };
+    return { name, children: Array.from(value, ([k, v]) => mapToNode(k, v)) };
   }
 
-  const hierarchyData = mapToNode("root", nestedMap);
-
-  const root = d3.hierarchy(hierarchyData)
+  const root = d3.hierarchy(mapToNode("root", nestedMap))
     .sum(d => d.value)
     .sort((a, b) => b.value - a.value);
 
-  const width = 550;
+  const width = 600;
   const height = width;
   const radius = width / 6;
 
@@ -58,7 +55,7 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
   ];
 
   function getColor(d) {
-    if (d.depth === 1) return PALETA_TIPO[d.data.name] || "#999";
+    if (d.depth === 1) return PALETA_GENERO[d.data.name] || "#999";
     if (d.depth === 2) return PALETA_ATRIBUTO[d.data.name] || "#888";
 
     const base = d3.hsl(PALETA_ATRIBUTO[d.parent.data.name] || "#888");
@@ -78,20 +75,20 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
     .innerRadius(d => d.y0 * radius)
     .outerRadius(d => Math.max(d.y0 * radius, d.y1 * radius - 1));
 
-  const botonVerCasos = crearBotonVerCasos();
-  contenedor.appendChild(botonVerCasos.boton);
+  const wrapper = document.createElement("div");
+  wrapper.className = "apilado-sankey-wrapper";
+  contenedor.appendChild(wrapper);
 
-  function cadenaDe(d) {
-    return d.ancestors().map(n => n.data.name).reverse().slice(1).join(" → ");
-  }
+  const botonVerCasos = crearBotonVerCasos();
+  wrapper.appendChild(botonVerCasos.boton);
 
   let leafSeleccionado = null;
   function overridesDeHoja(d) {
-    const agente = d.parent.parent.data.name;
+    const genero = d.parent.parent.data.name;
     const atributo = d.parent.data.name;
     return hayCrimenFijado
-      ? { agente, atributo, codigo: crimenSeleccionado, subcodigo: d.data.name }
-      : { agente, atributo, codigo: d.data.name };
+      ? { genero, atributo, codigo: crimenSeleccionado, subcodigo: d.data.name }
+      : { genero, atributo, codigo: d.data.name };
   }
   function seleccionarHoja(d) {
     if (leafSeleccionado === d) {
@@ -101,6 +98,18 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
     }
     leafSeleccionado = d;
     botonVerCasos.mostrar(cadenaDe(d), () => irATablasFiltradas(overridesDeHoja(d)));
+  }
+
+  const tooltip = document.createElement("div");
+  tooltip.className = "tooltip-grafico tooltip-grafico--neutro tooltip-grafico--ancho";
+  wrapper.appendChild(tooltip);
+  function moverTooltip(event) {
+    const rect = wrapper.getBoundingClientRect();
+    tooltip.style.left = (event.clientX - rect.left + 12) + "px";
+    tooltip.style.top = (event.clientY - rect.top + 12) + "px";
+  }
+  function cadenaDe(d) {
+    return d.ancestors().map(n => n.data.name).reverse().slice(1).join(" → ");
   }
 
   const svg = d3.create("svg")
@@ -116,22 +125,23 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
     .join("path")
     .attr("fill", d => getColor(d))
     .attr("fill-opacity", d =>
-      arcVisible(d.current) ? (d.children ? 0.65 : 0.45) : 0
+      arcVisible(d.current) ? (d.children ? 0.75 : 0.55) : 0
     )
     .attr("pointer-events", d => arcVisible(d.current) ? "auto" : "none")
-    .attr("d", d => arc(d.current));
-
-  path.append("title").text(d => {
-    const pct = d.parent && d.parent.value
-      ? ((d.value / d.parent.value) * 100).toFixed(1)
-      : "100";
-    const ruta = d.ancestors()
-      .map(n => n.data.name)
-      .reverse()
-      .slice(1)
-      .join(" → ");
-    return `${ruta}\n${d.value} agentes (${pct}% de "${d.parent?.data.name ?? ""}")`;
-  });
+    .attr("d", d => arc(d.current))
+    .on("mouseenter", (event, d) => {
+      const pct = d.parent && d.parent.value
+        ? ((d.value / d.parent.value) * 100).toFixed(1)
+        : "100";
+      tooltip.innerHTML = `
+        <strong>${cadenaDe(d)}</strong><br/>
+        ${d.value.toLocaleString("es")} persona(s) (${pct}% de "${d.parent?.data.name ?? ""}")
+      `;
+      tooltip.classList.add("tooltip-grafico--visible");
+      moverTooltip(event);
+    })
+    .on("mousemove", moverTooltip)
+    .on("mouseleave", () => tooltip.classList.remove("tooltip-grafico--visible"));
 
   path.filter(d => d.children)
     .classed("sunburst-arco--clicable", true)
@@ -157,10 +167,9 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
       const pct = d.parent && d.parent.value
         ? ((d.value / d.parent.value) * 100).toFixed(1)
         : "100";
-      const name = truncate(d.data.name, d.current);
       d3.select(this).append("tspan")
         .attr("x", 0).attr("dy", "-0.4em")
-        .text(name);
+        .text(truncate(d.data.name, d.current));
       d3.select(this).append("tspan")
         .attr("class", "sunburst-etiqueta-pct")
         .attr("x", 0).attr("dy", "1.2em")
@@ -200,7 +209,7 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
         return +this.getAttribute("fill-opacity") || arcVisible(d.target);
       })
       .attr("fill-opacity", d =>
-        arcVisible(d.target) ? (d.children ? 0.65 : 0.45) : 0
+        arcVisible(d.target) ? (d.children ? 0.75 : 0.55) : 0
       )
       .attr("pointer-events", d => arcVisible(d.target) ? "auto" : "none")
       .attrTween("d", d => () => arc(d.current));
@@ -250,8 +259,12 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
     return text;
   }
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "grafico-wrapper";
   wrapper.appendChild(svg.node());
-  contenedor.appendChild(wrapper);
+
+  const nota = document.createElement("p");
+  nota.className = "filtro-nota";
+  nota.textContent = hayCrimenFijado
+    ? `Recorrido de las ${filasHierarchy.length.toLocaleString("es")} persona(s) con subcrimen registrado en "${crimenSeleccionado}". Clic en un anillo para hacer zoom.`
+    : `Recorrido de las ${filasHierarchy.length.toLocaleString("es")} persona(s) registradas, todos los crímenes. Clic en un anillo para hacer zoom.`;
+  contenedor.appendChild(nota);
 }
