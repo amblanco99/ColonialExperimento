@@ -97,6 +97,11 @@
   font-family: var(--font-body);
   font-weight: 600;
   cursor: pointer;
+  display: none;
+}
+
+.btn-ver-casos-generico--visible {
+  display: inline-block;
 }
 
 .btn-ver-casos-generico:hover {

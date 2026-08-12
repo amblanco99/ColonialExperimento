@@ -41,97 +41,36 @@
   </div>
   </nav>
 
-  <main class="container">
+  <main class="container personas-main-ancho">
 
     <h1 class="section-mainTitle">Otros agentes</h1>
 
-    <section>
-      <p>Instituciones y poblaciones (completas e indígenas) involucradas en procesos criminales. Elige una
-         pregunta y usa los filtros de abajo, que controlan las cuatro visualizaciones a la vez.</p>
-    </section>
+    <section class="personas-dashboard-seccion">
 
-    <section class="pw-carousel-section">
+      <div id="agentesFiltrosTop" class="personas-filtros-top"></div>
 
-      <div class="pw-carousel" id="agentesCarrusel">
+      <div class="personas-fila-ancha">
+        <div class="personas-tarjeta">
+          <div id="agParticipacionTiempo"></div>
+        </div>
+      </div>
 
-        <div class="pw-wheel-row">
+      <div class="personas-grid">
 
-          <button class="pw-arrow pw-arrow-prev" type="button" id="agPrev" aria-label="Pregunta anterior">‹</button>
-
-          <div class="pw-wheel" id="agWheel" role="tablist" aria-label="Preguntas sobre otros agentes">
-
-            <button class="pw-card" type="button" role="tab" data-index="0">
-              <span class="pw-card-num">01</span>
-              <span class="pw-card-q">¿En qué delitos se involucran?</span>
-            </button>
-
-            <button class="pw-card" type="button" role="tab" data-index="1">
-              <span class="pw-card-num">02</span>
-              <span class="pw-card-q">¿En qué casos son víctimas y victimarios?</span>
-            </button>
-
-            <button class="pw-card" type="button" role="tab" data-index="2">
-              <span class="pw-card-num">03</span>
-              <span class="pw-card-q">¿Cuál es el patrón que presentan los crímenes acá?</span>
-            </button>
-
-            <button class="pw-card" type="button" role="tab" data-index="3">
-              <span class="pw-card-num">04</span>
-              <span class="pw-card-q">¿Cómo se reparten entre instituciones y poblaciones?</span>
-            </button>
-
+        <div class="personas-columna">
+          <div class="personas-tarjeta">
+            <div id="agSunburst"></div>
           </div>
-
-          <button class="pw-arrow pw-arrow-next" type="button" id="agNext" aria-label="Pregunta siguiente">›</button>
-
         </div>
 
-        <div class="pw-stage" id="agStage">
-
-          <div class="pw-slide" data-index="0">
-            <h2>¿En qué delitos se involucran?</h2>
-            <p>Cada punto es una participación de una institución o población en un delito de un documento,
-               coloreada por tipo de agente.</p>
-            <div class="pw-chart-wide">
-              <div id="agBeeswarm"></div>
-            </div>
+        <div class="personas-columna">
+          <div class="personas-tarjeta">
+            <div id="agButterfly"></div>
           </div>
-
-          <div class="pw-slide" data-index="1">
-            <h2>¿En qué casos son víctimas y victimarios?</h2>
-            <p>Un siglo por fila; elige qué atributo va a cada lado para comparar cuántas veces los otros
-               agentes aparecen como víctimas, perpetradores o cómplices.</p>
-            <div class="pw-chart-wide">
-              <div id="agButterfly"></div>
-            </div>
-          </div>
-
-          <div class="pw-slide" data-index="2">
-            <h2>¿Cuál es el patrón que presentan los crímenes acá?</h2>
-            <p>Diagrama de flujo: primero la división entre instituciones y poblaciones, luego el atributo y
-               por último el crimen. El color de cada flujo se conserva desde su grupo de origen.</p>
-            <div class="pw-chart-wide">
-              <div id="agSankey"></div>
-            </div>
-          </div>
-
-          <div class="pw-slide" data-index="3">
-            <h2>¿Cómo se reparten entre instituciones y poblaciones?</h2>
-            <p>Sunburst Tipo de agente → Atributo → Siglo. Haz clic en un arco para hacer zoom y en el
-               centro para volver.</p>
-            <div class="pw-chart-wide">
-              <div id="agSunburst"></div>
-            </div>
-          </div>
-
         </div>
 
       </div>
 
-    </section>
-
-    <section class="pw-carousel-section">
-      <div id="agentesFiltros"></div>
     </section>
 
     <script type="module" src="/src/main/otrosAgentesMain.js"></script>

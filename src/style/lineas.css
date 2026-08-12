@@ -1,0 +1,27 @@
+/* =====================================================
+   PARTICIPACIÓN EN EL TIEMPO — LÍNEAS (ParticipacionTiempo.js)
+===================================================== */
+.lineas-wrapper {
+  margin-top: 8px;
+}
+
+.lineas-grupo-serie {
+  transition: opacity 0.2s ease;
+}
+
+.lineas-trazo {
+  stroke-width: 2;
+}
+
+.lineas-trazo-hit {
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.lineas-punto {
+  cursor: pointer;
+  stroke: #fff;
+  stroke-width: 1;
+}

@@ -14,7 +14,7 @@
   stroke: var(--rule, #c8b89a);
 }
 
-.mariposa-etiqueta-siglo {
+.mariposa-etiqueta-fila {
   font-size: 10.5px;
   fill: var(--ink-light, #4a3f35);
 }
@@ -27,9 +27,25 @@
 .mariposa-encabezado-lado {
   font-size: 13px;
   font-weight: 700;
-  fill: var(--accent, #7a3b1e);
 }
 
 .mariposa-barra-dato {
   cursor: default;
+}
+
+.mariposa-fila-boton:hover .mariposa-etiqueta-fila {
+  fill: var(--accent, #7a3b1e);
+  font-weight: 700;
+}
+
+.mariposa-btn-volver {
+  display: inline-block;
+  margin-bottom: 6px;
+  background: none;
+  border: none;
+  color: var(--accent, #7a3b1e);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
 }

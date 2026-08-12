@@ -1,16 +1,10 @@
 import * as d3 from "d3";
 import { PALETA_GENERO } from "./agentesComun.js";
+import { crearBotonVerCasos, irATablasFiltradas } from "./verCasos.js";
 
 const GENEROS = ["Mujer", "Hombre", "Sin información"];
 const RADIO_PUNTA = 4;
-
-const getSiglo = (año) => {
-  if (año <= 1599) return "Siglo XVI";
-  if (año <= 1699) return "Siglo XVII";
-  if (año <= 1799) return "Siglo XVIII";
-  return "Siglo XIX";
-};
-const SIGLOS = ["Siglo XVI", "Siglo XVII", "Siglo XVIII", "Siglo XIX"];
+const MAX_CHARS_ETIQUETA = 30;
 
 function pathBarra(x, y, w, h, redondearDerecha) {
   if (w <= 0) return "";
@@ -21,73 +15,43 @@ function pathBarra(x, y, w, h, redondearDerecha) {
   return `M${x + r},${y} L${x + w},${y} L${x + w},${y + h} L${x + r},${y + h} Q${x},${y + h} ${x},${y + h - r} L${x},${y + r} Q${x},${y} ${x + r},${y} Z`;
 }
 
-export async function crearButterflyGenero() {
+function truncar(texto, max = MAX_CHARS_ETIQUETA) {
+  return texto.length > max ? `${texto.slice(0, max - 1).trimEnd()}…` : texto;
+}
 
-  const raw = await d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`);
 
-  const filtrosContainer = document.getElementById("butterflyFiltros");
-  const chartContainer = document.getElementById("butterflyGenero");
+export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, datos, crimenTop, estadoLocal }) {
+  const filtrosContainer = document.getElementById(filtrosContainerId);
+  const chartContainer = document.getElementById(chartContainerId);
   if (!filtrosContainer || !chartContainer) return;
 
-  const vistos = new Set();
-  const datos = raw
-    .filter(d => d.Agente === "Persona" && d.Año && !isNaN(+d.Año) && d.Nombre_Codigo && d.Atributo)
-    .map(d => {
-      const genero = d.Género && d.Género.trim() !== "" && d.Género !== "null"
-        ? d.Género.trim()
-        : "Sin información";
-      return {
-        id: `${d.ID_Documento}|${d.Sub_Código}|${d.ID_Agente}`,
-        genero,
-        atributo: d.Atributo,
-        crimen: d.Nombre_Codigo,
-        siglo: getSiglo(+d.Año),
-      };
-    })
-    .filter(d => {
-      if (vistos.has(d.id)) return false;
-      vistos.add(d.id);
-      return true;
-    });
+  filtrosContainer.innerHTML = "";
+  chartContainer.innerHTML = "";
 
-  const atributosPresentes = [...new Set(datos.map(d => d.atributo))];
-  const ATRIBUTOS = ["Víctima", "Perpetrador", "Cómplice"].filter(a => atributosPresentes.includes(a));
+  if (datos.length === 0) {
+    chartContainer.innerHTML = `<p class="grafico-vacio">No hay datos para esta selección.</p>`;
+    return;
+  }
 
   const CRIMENES = [...d3.rollup(datos, v => v.length, d => d.crimen)]
     .sort((a, b) => b[1] - a[1])
     .map(([nombre]) => nombre);
 
-  const estado = {
-    genero: GENEROS[0],
-    izquierda: ATRIBUTOS.includes("Víctima") ? "Víctima" : ATRIBUTOS[0],
-    derecha: ATRIBUTOS.includes("Perpetrador") ? "Perpetrador" : ATRIBUTOS[1] || ATRIBUTOS[0],
-    crimen: "Todos",
-  };
+  const SUBCRIMENES_POR_CRIMEN = new Map();
+  CRIMENES.forEach(crimen => {
+    const subs = [...d3.rollup(
+      datos.filter(d => d.crimen === crimen && d.subcrimen),
+      v => v.length,
+      d => d.subcrimen
+    )].sort((a, b) => b[1] - a[1]).map(([nombre]) => nombre);
+    SUBCRIMENES_POR_CRIMEN.set(crimen, subs);
+  });
 
   filtrosContainer.innerHTML = `<div class="filtros-chip-panel"></div>`;
   const wrapperFiltros = filtrosContainer.querySelector(".filtros-chip-panel");
 
   function renderFiltros() {
     wrapperFiltros.innerHTML = "";
-
-    const grupoGenero = document.createElement("div");
-    const labelGenero = document.createElement("div");
-    labelGenero.className = "filtros-grupo-titulo";
-    labelGenero.textContent = "Género";
-    grupoGenero.appendChild(labelGenero);
-    const filaGenero = document.createElement("div");
-    filaGenero.className = "filtros-chip-fila";
-    GENEROS.forEach(g => {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = `filtro-chip filtro-chip--genero${estado.genero === g ? " filtro-chip--activo" : ""}`;
-      chip.textContent = g;
-      chip.style.setProperty("--chip-color", PALETA_GENERO[g]);
-      chip.addEventListener("click", () => { estado.genero = g; actualizar(); });
-      filaGenero.appendChild(chip);
-    });
-    grupoGenero.appendChild(filaGenero);
-    wrapperFiltros.appendChild(grupoGenero);
 
     const barra = document.createElement("div");
     barra.className = "filtros-barra-selectores";
@@ -101,47 +65,24 @@ export async function crearButterflyGenero() {
       grupo.appendChild(label);
       const select = document.createElement("select");
       select.className = "filtro-select-generico";
-      ATRIBUTOS.forEach(a => {
+      GENEROS.forEach(g => {
         const opt = document.createElement("option");
-        opt.value = a;
-        opt.textContent = a;
+        opt.value = g;
+        opt.textContent = g;
         select.appendChild(opt);
       });
-      select.value = estado[ladoKey];
+      select.value = estadoLocal[ladoKey];
       select.addEventListener("change", () => {
-        const otroKey = ladoKey === "izquierda" ? "derecha" : "izquierda";
-        if (select.value === estado[otroKey]) estado[otroKey] = estado[ladoKey];
-        estado[ladoKey] = select.value;
+        const otroKey = ladoKey === "generoIzquierda" ? "generoDerecha" : "generoIzquierda";
+        if (select.value === estadoLocal[otroKey]) estadoLocal[otroKey] = estadoLocal[ladoKey];
+        estadoLocal[ladoKey] = select.value;
         actualizar();
       });
       grupo.appendChild(select);
       return grupo;
     }
-    barra.appendChild(crearSelectorLado("Lado izquierdo", "izquierda"));
-    barra.appendChild(crearSelectorLado("Lado derecho", "derecha"));
-
-    const grupoCrimen = document.createElement("div");
-    grupoCrimen.className = "filtro-selector filtro-selector--ancho";
-    const labelCrimen = document.createElement("div");
-    labelCrimen.className = "filtros-grupo-titulo";
-    labelCrimen.textContent = "Crimen";
-    grupoCrimen.appendChild(labelCrimen);
-    const selectCrimen = document.createElement("select");
-    selectCrimen.className = "filtro-select-generico";
-    const optTodos = document.createElement("option");
-    optTodos.value = "Todos";
-    optTodos.textContent = "Todos los crímenes (resumen)";
-    selectCrimen.appendChild(optTodos);
-    CRIMENES.forEach(c => {
-      const opt = document.createElement("option");
-      opt.value = c;
-      opt.textContent = c.trim();
-      selectCrimen.appendChild(opt);
-    });
-    selectCrimen.value = estado.crimen;
-    selectCrimen.addEventListener("change", () => { estado.crimen = selectCrimen.value; actualizar(); });
-    grupoCrimen.appendChild(selectCrimen);
-    barra.appendChild(grupoCrimen);
+    barra.appendChild(crearSelectorLado("Lado izquierdo", "generoIzquierda"));
+    barra.appendChild(crearSelectorLado("Lado derecho", "generoDerecha"));
 
     wrapperFiltros.appendChild(barra);
   }
@@ -151,50 +92,90 @@ export async function crearButterflyGenero() {
     dibujarMariposa();
   }
 
-  const MARGIN = { top: 60, right: 16, bottom: 16, left: 16 };
-  const WIDTH = 700;
-  const GUTTER = 100;
+  const MARGIN = { top: 50, right: 16, bottom: 16, left: 16 };
+  const WIDTH = 820;
+  const LABEL_WIDTH = 190;
   const IW = WIDTH - MARGIN.left - MARGIN.right;
-  const IW_MITAD = (IW - GUTTER) / 2;
-  const PASO_FILA = 64;
-  const IH = SIGLOS.length * PASO_FILA;
-  const HEIGHT = MARGIN.top + IH + MARGIN.bottom;
+  const IW_MITAD = (IW - LABEL_WIDTH) / 2;
+  const CENTRO_X = LABEL_WIDTH + IW_MITAD;
+  const PASO_FILA = 38;
+
+  function crearBotonVolver() {
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "mariposa-btn-volver";
+    boton.textContent = "‹ Volver a todos los crímenes";
+    boton.addEventListener("click", () => {
+      estadoLocal.crimenLocal = null;
+      dibujarMariposa();
+    });
+    return boton;
+  }
+
+  const botonVerCasos = crearBotonVerCasos();
 
   function dibujarMariposa() {
     chartContainer.innerHTML = "";
+    botonVerCasos.ocultar();
 
-    const filas = (estado.crimen === "Todos" ? datos : datos.filter(d => d.crimen === estado.crimen))
-      .filter(d => d.genero === estado.genero);
+    const crimenActivoLocal = crimenTop !== "Todos" ? crimenTop : estadoLocal.crimenLocal;
+    const enSubnivel = crimenActivoLocal !== null;
+    const puedeVolver = enSubnivel && crimenTop === "Todos";
 
-    if (filas.length === 0) {
-      chartContainer.innerHTML = `<p class="grafico-vacio">No hay datos de "${estado.genero}" para esta selección.</p>`;
+    if (puedeVolver) {
+      chartContainer.appendChild(crearBotonVolver());
+    }
+
+    if (enSubnivel) {
+      chartContainer.appendChild(botonVerCasos.boton);
+    }
+
+    const filas = (enSubnivel ? datos.filter(d => d.crimen === crimenActivoLocal) : datos);
+    const filasGeneros = filas.filter(d => d.genero === estadoLocal.generoIzquierda || d.genero === estadoLocal.generoDerecha);
+
+    const nombresFila = enSubnivel ? (SUBCRIMENES_POR_CRIMEN.get(crimenActivoLocal) || []) : CRIMENES;
+
+    if (nombresFila.length === 0) {
+      const vacio = document.createElement("p");
+      vacio.className = "grafico-vacio";
+      vacio.textContent = `"${crimenActivoLocal}" no tiene subcrímenes registrados para esta selección.`;
+      chartContainer.appendChild(vacio);
       return;
     }
 
-    function conteoPorSiglo(atributo) {
-      const mapa = new Map(SIGLOS.map(s => [s, 0]));
-      filas.filter(d => d.atributo === atributo).forEach(d => {
-        mapa.set(d.siglo, mapa.get(d.siglo) + 1);
+    function conteoPorFila(genero) {
+      const mapa = new Map(nombresFila.map(f => [f, 0]));
+      filasGeneros.filter(d => d.genero === genero).forEach(d => {
+        const clave = enSubnivel ? d.subcrimen : d.crimen;
+        if (mapa.has(clave)) mapa.set(clave, mapa.get(clave) + 1);
       });
       return mapa;
     }
-    const conteoIzq = conteoPorSiglo(estado.izquierda);
-    const conteoDer = conteoPorSiglo(estado.derecha);
+    const conteoIzq = conteoPorFila(estadoLocal.generoIzquierda);
+    const conteoDer = conteoPorFila(estadoLocal.generoDerecha);
 
     const totalIzq = d3.sum(conteoIzq.values());
     const totalDer = d3.sum(conteoDer.values());
 
     if (totalIzq === 0 && totalDer === 0) {
-      chartContainer.innerHTML = `<p class="grafico-vacio">No hay datos de "${estado.izquierda}" ni "${estado.derecha}" para "${estado.genero}" en esta selección.</p>`;
+      const vacio = document.createElement("p");
+      vacio.className = "grafico-vacio";
+      vacio.textContent = `No hay datos de "${estadoLocal.generoIzquierda}" ni "${estadoLocal.generoDerecha}" para esta selección.`;
+      chartContainer.appendChild(vacio);
       return;
     }
 
-    const máximoFila = d3.max(SIGLOS, s => Math.max(conteoIzq.get(s), conteoDer.get(s))) || 1;
+    const filasConDatos = nombresFila.filter(f => conteoIzq.get(f) > 0 || conteoDer.get(f) > 0);
+    const IH = filasConDatos.length * PASO_FILA;
+    const HEIGHT = MARGIN.top + IH + MARGIN.bottom;
+
+    const máximoFila = d3.max(filasConDatos, f => Math.max(conteoIzq.get(f), conteoDer.get(f))) || 1;
 
     const escala = d3.scaleLinear().domain([0, máximoFila]).nice().range([0, IW_MITAD]);
-    const y = d3.scaleBand().domain(SIGLOS).range([0, IH]).paddingInner(0.4);
-    const centroX = IW_MITAD + GUTTER / 2;
-    const colorActivo = PALETA_GENERO[estado.genero];
+    const y = d3.scaleBand().domain(filasConDatos).range([0, IH]).paddingInner(0.35);
+    const centroX = CENTRO_X;
+    const colorIzq = PALETA_GENERO[estadoLocal.generoIzquierda];
+    const colorDer = PALETA_GENERO[estadoLocal.generoDerecha];
 
     const wrapper = document.createElement("div");
     wrapper.className = "grafico-wrapper--centrado";
@@ -210,23 +191,23 @@ export async function crearButterflyGenero() {
     }
 
     const svg = d3.create("svg")
-      .attr("viewBox", [0, 0, WIDTH, HEIGHT])
-      .attr("width", WIDTH)
-      .attr("height", HEIGHT)
+      .attr("viewBox", `0 0 ${WIDTH} ${HEIGHT}`)
       .attr("class", "grafico-svg");
 
     svg.append("text")
-      .attr("x", MARGIN.left + centroX - GUTTER / 2 - 4)
+      .attr("x", MARGIN.left + LABEL_WIDTH + IW_MITAD / 2)
       .attr("y", 20)
-      .attr("text-anchor", "end")
+      .attr("text-anchor", "middle")
       .attr("class", "mariposa-encabezado-lado")
-      .text(estado.izquierda);
+      .attr("fill", colorIzq)
+      .text(estadoLocal.generoIzquierda);
     svg.append("text")
-      .attr("x", MARGIN.left + centroX + GUTTER / 2 + 4)
+      .attr("x", MARGIN.left + centroX + IW_MITAD / 2)
       .attr("y", 20)
-      .attr("text-anchor", "start")
+      .attr("text-anchor", "middle")
       .attr("class", "mariposa-encabezado-lado")
-      .text(estado.derecha);
+      .attr("fill", colorDer)
+      .text(estadoLocal.generoDerecha);
 
     const g = svg.append("g").attr("transform", `translate(${MARGIN.left},${MARGIN.top})`);
 
@@ -234,7 +215,7 @@ export async function crearButterflyGenero() {
     const ejeTicks = g.append("g");
     ticks.forEach(t => {
       const offset = escala(t);
-      [centroX - GUTTER / 2 - offset, centroX + GUTTER / 2 + offset].forEach(x => {
+      [centroX - offset, centroX + offset].forEach(x => {
         ejeTicks.append("line")
           .attr("x1", x).attr("x2", x)
           .attr("y1", -8).attr("y2", IH)
@@ -252,59 +233,98 @@ export async function crearButterflyGenero() {
       .attr("y1", -8).attr("y2", IH)
       .attr("class", "mariposa-linea-central");
 
-    SIGLOS.forEach(siglo => {
-      const yTop = y(siglo);
-      const alto = Math.min(24, y.bandwidth());
+    filasConDatos.forEach(nombreFila => {
+      const yTop = y(nombreFila);
+      const alto = Math.min(20, y.bandwidth());
       const yCentrado = yTop + (y.bandwidth() - alto) / 2;
-      const valorIzq = conteoIzq.get(siglo);
-      const valorDer = conteoDer.get(siglo);
+      const valorIzq = conteoIzq.get(nombreFila);
+      const valorDer = conteoDer.get(nombreFila);
 
-      g.append("text")
-        .attr("x", centroX)
+      const filaGrupo = g.append("g")
+        .attr("class", `mariposa-fila${!enSubnivel ? " mariposa-fila-boton" : ""}`);
+
+      if (!enSubnivel) {
+        filaGrupo.append("rect")
+          .attr("x", 0)
+          .attr("y", yTop)
+          .attr("width", IW)
+          .attr("height", y.bandwidth())
+          .attr("fill", "transparent")
+          .style("cursor", "pointer")
+          .on("click", () => {
+            estadoLocal.crimenLocal = nombreFila;
+            dibujarMariposa();
+          });
+      }
+
+      const etiquetaTexto = filaGrupo.append("text")
+        .attr("x", 0)
         .attr("y", yTop + y.bandwidth() / 2)
         .attr("dy", "0.32em")
-        .attr("text-anchor", "middle")
-        .attr("class", "mariposa-etiqueta-siglo")
-        .text(siglo.replace("Siglo ", ""));
+        .attr("text-anchor", "start")
+        .attr("class", "mariposa-etiqueta-fila")
+        .style("pointer-events", "none")
+        .text(truncar(nombreFila));
+      etiquetaTexto.append("title").text(nombreFila);
 
-      function dibujarLado(valor, atributo, esDerecha) {
+      function dibujarLado(valor, genero, color, esDerecha) {
         const anchoPx = escala(valor);
-        const xBase = esDerecha ? centroX + GUTTER / 2 : centroX - GUTTER / 2 - anchoPx;
+        const xBase = esDerecha ? centroX : centroX - anchoPx;
         const d = pathBarra(xBase, yCentrado, anchoPx, alto, esDerecha);
         if (d) {
-          g.append("path")
+          const barra = filaGrupo.append("path")
             .attr("d", d)
-            .attr("fill", colorActivo)
-            .attr("class", "mariposa-barra-dato")
-            .on("mouseenter", (event) => {
-              tooltip.innerHTML = `<strong>${siglo} · ${atributo}</strong><br/>${estado.genero}: ${valor.toLocaleString("es")}`;
-              tooltip.classList.add("tooltip-grafico--visible");
-              moverTooltip(event);
-            })
-            .on("mousemove", moverTooltip)
-            .on("mouseleave", () => { tooltip.classList.remove("tooltip-grafico--visible"); });
+            .attr("fill", color)
+            .attr("class", "mariposa-barra-dato");
+          if (enSubnivel && valor > 0) {
+            barra.style("cursor", "pointer")
+              .on("click", event => {
+                event.stopPropagation();
+                botonVerCasos.mostrar(`${genero} · ${nombreFila}`, () => irATablasFiltradas({
+                  genero,
+                  codigo: crimenActivoLocal,
+                  subcodigo: nombreFila,
+                }));
+              });
+          } else {
+            barra.style("pointer-events", "none");
+          }
         }
         if (valor > 0) {
-          g.append("text")
+          filaGrupo.append("text")
             .attr("x", esDerecha ? xBase + anchoPx + 6 : xBase - 6)
             .attr("y", yCentrado + alto / 2)
             .attr("dy", "0.32em")
             .attr("text-anchor", esDerecha ? "start" : "end")
             .attr("class", "mariposa-valor-texto")
+            .style("pointer-events", "none")
             .text(valor.toLocaleString("es"));
         }
       }
 
-      dibujarLado(valorIzq, estado.izquierda, false);
-      dibujarLado(valorDer, estado.derecha, true);
+      dibujarLado(valorIzq, estadoLocal.generoIzquierda, colorIzq, false);
+      dibujarLado(valorDer, estadoLocal.generoDerecha, colorDer, true);
+
+      filaGrupo.on("mouseenter", (event) => {
+        tooltip.innerHTML = `
+          <strong>${nombreFila}</strong><br/>
+          ${estadoLocal.generoIzquierda}: ${valorIzq.toLocaleString("es")} · ${estadoLocal.generoDerecha}: ${valorDer.toLocaleString("es")}
+          ${!enSubnivel ? "<br/><em>Clic para ver subcrímenes</em>" : "<br/><em>Clic en una barra para ver sus casos</em>"}
+        `;
+        tooltip.classList.add("tooltip-grafico--visible");
+        moverTooltip(event);
+      })
+        .on("mousemove", moverTooltip)
+        .on("mouseleave", () => tooltip.classList.remove("tooltip-grafico--visible"));
     });
 
     wrapper.appendChild(svg.node());
 
     const nota = document.createElement("p");
     nota.className = "filtro-nota filtro-nota--centrada";
-    const etiquetaCrimen = estado.crimen === "Todos" ? "Todos los crímenes (resumen)" : estado.crimen.trim();
-    nota.textContent = `${estado.genero} · ${etiquetaCrimen} · ${estado.izquierda}: ${totalIzq.toLocaleString("es")} · ${estado.derecha}: ${totalDer.toLocaleString("es")}`;
+    const etiquetaNivel = enSubnivel ? `Subcrímenes de "${crimenActivoLocal}"` : "Todos los crímenes";
+    nota.textContent = `${etiquetaNivel} · ${estadoLocal.generoIzquierda}: ${totalIzq.toLocaleString("es")} · ${estadoLocal.generoDerecha}: ${totalDer.toLocaleString("es")}`
+      + (!enSubnivel ? " · Clic en un crimen para ver sus subcrímenes." : "");
     chartContainer.appendChild(nota);
   }
 

@@ -1,0 +1,424 @@
+/* =====================================================
+   CONTEO DE PERSONAS Y AGENTES (TablasConteo.js)
+===================================================== */
+.conteo-root {
+  text-align: left;
+}
+
+/* --- Encabezado: el toggle Personas/Otros agentes a la izquierda y el
+   botón "Expandir" en la esquina superior derecha, en la misma línea. --- */
+.conteo-encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* --- Botón único "Expandir": lleva a personas.html o a otrosAgentes.html
+   según qué pestaña del toggle esté activa (color y destino los fija
+   dibujarToggle() en JS vía --cta-color/--cta-texto). Reemplaza lo que
+   antes eran dos tarjetas separadas por un solo enlace. --- */
+.conteo-expandir-btn {
+  display: inline-block;
+  padding: 12px 28px;
+  border-radius: 999px;
+  background: var(--cta-color, var(--accent));
+  color: var(--cta-texto, #fff);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  box-shadow: 0 2px 6px rgba(26, 20, 16, 0.15);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.conteo-expandir-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(26, 20, 16, 0.25);
+}
+
+/* --- Toggle superior: dos pestañas de color sólido, pegadas entre sí,
+   inspirado en la barra "EXPERIMENT / DATA / TAKEAWAYS" de referencia. --- */
+.conteo-toggle {
+  display: inline-flex;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(26, 20, 16, 0.15);
+}
+
+.conteo-toggle-btn {
+  padding: 0.7rem 1.75rem;
+  border: none;
+  background: var(--toggle-color, var(--accent));
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+
+.conteo-toggle-btn:hover {
+  opacity: 0.75;
+}
+
+.conteo-toggle-btn--activo,
+.conteo-toggle-btn--activo:hover {
+  opacity: 1;
+}
+
+/* --- Cuadrados de género: ancho proporcional a la cantidad (flex-grow
+   fijado en JS), inspirados en los bloques de color de la imagen de
+   referencia. --- */
+.conteo-stat-cuadros {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  height: 220px;
+  margin-bottom: 24px;
+}
+
+.conteo-stat-cuadro {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 140px;
+  border: none;
+  border-radius: 10px;
+  background: var(--cuadro-color, var(--accent));
+  color: var(--cuadro-texto, var(--ink));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px 22px;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 2px 6px rgba(26, 20, 16, 0.12);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.conteo-stat-cuadro-flecha {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-size: 1.1rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.conteo-stat-cuadro:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(26, 20, 16, 0.22);
+}
+
+.conteo-stat-cuadro--activo {
+  box-shadow: 0 0 0 3px var(--ink), 0 6px 14px rgba(26, 20, 16, 0.22);
+}
+
+.conteo-stat-cuadro-valor {
+  font-family: var(--font-display, inherit);
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.conteo-stat-cuadro-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 10px;
+}
+
+.conteo-stat-cuadro-sub {
+  font-size: 0.8rem;
+  opacity: 0.85;
+  margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .conteo-stat-cuadros {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .conteo-stat-cuadro {
+    min-height: 110px;
+  }
+}
+
+/* --- Panel de detalle: se abre debajo de los cuadrados de género al
+   hacer clic en uno. Sigue el mismo lenguaje de bloques de color "llenos"
+   (atributos), más un banner para el delito más frecuente y una línea de
+   tiempo por siglo, según las imágenes de referencia. --- */
+.conteo-detalle {
+  margin: 4px 0 28px;
+  padding: 22px;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-top: 4px solid var(--detalle-color, var(--accent));
+  border-radius: 10px;
+}
+
+.conteo-detalle-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.conteo-detalle-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex: none;
+}
+
+.conteo-detalle-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--ink);
+  margin: 0;
+}
+
+.conteo-detalle-atributos {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+/* Tres paneles independientes (uno por atributo), cada uno con su propio
+   waffle de círculos: 100 círculos (1 = 1%) que se van llenando desde
+   abajo hacia arriba, como un nivel de líquido, hasta el porcentaje de
+   ese atributo sobre el total. */
+.conteo-detalle-atributo-panel {
+  flex: 1 1 0;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.conteo-detalle-atributo-panel:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.conteo-detalle-atributo-panel-pct {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--panel-color, var(--accent));
+  line-height: 1;
+}
+
+.conteo-detalle-atributo-panel-waffle {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 3px;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--parchment-dark, #ede5d0);
+  box-sizing: border-box;
+}
+
+.conteo-detalle-atributo-panel-celda {
+  border-radius: 50%;
+  background: rgba(26, 20, 16, 0.1);
+}
+
+.conteo-detalle-atributo-panel-celda--llena {
+  background: var(--panel-color, var(--accent));
+}
+
+.conteo-detalle-atributo-panel-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--panel-color, var(--accent));
+}
+
+.conteo-detalle-atributo-panel-numero {
+  font-size: 0.8rem;
+  color: var(--ink-light);
+  margin-top: -6px;
+}
+
+@media (max-width: 640px) {
+  .conteo-detalle-atributos {
+    flex-direction: column;
+  }
+
+  .conteo-detalle-atributo-panel-waffle {
+    max-width: 220px;
+  }
+}
+
+/* Pestañas de folder: "Delito más frecuente" a la izquierda y, cuando
+   aplica, "Mujeres mencionadas" en el extremo opuesto (derecha). El
+   recorte en las esquinas superiores (clip-path) es lo que da la
+   silueta de pestaña, como en la imagen de referencia. Clic en una
+   pestaña abre el panel de abajo con más información. */
+.conteo-detalle-folder {
+  margin-bottom: 22px;
+}
+
+.conteo-detalle-tabs {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.conteo-detalle-tab {
+  clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+  border: none;
+  padding: 10px 22px 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #fff;
+  background: var(--detalle-color, var(--accent));
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.15s ease;
+}
+
+.conteo-detalle-tab--derecha {
+  background: var(--accent-dim, #a0622f);
+}
+
+.conteo-detalle-tab:hover,
+.conteo-detalle-tab--activa {
+  opacity: 1;
+}
+
+.conteo-detalle-tab-panel {
+  background: var(--parchment, #f7f2e8);
+  border: 1px solid var(--rule);
+  border-radius: 0 0 8px 8px;
+  padding: 16px 18px;
+}
+
+.conteo-detalle-tab-contenido {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.conteo-detalle-tab-titulo {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ink);
+  margin: 0;
+}
+
+.conteo-detalle-tab-texto {
+  font-size: 0.85rem;
+  color: var(--ink-light);
+  margin: 0;
+}
+
+.conteo-detalle-tab-link {
+  margin-top: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.conteo-detalle-tab-link:hover {
+  color: var(--accent-dim, #a0622f);
+}
+
+/* Línea de tiempo en burbujas: el diámetro de cada círculo representa la
+   cantidad de ese siglo (todas apoyadas sobre el mismo tallo, que llega a
+   una línea base común, como en la imagen de referencia). El contenedor
+   de cada ítem tiene alto fijo con justify-content:flex-end, así que
+   aunque el diámetro varíe, el tallo y el siglo siempre quedan alineados
+   en la misma línea de base. */
+.conteo-detalle-timeline {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.conteo-detalle-timeline-linea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 21px;
+  height: 2px;
+  background: var(--rule);
+  z-index: 0;
+}
+
+.conteo-detalle-timeline-item {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.conteo-detalle-timeline-item:disabled {
+  cursor: default;
+}
+
+.conteo-detalle-timeline-burbuja {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.conteo-detalle-timeline-tallo {
+  flex: none;
+  width: 2px;
+  height: 34px;
+  background: var(--rule);
+}
+
+.conteo-detalle-timeline-siglo {
+  flex: none;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}

@@ -4,24 +4,17 @@ import '/src/style/botones.css'
 import '/src/style/graficos.css'
 import '/src/style/filtros-chip.css'
 import '/src/style/mariposa.css'
+import '/src/style/apilado.css'
+import '/src/style/lineas.css'
+import '/src/style/sunburst.css'
+import '/src/style/dashboard.css'
 
-import { crearWaffleGenero } from '../charts/WaffleGenero.js'
-import { crearBeeswarmGenero } from '../charts/BeeswarmGenero.js'
-import { crearButterflyGenero } from '../charts/ButterflyGenero.js'
-import { crearParticipacionTiempo } from '../charts/ParticipacionTiempo.js'
-import { initCarruselPreguntas } from '../ui/carruselPreguntas.js'
+import { crearPersonasDashboard } from '../charts/PersonasDashboard.js'
+import { initVistaToggle } from '../ui/vistaToggle.js'
 
-const renderizadoresSlides = [
-  crearBeeswarmGenero,
-  crearButterflyGenero,
-  crearParticipacionTiempo,
-  crearWaffleGenero,
-]
+crearPersonasDashboard()
 
-initCarruselPreguntas({
-  wheelId: 'pwWheel',
-  stageId: 'pwStage',
-  prevId: 'pwPrev',
-  nextId: 'pwNext',
-  onActivate: (indice) => renderizadoresSlides[indice]?.(),
+initVistaToggle({
+  botones: ['vistaBtnDashboard', 'vistaBtnHistoria'],
+  vistas: ['vistaDashboard', 'vistaHistoria'],
 })

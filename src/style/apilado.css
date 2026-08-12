@@ -1,0 +1,129 @@
+/* =====================================================
+   GRÁFICO DE BARRAS APILADAS (DelitosGeneroApilado.js)
+===================================================== */
+.apilado-barra-switch {
+  margin-bottom: 14px;
+}
+
+.apilado-segmento {
+  cursor: pointer;
+  transition: fill-opacity 0.15s;
+}
+
+.apilado-eje-atributo {
+  font-size: 12.5px;
+  font-weight: 700;
+  fill: var(--ink, #1a1410);
+}
+
+.apilado-eje-siglo {
+  font-size: 9.5px;
+  fill: var(--ink-light, #4a3f35);
+}
+
+.apilado-leyenda-item {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 3px 6px;
+  transition: background 0.15s;
+}
+
+.apilado-leyenda-item:hover {
+  background: var(--parchment-dark, #ede5d0);
+}
+
+.apilado-leyenda-item--activo {
+  background: var(--badge-bg, #f0e6d0);
+  outline: 1px solid var(--accent-dim, #a0622f);
+}
+
+.apilado-panel-detalle {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  border-radius: 4px;
+  text-align: left;
+}
+
+.apilado-panel-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.apilado-panel-titulo {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--accent);
+}
+
+.apilado-panel-cerrar {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--ink-light);
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.apilado-panel-cerrar:hover {
+  color: var(--accent);
+}
+
+.apilado-panel-total {
+  font-size: 12.5px;
+  color: var(--ink-light);
+  margin-bottom: 10px;
+}
+
+.apilado-genero-fila {
+  display: grid;
+  grid-template-columns: 110px 1fr 70px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-size: 12.5px;
+  color: var(--ink-light);
+}
+
+.apilado-genero-barra-fondo {
+  display: block;
+  background: var(--parchment-dark, #ede5d0);
+  border-radius: 3px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.apilado-genero-barra-relleno {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.apilado-sankey-seccion {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+.apilado-sankey-titulo {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.apilado-sankey-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.apilado-sankey-etiqueta {
+  font-size: 11.5px;
+  fill: var(--ink, #1a1410);
+}

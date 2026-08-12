@@ -1,15 +1,11 @@
 import * as d3 from "d3";
-import { TIPOS_AGENTE, PALETA_TIPO, grupoDeTipo, SIGLOS, getSiglo } from "./agentesComun.js";
-import { dibujarAgentesBeeswarm } from "./AgentesBeeswarm.js";
+import { TIPOS_AGENTE, PALETA_TIPO, grupoDeTipo } from "./agentesComun.js";
 import { crearAgentesButterfly } from "./AgentesButterfly.js";
-import { dibujarAgentesSankey } from "./AgentesSankey.js";
+import { dibujarParticipacionTiempoAgentes } from "./ParticipacionTiempoAgentes.js";
 import { dibujarSunburst } from "./InstitucionesAtributo.js";
-import { initCarruselPreguntas } from "../ui/carruselPreguntas.js";
-
-const ORDEN_ATRIBUTO = ["Víctima", "Perpetrador", "Cómplice"];
 
 export async function crearOtrosAgentesDashboard() {
-  const filtrosContainer = document.getElementById("agentesFiltros");
+  const filtrosContainer = document.getElementById("agentesFiltrosTop");
   if (!filtrosContainer) return;
 
   const raw = await d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`);
@@ -19,6 +15,9 @@ export async function crearOtrosAgentesDashboard() {
     .filter(d => d.Agente && d.Agente !== "Persona" && d.Año && !isNaN(+d.Año) && d.Nombre_Codigo && d.Atributo)
     .map(d => {
       const tipo = d.Agente.trim();
+      const subcrimen = d.Nombre_Sub_Codigo && d.Nombre_Sub_Codigo.trim() !== "" && d.Nombre_Sub_Codigo.trim().toUpperCase() !== "NULL"
+        ? d.Nombre_Sub_Codigo.trim()
+        : null;
       return {
         idAgente: d.ID_Agente,
         idEvento: `${d.ID_Documento}|${d.Sub_Código}|${d.ID_Agente}`,
@@ -26,8 +25,9 @@ export async function crearOtrosAgentesDashboard() {
         grupo: grupoDeTipo(tipo),
         atributo: d.Atributo.trim(),
         crimen: d.Nombre_Codigo.trim(),
+        subcrimen,
         año: +d.Año,
-        siglo: getSiglo(+d.Año),
+        década: Math.floor(+d.Año / 10) * 10,
       };
     })
     .filter(d => {
@@ -42,35 +42,26 @@ export async function crearOtrosAgentesDashboard() {
   }
 
   const TIPOS_PRESENTES = TIPOS_AGENTE.filter(t => eventos.some(d => d.tipo === t));
-  const SIGLOS_PRESENTES = SIGLOS.filter(s => eventos.some(d => d.siglo === s));
-  const ATRIBUTOS_PRESENTES = ORDEN_ATRIBUTO.filter(a => eventos.some(d => d.atributo === a));
   const CRIMENES = [...d3.rollup(eventos, v => v.length, d => d.crimen)]
     .sort((a, b) => b[1] - a[1])
     .map(([nombre]) => nombre);
 
+  const [decadaMin, decadaMax] = d3.extent(eventos, d => d.década);
+  const DECADAS = d3.range(decadaMin, decadaMax + 10, 10);
+
   const estado = {
     tipo: null,
-    siglos: new Set(SIGLOS_PRESENTES),
-    atributos: new Set(ATRIBUTOS_PRESENTES),
-    crimenes: new Set(),
+    decadaDesde: decadaMin,
+    decadaHasta: decadaMax,
+    crimen: "Todos",
   };
 
   function filtrarEventos() {
     return eventos.filter(d =>
       (!estado.tipo || d.tipo === estado.tipo) &&
-      estado.siglos.has(d.siglo) &&
-      estado.atributos.has(d.atributo) &&
-      (estado.crimenes.size === 0 || estado.crimenes.has(d.crimen))
+      d.década >= estado.decadaDesde && d.década <= estado.decadaHasta &&
+      (estado.crimen === "Todos" || d.crimen === estado.crimen)
     );
-  }
-
-  function entidadesDesdeEventos(eventosFiltrados) {
-    const primerPorAgente = new Map();
-    eventosFiltrados.forEach(d => {
-      const actual = primerPorAgente.get(d.idAgente);
-      if (!actual || d.año < actual.año) primerPorAgente.set(d.idAgente, d);
-    });
-    return [...primerPorAgente.values()];
   }
 
   filtrosContainer.innerHTML = `
@@ -81,16 +72,16 @@ export async function crearOtrosAgentesDashboard() {
           <div class="ag-chip-fila" id="agTipoFila"></div>
         </div>
         <div class="ag-filtros-grupo">
-          <div class="ag-filtros-titulo">Tiempo</div>
-          <div class="ag-chip-fila" id="agSigloFila"></div>
+          <div class="ag-filtros-titulo">Década desde</div>
+          <select class="filtro-select-generico" id="agDecadaDesde"></select>
         </div>
         <div class="ag-filtros-grupo">
-          <div class="ag-filtros-titulo">Atributo</div>
-          <div class="ag-chip-fila" id="agAtributoFila"></div>
+          <div class="ag-filtros-titulo">Década hasta</div>
+          <select class="filtro-select-generico" id="agDecadaHasta"></select>
         </div>
         <div class="ag-filtros-grupo ag-filtros-grupo-crimen">
-          <div class="ag-filtros-titulo">Crimen (ninguno elegido = todos)</div>
-          <div class="ag-chip-fila ag-chip-crimenes" id="agCrimenFila"></div>
+          <div class="ag-filtros-titulo">Crimen</div>
+          <select class="filtro-select-generico" id="agCrimenSelect"></select>
         </div>
       </div>
       <div class="ag-filtros-pie">
@@ -101,9 +92,9 @@ export async function crearOtrosAgentesDashboard() {
   `;
 
   const tipoFila = document.getElementById("agTipoFila");
-  const sigloFila = document.getElementById("agSigloFila");
-  const atributoFila = document.getElementById("agAtributoFila");
-  const crimenFila = document.getElementById("agCrimenFila");
+  const selectDecadaDesde = document.getElementById("agDecadaDesde");
+  const selectDecadaHasta = document.getElementById("agDecadaHasta");
+  const selectCrimen = document.getElementById("agCrimenSelect");
   const leyenda = document.getElementById("agLeyenda");
 
   TIPOS_PRESENTES.forEach(t => {
@@ -119,52 +110,41 @@ export async function crearOtrosAgentesDashboard() {
     tipoFila.appendChild(chip);
   });
 
-  SIGLOS_PRESENTES.forEach(s => {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "ag-chip";
-    chip.textContent = s.replace("Siglo ", "S. ");
-    chip.addEventListener("click", () => {
-      if (estado.siglos.has(s)) estado.siglos.delete(s);
-      else estado.siglos.add(s);
-      onFiltroCambiado();
+  function llenarSelectDecadas(select) {
+    DECADAS.forEach(dc => {
+      const opt = document.createElement("option");
+      opt.value = dc;
+      opt.textContent = dc;
+      select.appendChild(opt);
     });
-    sigloFila.appendChild(chip);
-  });
-
-  ATRIBUTOS_PRESENTES.forEach(a => {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "ag-chip";
-    chip.textContent = a;
-    chip.addEventListener("click", () => {
-      if (estado.atributos.has(a)) estado.atributos.delete(a);
-      else estado.atributos.add(a);
-      onFiltroCambiado();
-    });
-    atributoFila.appendChild(chip);
-  });
-
-  const chipTodosCrimenes = document.createElement("button");
-  chipTodosCrimenes.type = "button";
-  chipTodosCrimenes.className = "ag-chip ag-chip-small";
-  chipTodosCrimenes.textContent = "Todos";
-  chipTodosCrimenes.addEventListener("click", () => {
-    estado.crimenes.clear();
+  }
+  llenarSelectDecadas(selectDecadaDesde);
+  llenarSelectDecadas(selectDecadaHasta);
+  selectDecadaDesde.value = estado.decadaDesde;
+  selectDecadaHasta.value = estado.decadaHasta;
+  selectDecadaDesde.addEventListener("change", () => {
+    estado.decadaDesde = Math.min(+selectDecadaDesde.value, estado.decadaHasta);
     onFiltroCambiado();
   });
-  crimenFila.appendChild(chipTodosCrimenes);
+  selectDecadaHasta.addEventListener("change", () => {
+    estado.decadaHasta = Math.max(+selectDecadaHasta.value, estado.decadaDesde);
+    onFiltroCambiado();
+  });
+
+  const optTodosCrimenes = document.createElement("option");
+  optTodosCrimenes.value = "Todos";
+  optTodosCrimenes.textContent = "Todos los crímenes";
+  selectCrimen.appendChild(optTodosCrimenes);
   CRIMENES.forEach(c => {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "ag-chip ag-chip-small";
-    chip.textContent = c;
-    chip.addEventListener("click", () => {
-      if (estado.crimenes.has(c)) estado.crimenes.delete(c);
-      else estado.crimenes.add(c);
-      onFiltroCambiado();
-    });
-    crimenFila.appendChild(chip);
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    selectCrimen.appendChild(opt);
+  });
+  selectCrimen.value = estado.crimen;
+  selectCrimen.addEventListener("change", () => {
+    estado.crimen = selectCrimen.value;
+    onFiltroCambiado();
   });
 
   TIPOS_PRESENTES.forEach(t => {
@@ -176,9 +156,9 @@ export async function crearOtrosAgentesDashboard() {
 
   document.getElementById("agLimpiar").addEventListener("click", () => {
     estado.tipo = null;
-    estado.siglos = new Set(SIGLOS_PRESENTES);
-    estado.atributos = new Set(ATRIBUTOS_PRESENTES);
-    estado.crimenes.clear();
+    estado.decadaDesde = decadaMin;
+    estado.decadaHasta = decadaMax;
+    estado.crimen = "Todos";
     onFiltroCambiado();
   });
 
@@ -186,52 +166,32 @@ export async function crearOtrosAgentesDashboard() {
     tipoFila.querySelectorAll(".ag-chip").forEach(chip => {
       chip.classList.toggle("ag-chip-activo", chip.textContent === estado.tipo);
     });
-    sigloFila.querySelectorAll(".ag-chip").forEach(chip => {
-      const valor = SIGLOS_PRESENTES.find(s => s.replace("Siglo ", "S. ") === chip.textContent);
-      chip.classList.toggle("ag-chip-activo", estado.siglos.has(valor));
-    });
-    atributoFila.querySelectorAll(".ag-chip").forEach(chip => {
-      chip.classList.toggle("ag-chip-activo", estado.atributos.has(chip.textContent));
-    });
-    chipTodosCrimenes.classList.toggle("ag-chip-activo", estado.crimenes.size === 0);
-    crimenFila.querySelectorAll(".ag-chip-small").forEach(chip => {
-      if (chip === chipTodosCrimenes) return;
-      chip.classList.toggle("ag-chip-activo", estado.crimenes.has(chip.textContent));
-    });
+    selectDecadaDesde.value = estado.decadaDesde;
+    selectDecadaHasta.value = estado.decadaHasta;
+    selectCrimen.value = estado.crimen;
   }
 
   const butterflyCtrl = crearAgentesButterfly("agButterfly");
-  let activo = 0;
-  const sucio = [true, true, true, true];
 
-  function dibujar(indice) {
+  function actualizarGraficas() {
     const eventosFiltrados = filtrarEventos();
-    if (indice === 0) dibujarAgentesBeeswarm("agBeeswarm", eventosFiltrados);
-    else if (indice === 1) butterflyCtrl.actualizar(eventosFiltrados, estado.siglos, estado.tipo);
-    else if (indice === 2) dibujarAgentesSankey("agSankey", eventosFiltrados, estado.crimenes);
-    else if (indice === 3) dibujarSunburst("agSunburst", entidadesDesdeEventos(eventosFiltrados));
+    const decadasRango = d3.range(estado.decadaDesde, estado.decadaHasta + 10, 10);
+    butterflyCtrl.actualizar(eventosFiltrados, estado.crimen);
+    dibujarParticipacionTiempoAgentes({
+      chartContainerId: "agParticipacionTiempo",
+      eventos: eventosFiltrados,
+      decadas: decadasRango,
+      tiposActivos: estado.tipo ? [estado.tipo] : TIPOS_PRESENTES,
+      crimenActivo: estado.crimen === "Todos" ? null : estado.crimen,
+    });
+    dibujarSunburst("agSunburst", eventosFiltrados, estado.crimen === "Todos" ? null : estado.crimen);
   }
 
   function onFiltroCambiado() {
     pintarEstadoChips();
-    sucio.fill(true);
-    dibujar(activo);
-    sucio[activo] = false;
+    actualizarGraficas();
   }
 
   pintarEstadoChips();
-
-  initCarruselPreguntas({
-    wheelId: "agWheel",
-    stageId: "agStage",
-    prevId: "agPrev",
-    nextId: "agNext",
-    onActivate: (indice) => {
-      activo = indice;
-      if (sucio[indice]) {
-        dibujar(indice);
-        sucio[indice] = false;
-      }
-    },
-  });
+  actualizarGraficas();
 }
