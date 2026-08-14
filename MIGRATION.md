@@ -152,9 +152,11 @@ líneas en la fusión pero conserva sus 37 tokens intactos; ninguno de los que l
 `--mapa-font` sigue en `:root` sin lector. `style.css` mantiene el comentario que avisa de que
 JS lee estas propiedades.
 
-**Aviso para la fase 4a:** `agentesComun.js` incorporó `PALETA_ATRIBUTO` con tres colores
-**hardcodeados** (`#2f7d5c`, `#c1443e`, `#6b5b95`) que **no** son custom properties. No entran
-en el contrato, pero conviene saber que hay paleta nueva fuera del sistema de tokens.
+**`PALETA_ATRIBUTO` se queda como está — decidido, y NO es trabajo de la fase 4a.**
+`agentesComun.js` incorporó tres colores **hardcodeados** (`#2f7d5c`, `#c1443e`, `#6b5b95`) que
+no son custom properties. Convertirlos en tokens cambiaría el renderizado, y eso queda fuera de
+un port. **La fase 4a no los toca**: no entran en el contrato, no se les busca equivalente en
+`:root` y no se añaden a `_variables.scss`. Queda anotado abajo como trabajo posterior.
 
 **Verificación automática:** `src/scripts/dev/verificarVariablesCss.ts` comprueba que las 27
 resuelvan a un valor no vacío en `:root` y lanza error si alguna falla. Corre en todas las
@@ -392,6 +394,11 @@ Para cada una de las 10 páginas restantes, además de `npm run check` y `npm ru
   bundle común que además incluía los otros dos gráficos. Lo que cambia es que los scripts por
   página lo vuelven visible y medible. Vale la pena revisarlo después de la fase 7 (importar
   solo los módulos de d3 que se usan, en vez de `import * as d3`).
+- **Tokenizar `PALETA_ATRIBUTO`.** `agentesComun.js` define `"Víctima": "#2f7d5c"`,
+  `"Perpetrador": "#c1443e"` y `"Cómplice": "#6b5b95"` a fuego, mientras el resto de paletas del
+  proyecto salen de custom properties vía `leerVariableCss`. Es la única paleta fuera del
+  sistema de tokens. **Decidido: no se toca en la migración** — convertirlas cambiaría el
+  renderizado y eso no es un port. La fase 4a las deja tal cual.
 - **Evaluar Playwright para pruebas de regresión visual después de la fase 7.** Durante la
   migración se descartó a propósito: es una dependencia nueva y una superficie de fallo nueva a
   mitad del port, y las 9 páginas se revisan en un teléfono de verdad, que además detecta cosas

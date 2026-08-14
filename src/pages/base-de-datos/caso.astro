@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// baseDeDatosMain.js importaba style.css y caso.css. Aquí caso.css es la hoja
+// principal: define .site-header, .back-link, .page, .state-msg y todo el
+// detalle del expediente. La fase 4b la repunta a src/styles/pages/_caso.scss.
+import '../../style/caso.css';
+
+// Esta página no lleva nav. En su lugar tiene un <header class="site-header">
+// con un enlace de vuelta a la tabla, y es la única de las 11 así. Por eso
+// conNav={false}: ponerle el nav sería añadir algo que hoy no está.
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="Detalle del Caso" conNav={false}>
+  <header class="site-header">
+    <a href={`${base}base-de-datos/index.html`} class="back-link">Base de datos</a>
+  </header>
+
+  <main class="page" id="main-content">
+    <p class="state-msg" id="loading-msg">Cargando expediente…</p>
+  </main>
+
+  <script>
+    import { inicializarCaso } from '../../tables/caso.js';
+
+    inicializarCaso();
+  </script>
+</BaseLayout>
