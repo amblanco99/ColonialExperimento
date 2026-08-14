@@ -369,6 +369,25 @@ D3 corre solo en el navegador, importado desde un `<script>` a nivel de página,
 fijado en `node-version: 20`. Se sube a 22 en el pre-vuelo, no en el cambio final: si no, CI
 instalaría bien mientras `build` siga siendo Vite y reventaría justo al hacer el cambio.
 
+### Antes de la fase 4a: el juego de breakpoints es 600/640/720/768/900
+
+Al extraer las `$bp-*` a `_variables.scss` hay que partir de **cinco** valores, no de cuatro.
+**900 es nuevo**, lo trajo `dashboard.css` en la fusión.
+
+| valor | archivo | qué hace |
+|---|---|---|
+| 600 | `caso.css:286` | padding de `.page` |
+| 640 | `conteo.css:145` y `:260` | dos bloques del conteo (**nuevos**) |
+| 720 | `agentes-filtros.css:126` | apila las filas de filtros |
+| 768 | `style.css:438` | topnav, `.col-root`/`.cards-container` a columna, `.card` al 100% |
+| 900 | `dashboard.css:108` | **nuevo**: `.personas-grid` a una columna, filtros no sticky |
+
+**La composición cambió, no solo el total.** El bloque de 640 que tenía `style.css` era del
+carrusel y desapareció con él; los dos 640 de ahora son de `conteo.css` y hacen otra cosa. O
+sea: el 640 de la lista antigua y el de la nueva no son el mismo breakpoint. Conviene mirar qué
+hace cada uno antes de darles nombre, porque un `$bp-movil` único no describe bien cinco valores
+que responden a cosas distintas.
+
 ### Lista de la fase 7
 
 - `dev`, `build` y `preview` pasan a Astro; se quitan los alias `:astro`.
