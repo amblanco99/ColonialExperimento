@@ -373,11 +373,38 @@ Para cada una de las 10 páginas restantes, además de `npm run check` y `npm ru
 - No hay favicon en todo el repo.
 - `public/data/metadatos.csv` no lo carga nadie; `style.css:237` estiliza un
   `#tablaMetadatos` que ninguna página define.
-- **`personas/personas.html` y `personas/otrosAgentes.html` no se alcanzan desde ningún HTML.**
-  Antes se llegaba por las dos tarjetas de `personas/index.html`; en `origin/main` esas tarjetas
-  se eliminaron. Ahora el único acceso lo genera `TablasConteo.js:102-105`, un botón "Expandir"
-  cuyo `href` sale de `destino`. Ninguna de las dos está en el nav, así que **si ese botón no se
-  renderiza, las páginas quedan inalcanzables**. Merece revisarse aparte.
+- **El acceso a `personas.html` y `otrosAgentes.html` cuelga de un solo hilo.** Ninguna de las
+  dos está en el nav y **ningún HTML enlaza a ellas**: antes se llegaba por las dos tarjetas de
+  `personas/index.html`, que `origin/main` eliminó. El único acceso que queda lo fabrica
+  `TablasConteo.js` en tiempo de ejecución.
+
+  Traza completa, por si hay que rehacerla:
+
+  1. `crearConteoInteractivo()` sale temprano si no encuentra `#conteoInteractivo`
+     (`TablasConteo.js:63`).
+  2. Si lo encuentra, **hace `await` de dos CSV** — `Visualizaciones.csv` y `Casos.csv`
+     (líneas 65-68). Todo lo demás va después de esa espera.
+  3. Crea `<a class="conteo-expandir-btn">Expandir</a>` (línea 97) **sin `href`**.
+  4. `dibujarToggle(...)` recibe las dos opciones con `destino: "personas.html"` y
+     `destino: "otrosAgentes.html"` (líneas 102-103) y un callback que asigna
+     `botonExpandir.href = opcion.destino` (línea 105).
+  5. El `href` solo se asigna dentro de ese callback. Lo que salva la situación es que
+     `dibujarToggle` **termina llamando a `activar(0)`** (línea 164), que dispara el callback en
+     el primer render. Sin esa línea el botón saldría sin `href` hasta que alguien pulsara el
+     conmutador.
+
+  **Consecuencia: si falla la carga de cualquiera de los dos CSV, el `await` no resuelve, el
+  botón no llega a existir y las dos páginas quedan inalcanzables desde el sitio.** No hay
+  segunda vía.
+
+  Comprobado que sobrevive al build de Vite: en `dist/assets/composicionSocial-*.js` están
+  `conteo-expandir-btn`, `Expandir`, las dos cadenas `destino` y, sobre todo, la llamada `a(0)`
+  minificada justo detrás del cuerpo de la función. La resolución relativa también es correcta:
+  desde `/ColonialExperimento/personas/index.html`, un `href="personas.html"` apunta a
+  `/ColonialExperimento/personas/personas.html`.
+
+  **Es anterior al port y el port no lo cambia.** Se anota porque no es algo que se redescubra
+  fácilmente: son cinco saltos de código para explicar por qué dos páginas del sitio existen.
 - `personas/personas.html` tiene una sección "Mujeres Mencionadas" cuyo cuerpo es `PENDIENTE`.
 - `leerVariableCss` está duplicado en dos archivos.
 - Los dos bloques `<style>` inyectados por `innerHTML` se saltan la hoja de estilos.
@@ -457,6 +484,24 @@ Arreglarlo es trabajo posterior (gráficos responsivos), no parte de este port.
 *(Aquí había una entrada sobre dos bytes NUL en `AgentesSankey.js`, marcada como pendiente de
 decisión. La fusión con `origin/main` borró ese archivo, así que la pregunta se cerró sola y la
 fase 6 ya no tiene ese riesgo. No queda ningún archivo con bytes NUL en el repo.)*
+
+### La prop `conNav` de BaseLayout
+
+`base-de-datos/caso.html` es **la única de las 11 páginas sin nav**. En su lugar lleva:
+
+```html
+<header class="site-header">
+  <a href="index.html" class="back-link">Base de datos</a>
+</header>
+```
+
+`BaseLayout` renderizaba `<Nav>` siempre, así que usarlo tal cual habría **añadido** un nav que
+esa página hoy no tiene: un cambio visual, no un port. Por eso el layout acepta
+`conNav` (**por defecto `true`**, de modo que las otras 10 páginas no se enteran) y
+`caso.astro` pasa `conNav={false}` y pone su propia cabecera.
+
+Si algún día se decide que `caso` también lleve nav, es quitar esa prop de la página — pero es
+un cambio de diseño, no de migración.
 
 ### Cómo comprobar de verdad la cadena de CSS de una página
 
