@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Cadena de otrosAgentesMain.js, en el mismo orden. Ocho hojas de página; la
+// global la pone BaseLayout. La fase 4b las repunta a src/styles/pages/.
+//
+// dashboard.css NO es un resto: esta página usa siete clases que solo define esa
+// hoja (personas-main-ancho, personas-dashboard-seccion, personas-filtros-top,
+// personas-fila-ancha, personas-grid, personas-columna, personas-tarjeta).
+// personas-fila-ancha, de hecho, solo se usa aquí.
+import '../../style/tooltips.css';
+import '../../style/botones.css';
+import '../../style/graficos.css';
+import '../../style/filtros-chip.css';
+import '../../style/mariposa.css';
+import '../../style/agentes-filtros.css';
+import '../../style/sunburst.css';
+import '../../style/lineas.css';
+import '../../style/dashboard.css';
+
+// Esta página no lleva conmutador de vistas: no hay .vista-toggle en el marcado
+// y otrosAgentesMain.js tampoco importa vistaToggle.js. Es coherente.
+//
+// #agentesFiltrosTop es obligatorio: OtrosAgentesDashboard.js:9 hace return si
+// falta. Los ids agTipoFila, agDecadaDesde, agDecadaHasta, agCrimenSelect,
+// agLeyenda y agLimpiar los construye el JS dentro de ese contenedor, no van en
+// el marcado.
+---
+
+<BaseLayout title="Otros agentes" active="personas">
+  <main class="container personas-main-ancho">
+    <h1 class="section-mainTitle">Otros agentes</h1>
+
+    <section class="personas-dashboard-seccion">
+      <div id="agentesFiltrosTop" class="personas-filtros-top"></div>
+
+      <div class="personas-fila-ancha">
+        <div class="personas-tarjeta">
+          <div id="agParticipacionTiempo"></div>
+        </div>
+      </div>
+
+      <div class="personas-grid">
+        <div class="personas-columna">
+          <div class="personas-tarjeta">
+            <div id="agSunburst"></div>
+          </div>
+        </div>
+
+        <div class="personas-columna">
+          <div class="personas-tarjeta">
+            <div id="agButterfly"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      import { crearOtrosAgentesDashboard } from '../../charts/OtrosAgentesDashboard.js';
+
+      crearOtrosAgentesDashboard();
+    </script>
+  </main>
+</BaseLayout>

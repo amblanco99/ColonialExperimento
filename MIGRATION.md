@@ -236,7 +236,7 @@ páginas reciben la hoja global por la misma vía.
 ### Meta viewport — fase 3.5, ahora una revisión y no un commit
 
 Solo `index.html` y `base-de-datos/caso.html` tenían `<meta name="viewport">`. Como
-`BaseLayout` lo da a las 11, los breakpoints móviles (`style.css:590`, más 600/640/720px en
+`BaseLayout` lo da a las 11, los breakpoints móviles (`style.css:438`, más 600/640/720/900px en
 otros archivos) **empiezan a aplicarse en 9 páginas que nunca los habían visto**.
 
 **El plan original era aislarlo en un commit propio. Eso ya no es posible.** `BaseLayout` lleva
@@ -275,16 +275,46 @@ razonablemente lo que hará el breakpoint leyendo las reglas. En las que llevan 
 que mirarlas. Por orden de prioridad:
 
 - **`tiempo/index.html`** — el mapa (760×820) y el gráfico de líneas, más paneles de filtro
-  construidos por JS que no existen en el HTML.
-- **`personas/personas.html`** — el dashboard nuevo, con el gráfico más ancho que queda
-  (`ButterflyGenero`, 820) y dos vistas alternables.
-- **`personas/otrosAgentes.html`** — varios gráficos y el mismo conmutador de vistas.
-  *(Ya no lleva sankey: ese módulo se borró en la fusión.)*
+  construidos por JS que no existen en el HTML. **Sigue siendo la primera.**
 - **`about/fuentes.html`** — Observable Plot con ancho fijo de 600 y sin `viewBox`, así que no
   se comporta como los demás.
+- **`personas/personas.html` y `personas/otrosAgentes.html`** — bajan de prioridad, ver abajo.
 
 El resto de páginas con gráfico caen en el patrón general descrito arriba (se encogen y pierden
 legibilidad), y con mirar una basta para saber cómo están todas.
+
+**Las páginas del dashboard sí tienen breakpoint: 900 px.** Se comprobó leyendo
+`dashboard.css`, que trae una única media query (línea 108):
+
+```css
+@media (max-width: 900px) {
+  .personas-filtros-top { position: static; }   /* deja de ser sticky */
+  .personas-grid        { flex-direction: column; }  /* dos columnas -> una */
+}
+```
+
+`.personas-grid` es `display:flex` con `.personas-columna { flex: 1 1 0; min-width: 0 }`, así
+que **por debajo de 900 px pasa a una sola columna**. `.personas-main-ancho` no necesita
+breakpoint: es `max-width: 1700px; width: 96%`, o sea fluido (a 375 px ocupa ~360).
+
+Esto **descarta el escenario malo**: en un teléfono no van a quedar dos gráficos de 820 px lado
+a lado. A 375 px hay una columna y cada gráfico se encoge, que es el problema sistemático ya
+descrito — legibilidad, no maquetación. Por eso `personas.html` y `otrosAgentes.html` bajan en
+la lista: se comportan como las demás.
+
+**Ojo para la fase 4a: 900 es un valor nuevo.** El juego de breakpoints ya no es
+600/640/720/768 sino **600/640/720/768/900**, repartido así tras la fusión:
+
+| valor | archivo | qué hace |
+|---|---|---|
+| 600 | `caso.css:286` | padding de `.page` |
+| 640 | `conteo.css:145` y `:260` | dos bloques del conteo (**nuevos**) |
+| 720 | `agentes-filtros.css:126` | apila las filas de filtros |
+| 768 | `style.css:438` | topnav, `.col-root`/`.cards-container` a columna, `.card` al 100% |
+| 900 | `dashboard.css:108` | **nuevo**: `.personas-grid` a una columna, filtros no sticky |
+
+*(El bloque de 640 que tenía `style.css` para el carrusel desapareció con él en la fusión; los
+dos de 640 que hay ahora son de `conteo.css` y son otra cosa.)*
 
 Lo que se vea mal se anota abajo como trabajo posterior. **No se corrige CSS en esta
 migración.**
