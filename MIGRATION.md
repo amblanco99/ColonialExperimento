@@ -10,16 +10,45 @@ Rama: `astro`. Punto de retorno: tag `pre-astro` (`00656aa`).
 
 ---
 
-## 1. Inventario del estado inicial
+## 1. Inventario
+
+**Actualizado tras fusionar `origin/main` (`87aa6a7 personas`) el 2026-08-13.** Las cifras de
+abajo son del árbol fusionado, no del estado inicial. Donde algo cambió respecto al inventario
+original se indica.
 
 | | |
 |---|---|
-| Páginas | 11 archivos HTML, todos entry points de Vite |
-| JS | 24 archivos: 6 en `src/main/`, 16 en `src/charts/`, 2 en `src/tables/`, 1 en `src/ui/` (~4.700 líneas) |
-| CSS | 11 archivos en `src/style/` (~2.000 líneas); `style.css` tiene 599 y concentra los tokens |
-| Datos | 8 archivos en `public/data/` (~4,3 MB), cargados en runtime con `d3.csv` / `d3.json` |
+| Páginas | 11 archivos HTML (sin cambios) |
+| JS | **23 archivos**: 6 en `src/main/`, 15 en `src/charts/`, 2 en `src/tables/`, 1 en `src/ui/` (antes 24) |
+| CSS | **15 archivos** en `src/style/` (antes 11); `style.css` bajó a 387 líneas |
+| Datos | 8 archivos en `public/data/` (~4,3 MB), sin cambios |
 | Assets | **ninguno** — no hay imágenes, fuentes locales ni PDFs |
-| Dependencias | d3 7.9, `@observablehq/plot`, `d3-sankey`, `@turf/rewind` |
+| Dependencias | d3 7.9, `@observablehq/plot`, `d3-sankey`, `@turf/rewind`, **`d3-hexbin` 0.2.2** (nueva) |
+
+### Qué cambió en `src/charts/`, `src/tables/` y `src/ui/`
+
+**6 módulos eliminados:** `AgentesBeeswarm.js`, `AgentesSankey.js`, `BeeswarmGenero.js`,
+`WaffleGenero.js`, `zoomBeeswarm.js`, `ui/carruselPreguntas.js`.
+
+**5 módulos nuevos:** `DelitosSunburstGenero.js`, `ParticipacionTiempoAgentes.js`,
+`PersonasDashboard.js`, `verCasos.js`, `ui/vistaToggle.js`.
+
+**18 módulos siguen en pie** (los que porta la fase 5a):
+
+`AgentesButterfly` · `ButterflyGenero` · `ConteoCrimenes` · `DelitosSunburstGenero` ·
+`InstitucionesAtributo` · `Linaje` · `OtrosAgentesDashboard` · `ParticipacionTiempo` ·
+`ParticipacionTiempoAgentes` · `PersonasDashboard` · `TablasConteo` · `TiempoCrimenesMapa` ·
+`TiposCasos` · `agentesComun` · `verCasos` · `tables/caso` · `tables/tablageneral` ·
+`ui/vistaToggle`
+
+**Reescrituras grandes:** `TablasConteo` (686 líneas), `ParticipacionTiempo` (516),
+`ButterflyGenero` (320), `AgentesButterfly` (280), `OtrosAgentesDashboard` (188).
+
+**El carrusel desapareció.** `personasDetalleMain.js` ya no usa `carruselPreguntas.js`, sino
+`crearPersonasDashboard()` y un `initVistaToggle({ botones, vistas })`. El contrato de ids
+`pw*`/`ag*` que había que preservar en `personas.html` y `otrosAgentes.html` **ya no existe**.
+
+**4 hojas nuevas:** `apilado.css`, `conteo.css`, `dashboard.css`, `lineas.css`.
 
 ### Páginas y sus scripts
 
@@ -45,8 +74,9 @@ Rama: `astro`. Punto de retorno: tag `pre-astro` (`00656aa`).
 - **`<head>`:** dos variantes. Solo `index.html` y `caso.html` tienen `<meta name="viewport">`.
 - **Footer:** no existe en ninguna página (cero coincidencias de `<footer>`).
 - **Tokens CSS:** `caso.css` repite literalmente los primeros 11 tokens de `style.css`.
-- **Carrusel `pw-*`:** duplicado entre `personas.html` y `otrosAgentes.html`, cambiando solo
-  el prefijo de los ids (`pw*` → `ag*`).
+- ~~**Carrusel `pw-*`:** duplicado entre `personas.html` y `otrosAgentes.html`.~~ **Ya no
+  aplica:** la fusión con `origin/main` sustituyó el carrusel por un conmutador de vistas
+  (`ui/vistaToggle.js`) en las dos páginas.
 - **Sin CDN:** no hay ningún `<script src="https://…">`. Las dependencias ya son paquetes npm,
   así que "reemplazar CDN por dependencias reales" ya estaba hecho.
 
@@ -60,7 +90,7 @@ Rama: `astro`. Punto de retorno: tag `pre-astro` (`00656aa`).
 | Rama | `astro` (existente) | Ya diverge de `main`. |
 | Base URL | `/ColonialExperimento/` | GitHub Pages en subruta; los enlaces existentes siguen funcionando. |
 | `build.format` | `'preserve'` | Conserva las rutas `.html` actuales (`caso.html`, `fuentes.html`, `personas.html`). El default `'directory'` las reescribiría a `/caso/` y rompería los enlaces que genera el código de la tabla. |
-| CSS | Base global + cadenas por página | `style.css` pasa a `global.scss` en el layout; las 10 hojas especializadas siguen importándose por página, **igual que hoy**. |
+| CSS | Base global + cadenas por página | `style.css` pasa a `global.scss` en el layout; las **14** hojas especializadas siguen importándose por página, **igual que hoy**. (La rareza de que `otrosAgentes` no cargara `botones.css`, que había que preservar, la arregló ella en `origin/main`: ahora sí la importa.) |
 | Estado activo del nav | Solo `aria-current="page"` | Hoy no hay ningún estilo activo. Añadir uno visible sería un cambio de diseño. |
 | Footer | `Footer.astro` vacío | No hay contenido de footer que portar; se deja la estructura lista. |
 | `npm run build` | Sigue en Vite hasta la fase 7 | `deploy.yml` corre `npm run build`. Apuntarlo a Astro antes de tiempo publicaría un sitio incompleto. |
@@ -68,7 +98,7 @@ Rama: `astro`. Punto de retorno: tag `pre-astro` (`00656aa`).
 
 ---
 
-## 3. El contrato de las 26 propiedades personalizadas
+## 3. El contrato de las 27 propiedades personalizadas
 
 **El punto más delicado de la migración.** Dos archivos leen colores desde CSS en runtime:
 
@@ -92,6 +122,10 @@ Peor: `agentesComun.js` llama al helper **en el nivel superior del módulo** (l�
 **Estas propiedades deben seguir siendo custom properties reales en `:root`.** Las variables
 SCSS son la fuente de verdad; `:root` las emite como custom properties.
 
+**Re-extraído del árbol fusionado el 2026-08-13.** Las 25 que se leen con `leerVariableCss` no
+cambiaron: ningún módulo eliminado se llevó ninguna, y ningún módulo nuevo lee ninguna que no
+existiera. Lo único que se movió fue la parte de los literales `var(--…)`.
+
 | Origen | Propiedades |
 |---|---|
 | `agentesComun.js:9-11` | `--tipo-institucion`, `--tipo-poblacion-completa`, `--tipo-poblacion-indigena` |
@@ -99,12 +133,30 @@ SCSS son la fuente de verdad; `:root` las emite como custom properties.
 | `TiempoCrimenesMapa.js:17-24` | `--mapa-fondo-pergamino`, `--mapa-panel`, `--mapa-tierra`, `--mapa-borde`, `--mapa-tinta-oscura`, `--mapa-acento-linea`, `--mapa-acento-secundario`, `--mapa-tarjeta-fondo` |
 | `TiempoCrimenesMapa.js:27` | `--mapa-serie-1` … `--mapa-serie-10` (construidas con template literal) |
 | `TiempoCrimenesMapa.js:624` | `--mapa-punto-color` |
-| `AgentesButterfly.js:133` | `--accent` (string literal `"var(--accent)"`) |
+| `AgentesButterfly.js:225` | `--accent` (literal `"var(--accent)"`; antes estaba en la línea 133) |
+| `TablasConteo.js:102-103` | `--genero-mujer`, `--tipo-institucion`, **`--ink`** (literales) |
+| `TablasConteo.js:181` | **`--ink`** (literal) |
+| `PersonasDashboard.js:144` | `--accent` (literal, vía `style.setProperty("--chip-color", …)`) |
 
-Solo tienen lector en JS estas 26. `--mapa-font` está en `:root` pero nadie la lee.
-`style.css:20` ya trae un comentario advirtiendo que JS las lee.
+**Cambios respecto al contrato anterior:**
 
-**Verificación automática:** `src/scripts/dev/verificarVariablesCss.ts` comprueba que las 26
+- **`--ink` es nueva en el contrato.** La introdujo `TablasConteo.js` al reescribirse. Total:
+  **26 → 27**.
+- El literal `var(--accent)` de `AgentesSankey.js` desapareció con el archivo, pero `--accent`
+  sigue en el contrato por `AgentesButterfly` y por el `PersonasDashboard` nuevo.
+- Ninguna propiedad salió del contrato.
+
+**Comprobado en el árbol fusionado: las 27 siguen definidas en `:root`.** `style.css` perdió 212
+líneas en la fusión pero conserva sus 37 tokens intactos; ninguno de los que lee el JS se fue.
+
+`--mapa-font` sigue en `:root` sin lector. `style.css` mantiene el comentario que avisa de que
+JS lee estas propiedades.
+
+**Aviso para la fase 4a:** `agentesComun.js` incorporó `PALETA_ATRIBUTO` con tres colores
+**hardcodeados** (`#2f7d5c`, `#c1443e`, `#6b5b95`) que **no** son custom properties. No entran
+en el contrato, pero conviene saber que hay paleta nueva fuera del sistema de tokens.
+
+**Verificación automática:** `src/scripts/dev/verificarVariablesCss.ts` comprueba que las 27
 resuelvan a un valor no vacío en `:root` y lanza error si alguna falla. Corre en todas las
 páginas en modo dev. Convierte el fallo invisible en un error duro.
 
@@ -114,12 +166,22 @@ páginas en modo dev. Convierte el fallo invisible en un error duro.
 
 1. **Imports de CSS absolutos.** Los 6 `src/main/*.js` hacen `import '/src/style/style.css'`.
    Ese especificador no sobrevive; el CSS pasa al layout y al frontmatter de cada página.
-2. **17 rutas de datos con doble barra.** Todas usan
+2. **16 rutas de datos con doble barra** (antes 17). Todas usan
    `` `${import.meta.env.BASE_URL}/data/X.csv` ``, pero `BASE_URL` ya termina en `/`, así que
    la URL real lleva `//`. Los servidores lo normalizan y por eso nunca falló. Se corrige a
    `` `${import.meta.env.BASE_URL}data/X.csv` ``. La misma trampa aplica a los enlaces del nav.
-3. **5 saltos de página hardcodeados** dentro del código D3: `tablageneral.js:114,159`,
-   `BeeswarmGenero.js:339`, `TablasConteo.js:158`, `TiempoCrimenesMapa.js:133,151`.
+   Comprobado en el árbol fusionado: **ninguna está corregida todavía**. Reparto por archivo —
+   `TiempoCrimenesMapa` 4, `caso` 3, `TablasConteo` 2, `tablageneral` 2, y una cada uno en
+   `OtrosAgentesDashboard`, `Linaje`, `ConteoCrimenes`, `TiposCasos`, `PersonasDashboard`.
+   *Cambio en la fusión:* desaparecieron las de `BeeswarmGenero`, `WaffleGenero` y
+   `ParticipacionTiempo`; apareció la de `PersonasDashboard`.
+3. **7 saltos de página hardcodeados** (antes 5), todos dentro del código de gráficos:
+   `tablageneral.js:114` y `:159`, `TablasConteo.js:23`, `TiempoCrimenesMapa.js:133` y `:151`,
+   **`verCasos.js:33`** (nuevo) y **`TablasConteo.js:105`** (nuevo, y de otro tipo: no es
+   `window.location.href` sino `botonExpandir.href = opcion.destino`, con `destino` valiendo
+   `"personas.html"` o `"otrosAgentes.html"` según las líneas 102-103).
+   *Cambio en la fusión:* murió el de `BeeswarmGenero.js:339`; el de `TablasConteo` se movió de
+   la línea 158 a la 23; entraron los dos nuevos.
 4. **Dos bloques `<style>` inyectados** por `innerHTML` con hex hardcodeados
    (`ConteoCrimenes.js:46`, `TablasConteo.js:138`). Se portan tal cual.
 
@@ -212,8 +274,10 @@ que mirarlas. Por orden de prioridad:
 
 - **`tiempo/index.html`** — el mapa (760×820) y el gráfico de líneas, más paneles de filtro
   construidos por JS que no existen en el HTML.
-- **`personas/otrosAgentes.html`** — cuatro gráficos, uno de ellos el sankey, que es el único
-  que scrollea en horizontal en vez de encogerse.
+- **`personas/personas.html`** — el dashboard nuevo, con el gráfico más ancho que queda
+  (`ButterflyGenero`, 820) y dos vistas alternables.
+- **`personas/otrosAgentes.html`** — varios gráficos y el mismo conmutador de vistas.
+  *(Ya no lleva sankey: ese módulo se borró en la fusión.)*
 - **`about/fuentes.html`** — Observable Plot con ancho fijo de 600 y sin `viewBox`, así que no
   se comporta como los demás.
 
@@ -249,19 +313,25 @@ D3 corre solo en el navegador, importado desde un `<script>` a nivel de página,
 
 | Fase | Contenido | Estado |
 |---|---|---|
-| Pre-vuelo | Tag `pre-astro`, subir `deploy.yml` a Node 22 | pendiente |
-| 0 | Este documento | **en curso** |
-| 1 | Scaffold: Astro, sass, TS, Prettier | pendiente |
-| 2 | `BaseLayout` + `Nav` + `Footer` | pendiente |
-| 3 | Páginas, una a una, de la más simple a la más compleja | en curso |
+| Pre-vuelo | Tag `pre-astro`, subir `deploy.yml` a Node 22 | **hecho** |
+| 0 | Este documento | **hecho** (se corrige sobre la marcha) |
+| 1 | Scaffold: Astro, sass, TS, Prettier | **hecho** |
+| 2 | `BaseLayout` + `Nav` + `Footer` | **hecho** |
+| — | Fusionar `origin/main` (`87aa6a7`) | **hecho** (2026-08-13) |
+| 3 | Páginas, una a una, de la más simple a la más compleja | **en curso: 7 de 11** |
 | 3.5 | Revisión en móvil de las 9 páginas (ya no es un commit) | pendiente |
 | 4a | Tokens, base, `global.scss` | pendiente |
-| 4b | Las otras 10 hojas → `src/styles/pages/` | pendiente |
-| 5a | Mover D3 a `src/scripts/*.ts` sin tocar contenido | pendiente |
-| 5b | Corregir las 17 rutas de datos y los 5 saltos de página | pendiente |
+| 4b | Las otras **14** hojas → `src/styles/pages/` | pendiente |
+| 5a | Mover D3 a `src/scripts/*.ts` sin tocar contenido (**18 módulos**) | pendiente |
+| 5b | Corregir las **16** rutas de datos y los **7** saltos de página | pendiente |
 | 5c | Tipar | pendiente |
 | 6 | Prettier sobre todo el repo | pendiente |
 | 7 | Cambiar `build` a Astro, `outDir` a `dist`, borrar lo viejo | pendiente |
+
+**Páginas portadas (7):** `index`, `about/index`, `about/fuentes`, `about/delitos`,
+`about/documentacion-tecnica`, `base-de-datos/index`, `personas/index`.
+**Pendientes (4):** `base-de-datos/caso`, `personas/personas`, `personas/otrosAgentes`,
+`tiempo/index`.
 
 **Nota sobre Node:** `astro@7.1.6` exige `engines.node >= 22.12.0` y `deploy.yml` estaba
 fijado en `node-version: 20`. Se sube a 22 en el pre-vuelo, no en el cambio final: si no, CI
@@ -301,10 +371,11 @@ Para cada una de las 10 páginas restantes, además de `npm run check` y `npm ru
 - No hay favicon en todo el repo.
 - `public/data/metadatos.csv` no lo carga nadie; `style.css:237` estiliza un
   `#tablaMetadatos` que ninguna página define.
-- El carrusel tiene `role="tablist"` y `role="tab"` pero le faltan `aria-selected`,
-  `aria-controls` y `role="tabpanel"` en los paneles.
-- `personas/personas.html` y `personas/otrosAgentes.html` solo se alcanzan desde las tarjetas
-  de `personas/index.html`, nunca desde el nav.
+- **`personas/personas.html` y `personas/otrosAgentes.html` no se alcanzan desde ningún HTML.**
+  Antes se llegaba por las dos tarjetas de `personas/index.html`; en `origin/main` esas tarjetas
+  se eliminaron. Ahora el único acceso lo genera `TablasConteo.js:102-105`, un botón "Expandir"
+  cuyo `href` sale de `destino`. Ninguna de las dos está en el nav, así que **si ese botón no se
+  renderiza, las páginas quedan inalcanzables**. Merece revisarse aparte.
 - `personas/personas.html` tiene una sección "Mujeres Mencionadas" cuyo cuerpo es `PENDIENTE`.
 - `leerVariableCss` está duplicado en dos archivos.
 - Los dos bloques `<style>` inyectados por `innerHTML` se saltan la hoja de estilos.
@@ -328,80 +399,76 @@ Para cada una de las 10 páginas restantes, además de `npm run check` y `npm ru
 
 ### Todos los gráficos tienen ancho fijo (sistemático, no por página)
 
-Barrido completo de `src/charts/`, `src/tables/` y `src/ui/`. **Ningún módulo mide su
-contenedor para decidir su tamaño.** Los 8 usos de `getBoundingClientRect()` que hay son todos
-para colocar el tooltip (`tooltip.style.left = event.clientX - rect.left + 12`), ninguno para
-dimensionar. No hay `clientWidth`, `offsetWidth` ni `innerWidth` en todo el código.
+**Re-ejecutado sobre el árbol fusionado el 2026-08-13.** La conclusión no cambia: **ningún
+módulo mide su contenedor para dimensionarse.** Los 8 `getBoundingClientRect()` (antes 8
+también, pero en otros archivos) siguen siendo todos para colocar el tooltip
+(`tooltip.style.left = event.clientX - rect.left + 12`). No hay `clientWidth`, `offsetWidth`
+ni `innerWidth` en ningún sitio. **Los dos módulos nuevos que dibujan heredan el mismo patrón.**
 
 | Archivo | Línea | Valor | ¿Deriva del contenedor? |
 |---|---|---|---|
 | `Linaje.js` | 7 | `width = 928` | no |
-| `AgentesSankey.js` | 68 | `width = 820` | no (wrapper con `overflow-x:auto`) |
+| `ButterflyGenero.js` | 96 | `WIDTH = 820` | no — **subió de 700 a 820** al reescribirse |
+| `ParticipacionTiempo.js` | 6 | `WIDTH_LINEA = 820` | no — **ahora es constante fija**; antes derivaba de los datos con mínimo 500 |
+| `ParticipacionTiempoAgentes.js` | 6 | `WIDTH_LINEA = 820` | no — **nuevo**, copia del anterior |
 | `TiempoCrimenesMapa.js` | 620-621 | `width = 760`, `height = 820` (mapa) | no |
 | `TiempoCrimenesMapa.js` | 976 | `WIDTH = 700`, `HEIGHT = 300` (líneas) | no |
-| `AgentesButterfly.js` | 30 | `WIDTH = 700` | no |
-| `ButterflyGenero.js` | 155 | `WIDTH = 700` | no |
+| `AgentesButterfly.js` | 32 | `WIDTH = 700` | no |
 | `TiposCasos.js` | 10 | `width: 600` (Observable Plot) | no |
-| `InstitucionesAtributo.js` | 38 | `width = 550` | no |
-| `WaffleGenero.js` | 180-185 | `cellSize = 35`, `legendWidth = 500` | no |
-| `BeeswarmGenero.js` | 239 | `IW = Math.max(700, (maxAño - minAño) * PX_POR_AÑO)` | no — deriva de los **datos**, con mínimo 700 |
-| `AgentesBeeswarm.js` | 30 | `IW = Math.max(700, (maxAño - minAño) * PX_POR_AÑO)` | no — igual |
-| `ParticipacionTiempo.js` | 263 | `IW = Math.max(500, (MAX_DÉCADA - MIN_DÉCADA) / 10 * PX_POR_DÉCADA)` | no — igual, mínimo 500 |
+| `DelitosSunburstGenero.js` | 39 | `width = 600` | no — **nuevo** |
+| `InstitucionesAtributo.js` | 42 | `width = 550` | no |
 | `ConteoCrimenes.js` | 46 | `max-width: 800px` (HTML, no SVG) | no |
 | `TablasConteo.js` | 138 | `max-width: 800px` (HTML, no SVG) | no |
 
-**Qué significa para la revisión en móvil.** 10 de los 12 módulos SVG llevan `viewBox`, y
-`style.css:128` aplica `svg { max-width: 100%; height: auto }`. Así que **el fallo esperable no
-es que se desborden, sino que se encojan**: un gráfico de 928 px dentro de un viewport de
-375 px se escala a ~40%, y el texto se escala con él. El problema es de **legibilidad**, no de
-maquetación, y es el mismo en todas las páginas con gráfico.
+`PersonasDashboard.js`, `verCasos.js` y `ui/vistaToggle.js` no dibujan: el primero orquesta a
+`ButterflyGenero`, `ParticipacionTiempo` y `DelitosSunburstGenero`; los otros dos son navegación
+y alternancia de vistas.
 
-Las dos excepciones: `AgentesSankey.js:128` pone su wrapper en `overflow-x:auto`, así que ese
-scrollea en vez de encogerse; y `TiposCasos.js` usa Observable Plot, que no emite `viewBox`.
+**Qué cambió respecto al barrido anterior:**
 
-Esto es exactamente lo que se quería saber antes de la puerta: **es un problema sistemático,
-uno solo, no nueve distintos.** Arreglarlo es trabajo posterior (gráficos responsivos), no
-parte de este port.
+- Se fueron 5 entradas con los módulos borrados (`AgentesSankey`, `WaffleGenero`,
+  `BeeswarmGenero`, `AgentesBeeswarm`, y con ellos los tres anchos derivados de los datos).
+- Entraron 2 nuevas: `DelitosSunburstGenero` (600) y `ParticipacionTiempoAgentes` (820).
+- `ButterflyGenero` pasó de 700 a 820 y `ParticipacionTiempo` dejó de derivar del rango de
+  décadas para fijarse en 820.
+- **Ya no queda ningún módulo cuyo ancho dependa de los datos.** Ahora son todos constantes,
+  entre 550 y 928 px. El rango se estrechó y el caso raro desapareció.
 
-### PENDIENTE DE DECISIÓN: dos bytes NUL en AgentesSankey.js
+**Qué significa para la revisión en móvil.** Igual que antes, y ahora más uniforme: los módulos
+SVG llevan `viewBox` y `style.css` aplica `svg { max-width: 100%; height: auto }`, así que **el
+fallo esperable es que se encojan, no que se desborden**. Un gráfico de 928 px en un viewport de
+375 px se escala a ~40% y el texto con él: es un problema de **legibilidad**, sistemático y
+único.
 
-`src/charts/AgentesSankey.js` contiene **dos bytes NUL (0x00)**, y es el único archivo del
-repo que los tiene (comprobado comparando el tamaño de cada archivo con y sin NUL; `file(1)` lo
-clasifica como `data` en vez de texto). Forman un par unir/separar coherente:
+La única excepción que queda es `TiposCasos.js`, que usa Observable Plot y no emite `viewBox`.
+*(La otra excepción de antes, el `overflow-x:auto` de `AgentesSankey`, desapareció con el
+archivo. Además aquella nota era incorrecta: el sankey también llevaba `max-width:100%` en línea
+sobre el SVG, así que se encogía igual y el scroll nunca llegaba a activarse.)*
 
-```
-línea 42:  const clave = `${source}\0${target}`;
-línea 59:  const [source, target] = clave.split("\0");
-```
+Arreglarlo es trabajo posterior (gráficos responsivos), no parte de este port.
 
-Como delimitador **funciona**: un NUL no aparece nunca en los datos, así que evita colisiones.
-Lo que no se sabe es si fue deliberado. Dos indicios en contra: el propio archivo usa `||` como
-separador en las líneas 49 y 51 para claves compuestas, y el NUL está escrito como byte crudo y
-no como el escape `\0`, que sería lo normal si se hubiera querido a propósito.
+*(Aquí había una entrada sobre dos bytes NUL en `AgentesSankey.js`, marcada como pendiente de
+decisión. La fusión con `origin/main` borró ese archivo, así que la pregunta se cerró sola y la
+fase 6 ya no tiene ese riesgo. No queda ningún archivo con bytes NUL en el repo.)*
 
-**Consecuencias prácticas, ya observadas:**
+### Cómo comprobar de verdad la cadena de CSS de una página
 
-- `grep` trata el archivo como binario y **oculta las coincidencias** salvo con `-a`. Durante la
-  fase 3 esto dio dos falsos negativos antes de detectarse.
-- Hay que vigilarlo en la **fase 5a** (el byte debe sobrevivir al pasar a `.ts`) y sobre todo en
-  la **fase 6**: hay que comprobar qué hace Prettier con un NUL crudo dentro de un template
-  literal. Si lo normaliza o lo elimina, el sankey deja de agrupar bien y **no falla de forma
-  visible**: `split` sobre un separador que ya no existe devuelve un array de un elemento y los
-  enlaces salen mal.
+Astro decide por hoja si la incrusta o la emite (`build.inlineStylesheets: 'auto'`), y **usa las
+dos vías en este proyecto**:
 
-Se porta tal cual y **no se toca**. Queda marcado para preguntar, según la regla de no decidir
-en silencio sobre cosas que parecen notas o rarezas del autor original.
+| página | hoja extra | cómo llega |
+|---|---|---|
+| `base-de-datos/index` | `caso.css` (6,7 KB) | **en línea**, como `<style>` dentro del HTML |
+| `personas/index` | `conteo.css` (12 KB) | **enlazada**, como `_astro/index.<hash>.css` |
 
-### Astro mete el CSS en línea cuando es pequeño
+**Mirar solo una de las dos da un falso negativo, y las dos veces me pasó:** primero busqué solo
+`<link>` y di `caso.css` por perdida; luego busqué solo dentro del HTML y di `conteo.css` por
+perdida. Las dos estaban bien.
 
-`base-de-datos/index.html` importa `caso.css` además de la hoja global. En el HTML publicado
-**no aparece como un segundo `<link>`**: Astro lo incrusta como `<style>` dentro de la página
-(`build.inlineStylesheets: 'auto'`). Comprobado que las reglas están (`.state-msg`,
-`.site-header`, `.back-link`, `.case-title`, `.crime-card`, `.agent-role`) y que **no** están en
-las páginas que no deben tenerlas.
-
-Anotado porque verificar las cadenas de CSS por página mirando solo las etiquetas `<link>` da un
-falso negativo. Hay que buscar las reglas en el HTML, no el archivo.
+La comprobación correcta es juntar el contenido de los `<style>` en línea **y** el de cada hoja
+enlazada, y buscar en esa unión un selector real de la hoja que se quiere verificar. Conviene
+además comprobar el negativo: que ese selector **no** aparezca en una página que no debería
+tenerlo.
 
 ### Estado verificado antes de la fase 5b
 
