@@ -9,8 +9,8 @@ import '/src/style/lineas.css'
 import '/src/style/sunburst.css'
 import '/src/style/dashboard.css'
 
-import { crearPersonasDashboard } from '../charts/PersonasDashboard.js'
-import { initVistaToggle } from '../ui/vistaToggle.js'
+import { crearPersonasDashboard } from '../scripts/charts/PersonasDashboard.js'
+import { initVistaToggle } from '../scripts/ui/vistaToggle.js'
 
 crearPersonasDashboard()
 

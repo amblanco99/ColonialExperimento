@@ -6,12 +6,19 @@
     "dist-astro",
     "node_modules",
 
-    // Código heredado que se borra en la fase 7. En la fase 5a se mueve a
-    // src/scripts/*.ts y ahí sí entra al chequeo; mientras tanto solo ensucia
-    // la salida con avisos de archivos condenados.
-    "src/charts",
+    // Entradas viejas de Vite. Se borran en la fase 7; hasta entonces alimentan
+    // la build que despliega deploy.yml.
     "src/main",
-    "src/tables",
-    "src/ui"
+
+    // Los 18 módulos movidos en la fase 5a. Van tal cual, sin tipar: en modo
+    // strict dan 845 errores, todos de código heredado (245 ts(7006) de
+    // parámetros con any implícito, 176 ts(2339), 60 ts(18047)…). Ninguno
+    // afecta a los .astro.
+    //
+    // LA FASE 5C QUITA ESTAS TRES LÍNEAS. Mientras estén, `npm run check` no
+    // dice nada sobre estos archivos: sirve solo para las páginas y componentes.
+    "src/scripts/charts",
+    "src/scripts/tables",
+    "src/scripts/ui"
   ]
 }

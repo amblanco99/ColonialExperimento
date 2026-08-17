@@ -4,6 +4,6 @@ import '/src/style/botones.css'
 import '/src/style/paneles-filtro.css'
 import '/src/style/mapa.css'
 
-import {  inicializarDashboard  } from "../charts/TiempoCrimenesMapa.js";
+import {  inicializarDashboard  } from "../scripts/charts/TiempoCrimenesMapa.js";
 
 inicializarDashboard()

@@ -1,6 +1,6 @@
 import '/src/style/style.css'
 import '/src/style/conteo.css'
 
-import { crearConteoInteractivo } from '../charts/TablasConteo.js'
+import { crearConteoInteractivo } from '../scripts/charts/TablasConteo.js'
 
 crearConteoInteractivo()

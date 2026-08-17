@@ -9,6 +9,6 @@ import '/src/style/sunburst.css'
 import '/src/style/lineas.css'
 import '/src/style/dashboard.css'
 
-import { crearOtrosAgentesDashboard } from '../charts/OtrosAgentesDashboard.js'
+import { crearOtrosAgentesDashboard } from '../scripts/charts/OtrosAgentesDashboard.js'
 
 crearOtrosAgentesDashboard()
