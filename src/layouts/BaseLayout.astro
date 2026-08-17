@@ -2,8 +2,8 @@
 import Nav, { type SeccionActiva } from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 
-// Hoja global. En la fase 4b esto pasa a '../styles/global.scss'.
-import '../style/style.css';
+// Hoja global, ya en SCSS. Emite las custom properties del contrato en :root.
+import '../styles/global.scss';
 
 // Notas sobre el <head> de abajo (van aquí y no como comentarios HTML, que se
 // publicarían en las 11 páginas):
@@ -48,6 +48,29 @@ const { title, active, conNav = true } = Astro.props;
   </head>
 
   <body>
+    {/*
+      Solo en desarrollo: comprueba que las 27 custom properties del contrato
+      resuelvan en :root.
+
+      Va aquí arriba, antes de <slot />, a propósito: los módulos se ejecutan en
+      orden de documento, y agentesComun.js lee su paleta al importarse (no al
+      dibujar). Si este chequeo fuera después, correría cuando el gráfico ya ha
+      leído sus colores.
+
+      La guarda está DENTRO del script, no en el marcado: Astro empaqueta las
+      etiquetas <script> aunque el marcado que las envuelve sea condicional.
+      Vite sustituye import.meta.env.DEV por false al compilar para producción,
+      así que el import dinámico se elimina del bundle publicado.
+    */}
+    <script>
+      if (import.meta.env.DEV) {
+        const { verificarVariablesCss } = await import(
+          '../scripts/dev/verificarVariablesCss'
+        );
+        verificarVariablesCss();
+      }
+    </script>
+
     {conNav && <Nav active={active} />}
     <slot />
     <Footer />
