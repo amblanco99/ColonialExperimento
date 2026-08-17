@@ -24,14 +24,16 @@ export async function crearTabla() {
   const casosParam = params.get("casos");
   const vieneDeFiltro = params.toString() !== "";
 
-  const getSiglo = y => {
+  // Implementación local; hay otras tres en el proyecto con contratos distintos
+  // (ver MIGRATION.md). Esta recibe el número que le pasa el llamante.
+  const getSiglo = (y: number) => {
     if (y >= 1500 && y <= 1599) return "Siglo XVI";
     if (y >= 1600 && y <= 1699) return "Siglo XVII";
     if (y >= 1700 && y <= 1799) return "Siglo XVIII";
     if (y >= 1800 && y <= 1899) return "Siglo XIX";
     return null;
   };
-  const getDecada = y => Math.floor(y / 10) * 10;
+  const getDecada = (y: number) => Math.floor(y / 10) * 10;
 
   let idDocumentosPermitidos = null;
   const idCasosPermitidos = casosParam
@@ -61,10 +63,13 @@ export async function crearTabla() {
     idDocumentosPermitidos = new Set(vizFiltrada.map(d => d.ID_Documento));
   }
 
-  const tablaContainer = document.getElementById("tablaContainer");
-  const filtroLugar    = document.getElementById("filtroLugar");
-  const filtroCrimen   = document.getElementById("filtroCrimen");
-  const busqueda       = document.getElementById("busqueda");
+  // Los cuatro están en el marcado de base-de-datos/index.astro. El `!` y los
+  // casts preservan el comportamiento: si alguno faltara, esto seguiría
+  // reventando igual que antes en vez de saltárselo en silencio.
+  const tablaContainer = document.getElementById("tablaContainer")!;
+  const filtroLugar    = document.getElementById("filtroLugar") as HTMLSelectElement;
+  const filtroCrimen   = document.getElementById("filtroCrimen") as HTMLSelectElement;
+  const busqueda       = document.getElementById("busqueda") as HTMLInputElement;
 
   const datosFiltradosPorViz = idCasosPermitidos
     ? dataCrimenes.filter(d => idCasosPermitidos.has(d.ID_Caso))
@@ -153,10 +158,10 @@ export async function crearTabla() {
       </table>
     `;
 
-    tablaContainer.querySelectorAll("tr[data-caso]").forEach(tr => {
+    tablaContainer.querySelectorAll<HTMLElement>("tr[data-caso]").forEach(tr => {
       tr.addEventListener("click", () => {
         const casoId = tr.dataset.caso;
-        window.location.href = `${import.meta.env.BASE_URL}base-de-datos/caso.html?caso=${encodeURIComponent(casoId)}`;
+        window.location.href = `${import.meta.env.BASE_URL}base-de-datos/caso.html?caso=${encodeURIComponent(casoId!)}`;
       });
     });
   }

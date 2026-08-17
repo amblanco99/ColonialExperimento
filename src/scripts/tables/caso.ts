@@ -1,16 +1,20 @@
 import * as d3 from 'd3';
 
+/** Fila cruda de cualquiera de los tres CSV. Se deja abierta a propósito: el
+ *  código accede a columnas por nombre y tiparlas todas sería reescribirlo. */
+type Fila = d3.DSVRowString<string>;
+
 const CSV_CRIMENES = `${import.meta.env.BASE_URL}data/crimenes.csv`;
 const CSV_FUENTES  = `${import.meta.env.BASE_URL}data/Source.csv`;
 const CSV_Personas    = `${import.meta.env.BASE_URL}data/Visualizaciones.csv`;
 
-function buildCasesMap(crimenes, fuentes) {
-  const fuentesIdx = {};
-  fuentes.forEach(f => {
-    fuentesIdx[f.ID_Documento] = f;
+function buildCasesMap(crimenes: Fila[], fuentes: Fila[]) {
+  const fuentesIdx: Record<string, Fila> = {};
+  fuentes.forEach((f: Fila) => {
+    fuentesIdx[f.ID_Documento!] = f;
   });
   const casesMap = new Map();
-  crimenes.forEach(row => {
+  crimenes.forEach((row: Fila) => {
     const caseId = row.ID_Caso;
 
     if (!casesMap.has(caseId)) {
@@ -28,7 +32,7 @@ function buildCasesMap(crimenes, fuentes) {
       id_documento: row.ID_Documento,
       crimen: row.crimen,
       subcrimen: row.subcrimen,
-      fuente: fuentesIdx[row.ID_Documento] ?? null,
+      fuente: fuentesIdx[row.ID_Documento!] ?? null,
     });
   });
   return casesMap;
@@ -42,13 +46,13 @@ export function inicializarCaso() {
   const loading = document.getElementById('loading-msg');
 
   if (!casoId) {
-    loading.textContent = 'No se especificó un caso. Vuelve a la tabla.';
+    loading!.textContent = 'No se especificó un caso. Vuelve a la tabla.';
   } else {
     loadCase(casoId, { main, loading });
   }
 }
 
-async function loadCase(id, { main, loading }) {
+async function loadCase(id: string, { main, loading }: { main: HTMLElement | null; loading: HTMLElement | null }) {
   try {
     const [crimenes, fuentes, personas] = await Promise.all([
       d3.csv(CSV_CRIMENES),
@@ -60,21 +64,23 @@ async function loadCase(id, { main, loading }) {
     const caso = casesMap.get(id);
 
     if (!caso) {
-      loading.textContent = `No se encontró el caso con ID "${id}".`;
+      loading!.textContent = `No se encontró el caso con ID "${id}".`;
       return;
     }
 
-    loading.remove();
+    loading!.remove();
 
-    renderCase(caso, personas, main);
+    renderCase(caso, personas, main!);
 
   } catch (err) {
-    loading.textContent = 'Error al cargar los datos. Revisa la consola.';
+    loading!.textContent = 'Error al cargar los datos. Revisa la consola.';
     console.error(err);
   }
 }
 
-function renderCase(caso, personas, main) {
+// TODO: type — `caso` es la estructura que arma buildCasesMap; tiparla exige
+// modelar todo el mapa de casos y documentos, que es más de lo que toca aquí.
+function renderCase(caso: any, personas: Fila[], main: HTMLElement) {
 
   const header = document.createElement('div');
   header.innerHTML = `
@@ -102,21 +108,21 @@ function renderCase(caso, personas, main) {
   const list = document.createElement('div');
   list.className = 'crimes-list';
 
-  caso.documentos.forEach(doc => {
+  caso.documentos.forEach((doc: any) => {
     const card = document.createElement('article');
     card.className = 'crime-card';
 
 const agentesDocumento = personas.filter(
-  p => String(p.ID_Documento).trim() === String(doc.id_documento).trim()
+  (p: Fila) => String(p.ID_Documento).trim() === String(doc.id_documento).trim()
 );
 
 let agentesHTML = "";
 
 if (agentesDocumento.length > 0) {
 
-  const grupos = {};
+  const grupos: Record<string, Fila[]> = {};
 
-  agentesDocumento.forEach(p => {
+  agentesDocumento.forEach((p: Fila) => {
     const atributo = p.Atributo || "Sin especificar";
 
     if (!grupos[atributo]) {
@@ -144,7 +150,7 @@ if (agentesDocumento.length > 0) {
 
                   ${personasGrupo
                     .map(
-                      p => `
+                      (p: Fila) => `
                         <div class="agent-person">
 
                           <div class="agent-name">

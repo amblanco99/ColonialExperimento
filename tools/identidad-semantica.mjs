@@ -34,8 +34,8 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 
 const raiz = path.resolve(import.meta.dirname, '..');
-const require = createRequire(path.join(raiz, 'package.json'));
-const ts = require('typescript');
+const requerir = createRequire(path.join(raiz, 'package.json'));
+const ts = requerir('typescript');
 
 const argv = process.argv.slice(2);
 if (argv.length < 2) {
@@ -59,8 +59,21 @@ const opciones = {
   },
 };
 
-/** Transpila y normaliza espacios: deja solo lo que se ejecuta. */
-const aJs = (codigo) => ts.transpileModule(codigo, opciones).outputText.replace(/\s+/g, ' ').trim();
+/**
+ * Transpila y normaliza: deja solo lo que se ejecuta.
+ *
+ * Además de colapsar espacios, quita los paréntesis de las flechas de un solo
+ * parámetro. Al anotar `y => …` hay que escribir `(y: number) => …`, y el
+ * transpilador emite `(y) => …`: son el mismo programa, pero comparados como
+ * texto no coinciden. Es la única normalización que se permite aquí, y es
+ * puramente sintáctica.
+ */
+const aJs = (codigo) =>
+  ts
+    .transpileModule(codigo, opciones)
+    .outputText.replace(/\s+/g, ' ')
+    .replace(/\(([A-Za-z_$][\w$]*)\) =>/g, '$1 =>')
+    .trim();
 
 const enRef = (ref, ruta) => execSync(`git show ${ref}:${ruta}`, { cwd: raiz }).toString();
 

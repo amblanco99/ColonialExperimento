@@ -49,8 +49,11 @@ export async function crearPersonasDashboard() {
     .sort((a, b) => b[1] - a[1])
     .map(([nombre]) => nombre);
 
+  // d3.extent devuelve [T | undefined, T | undefined]. Aquí nunca es undefined:
+  // unas líneas más arriba se sale si datosBase está vacío. El `!` deja el
+  // runtime igual.
   const [decadaMin, decadaMax] = d3.extent(datosBase, d => d.década);
-  const DECADAS = d3.range(decadaMin, decadaMax + 10, 10);
+  const DECADAS = d3.range(decadaMin!, decadaMax! + 10, 10);
 
   const estado = {
     generosActivos: new Set(GENEROS),
@@ -64,7 +67,7 @@ export async function crearPersonasDashboard() {
   const wrapperFiltros = filtrosContainer.querySelector(".filtros-chip-panel");
 
   function renderFiltrosTop() {
-    wrapperFiltros.innerHTML = "";
+    wrapperFiltros!.innerHTML = "";
 
     const barraCategorias = document.createElement("div");
     barraCategorias.className = "filtros-barra-selectores";
@@ -95,7 +98,7 @@ export async function crearPersonasDashboard() {
     grupoCrimen.appendChild(selectCrimen);
     barraCategorias.appendChild(grupoCrimen);
 
-    function crearSelectorDecada(etiqueta, campo) {
+    function crearSelectorDecada(etiqueta: string, campo: "decadaDesde" | "decadaHasta") {
       const grupo = document.createElement("div");
       grupo.className = "filtro-selector";
       const label = document.createElement("div");
@@ -106,17 +109,17 @@ export async function crearPersonasDashboard() {
       select.className = "filtro-select-generico";
       DECADAS.forEach(dc => {
         const opt = document.createElement("option");
-        opt.value = dc;
-        opt.textContent = dc;
+        opt.value = dc as unknown as string;
+        opt.textContent = dc as unknown as string;
         select.appendChild(opt);
       });
-      select.value = estado[campo];
+      select.value = estado[campo] as unknown as string;
       select.addEventListener("change", () => {
         const valor = +select.value;
         if (campo === "decadaDesde") {
-          estado.decadaDesde = Math.min(valor, estado.decadaHasta);
+          estado.decadaDesde = Math.min(valor, estado.decadaHasta!);
         } else {
-          estado.decadaHasta = Math.max(valor, estado.decadaDesde);
+          estado.decadaHasta = Math.max(valor, estado.decadaDesde!);
         }
         actualizarTodo();
       });
@@ -126,7 +129,7 @@ export async function crearPersonasDashboard() {
     barraCategorias.appendChild(crearSelectorDecada("Década desde", "decadaDesde"));
     barraCategorias.appendChild(crearSelectorDecada("Década hasta", "decadaHasta"));
 
-    wrapperFiltros.appendChild(barraCategorias);
+    wrapperFiltros!.appendChild(barraCategorias);
 
     const grupoGenero = document.createElement("div");
     const labelGenero = document.createElement("div");
@@ -154,7 +157,7 @@ export async function crearPersonasDashboard() {
       const activo = estado.generosActivos.has(g);
       chip.className = `filtro-chip filtro-chip--genero${activo ? " filtro-chip--activo" : ""}`;
       chip.textContent = g;
-      chip.style.setProperty("--chip-color", PALETA_GENERO[g]);
+      chip.style.setProperty("--chip-color", (PALETA_GENERO as Record<string, string>)[g]);
       chip.addEventListener("click", () => {
         if (estado.generosActivos.has(g)) {
           if (estado.generosActivos.size > 1) estado.generosActivos.delete(g);
@@ -166,14 +169,14 @@ export async function crearPersonasDashboard() {
       filaGenero.appendChild(chip);
     });
     grupoGenero.appendChild(filaGenero);
-    wrapperFiltros.appendChild(grupoGenero);
+    wrapperFiltros!.appendChild(grupoGenero);
   }
 
   function actualizarTodo() {
     renderFiltrosTop();
 
-    const datosFecha = datosBase.filter(d => d.década >= estado.decadaDesde && d.década <= estado.decadaHasta);
-    const decadasRango = d3.range(estado.decadaDesde, estado.decadaHasta + 10, 10);
+    const datosFecha = datosBase.filter(d => d.década >= estado.decadaDesde! && d.década <= estado.decadaHasta!);
+    const decadasRango = d3.range(estado.decadaDesde!, estado.decadaHasta! + 10, 10);
     const generosActivos = GENEROS.filter(g => estado.generosActivos.has(g));
 
     dibujarButterflyGenero({
