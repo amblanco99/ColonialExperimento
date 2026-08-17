@@ -524,6 +524,20 @@ Para cada una de las 10 páginas restantes, además de `npm run check` y `npm ru
   proyecto salen de custom properties vía `leerVariableCss`. Es la única paleta fuera del
   sistema de tokens. **Decidido: no se toca en la migración** — convertirlas cambiaría el
   renderizado y eso no es un port. La fase 4a las deja tal cual.
+- **`getSiglo` recibe un string en un sitio y un número en los otros dos, y funciona por
+  coerción.** `tablageneral.ts:56` y `TablasConteo.ts:44` llaman `getSiglo(+d.Año)`, con el `+`
+  que convierte a número. `ConteoCrimenes.ts:38` llama `getSiglo(d.Año)` a secas, o sea con el
+  string que devuelve `d3.csv`. Da el mismo resultado **solo porque `año <= 1599` convierte el
+  string a número al comparar**.
+
+  Al tipar el módulo se resolvió con un cast, que es lo correcto en un port: preserva el
+  comportamiento exacto y no toca el runtime. Pero el comportamiento sigue siendo implícito y
+  **carga peso**: si algún día `getSiglo` cambia la comparación por algo que no convierta —
+  `===`, un `switch`, `Math.floor(año / 100)` — las otras dos llamadas seguirán bien y **esa
+  sola se romperá en silencio**, devolviendo el siglo equivocado sin lanzar nada.
+
+  Lo limpio es que las tres llamadas pasen un número. Es un cambio de una línea, pero es un
+  cambio de runtime y por eso no entra en la migración.
 - **Evaluar Playwright para pruebas de regresión visual después de la fase 7.** Durante la
   migración se descartó a propósito: es una dependencia nueva y una superficie de fallo nueva a
   mitad del port, y las 9 páginas se revisan en un teléfono de verdad, que además detecta cosas
