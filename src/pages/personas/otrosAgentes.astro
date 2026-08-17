@@ -2,21 +2,20 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 // Cadena de otrosAgentesMain.js, en el mismo orden. Ocho hojas de página; la
-// global la pone BaseLayout. La fase 4b las repunta a src/styles/pages/.
 //
 // dashboard.css NO es un resto: esta página usa siete clases que solo define esa
 // hoja (personas-main-ancho, personas-dashboard-seccion, personas-filtros-top,
 // personas-fila-ancha, personas-grid, personas-columna, personas-tarjeta).
 // personas-fila-ancha, de hecho, solo se usa aquí.
-import '../../style/tooltips.css';
-import '../../style/botones.css';
-import '../../style/graficos.css';
-import '../../style/filtros-chip.css';
-import '../../style/mariposa.css';
-import '../../style/agentes-filtros.css';
-import '../../style/sunburst.css';
-import '../../style/lineas.css';
-import '../../style/dashboard.css';
+import '../../styles/pages/_tooltips.scss';
+import '../../styles/pages/_botones.scss';
+import '../../styles/pages/_graficos.scss';
+import '../../styles/pages/_filtros-chip.scss';
+import '../../styles/pages/_mariposa.scss';
+import '../../styles/pages/_agentes-filtros.scss';
+import '../../styles/pages/_sunburst.scss';
+import '../../styles/pages/_lineas.scss';
+import '../../styles/pages/_dashboard.scss';
 
 // Esta página no lleva conmutador de vistas: no hay .vista-toggle en el marcado
 // y otrosAgentesMain.js tampoco importa vistaToggle.js. Es coherente.

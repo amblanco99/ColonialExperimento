@@ -1,0 +1,44 @@
+// Portado de src/style/tooltips.css sin cambios de reglas.
+// Los tokens llegan por la inyección de astro.config.mjs; el bloque :root
+// lo emite solo abstracts/_root.scss desde global.scss.
+@use 'abstracts/variables' as v;
+
+/* =====================================================
+   TOOLTIPS DE GRÁFICOS (patrón compartido)
+   Caja flotante que sigue al cursor sobre un punto/nodo de un gráfico.
+   La posición (left/top) es inherentemente dinámica y se sigue fijando
+   desde JS; solo la apariencia vive aquí.
+===================================================== */
+.tooltip-grafico {
+  position: absolute;
+  pointer-events: none;
+  background: var(--mapa-tinta-oscura);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: var(--mapa-font);
+  opacity: 0;
+  transition: opacity 0.1s;
+  z-index: v.$z-tooltip;
+  max-width: 220px;
+}
+
+.tooltip-grafico--visible {
+  opacity: 1;
+}
+
+.tooltip-grafico--sans {
+  font-family: v.$font-sistema;
+}
+
+/* Variante neutra (fondo negro semitransparente) usada por los gráficos
+   de personas/agentes fuera del dashboard de mapa. */
+.tooltip-grafico--neutro {
+  background: rgba(0, 0, 0, 0.85);
+  font-family: v.$font-sistema;
+}
+
+.tooltip-grafico--ancho {
+  max-width: 240px;
+}

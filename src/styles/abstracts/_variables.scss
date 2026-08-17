@@ -30,8 +30,13 @@ $font-body: 'Source Sans 3', system-ui, sans-serif;
 $font-mono: 'Source Code Pro', monospace;
 $font-mapa: Georgia, serif;
 
-// Las cinco declaraciones que estaban sin tokenizar usaban esto tal cual.
+// Las declaraciones que estaban sin tokenizar. Son DOS valores distintos, no
+// uno: cuatro usaban `system-ui, sans-serif` y la de sunburst solo `sans-serif`.
+// Se mantienen separados a propósito: unificarlas metería `system-ui` delante en
+// el sunburst y ahí cambia la fuente que se acaba dibujando, que es un cambio
+// visual y no un port.
 $font-sistema: system-ui, sans-serif;
+$font-sans: sans-serif;
 
 // ── Paleta del dashboard "Tiempo y Crímenes" ─────────────
 // Identidad propia (pergamino más cálido, acentos magenta/azul), distinta de
@@ -89,48 +94,3 @@ $z-tooltip: 10;
 $z-panel-filtros: 40;
 $z-panel-flotante: 50;
 $z-topnav: 1000;
-
-// =====================================================
-//   SALIDA: custom properties en :root
-// =====================================================
-// Todo lo que el JS lee tiene que salir de aquí.
-
-:root {
-  --ink: #{$ink};
-  --ink-light: #{$ink-light};
-  --parchment: #{$parchment};
-  --parchment-dark: #{$parchment-dark};
-  --rule: #{$rule};
-  --accent: #{$accent};
-  --accent-dim: #{$accent-dim};
-  --badge-bg: #{$badge-bg};
-
-  --font-display: #{$font-display};
-  --font-body: #{$font-body};
-  --font-mono: #{$font-mono};
-  --mapa-font: #{$font-mapa};
-
-  --mapa-fondo-pergamino: #{$mapa-fondo-pergamino};
-  --mapa-panel: #{$mapa-panel};
-  --mapa-tierra: #{$mapa-tierra};
-  --mapa-borde: #{$mapa-borde};
-  --mapa-tinta-oscura: #{$mapa-tinta-oscura};
-  --mapa-acento-linea: #{$mapa-acento-linea};
-  --mapa-acento-secundario: #{$mapa-acento-secundario};
-  --mapa-tarjeta-fondo: #{$mapa-tarjeta-fondo};
-  --mapa-punto-color: #{$mapa-punto-color};
-
-  // Genera --mapa-serie-1 … --mapa-serie-10 desde el mapa de arriba, en el
-  // mismo orden en que TiempoCrimenesMapa.js las pide.
-  @each $n, $color in $mapa-series {
-    --mapa-serie-#{$n}: #{$color};
-  }
-
-  --genero-mujer: #{$genero-mujer};
-  --genero-hombre: #{$genero-hombre};
-  --genero-sin-info: #{$genero-sin-info};
-
-  --tipo-institucion: #{$tipo-institucion};
-  --tipo-poblacion-completa: #{$tipo-poblacion-completa};
-  --tipo-poblacion-indigena: #{$tipo-poblacion-indigena};
-}

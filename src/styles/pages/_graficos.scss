@@ -1,0 +1,67 @@
+// Portado de src/style/graficos.css sin cambios de reglas.
+// Los tokens llegan por la inyección de astro.config.mjs; el bloque :root
+// lo emite solo abstracts/_root.scss desde global.scss.
+@use 'abstracts/variables' as v;
+
+/* =====================================================
+   ENVOLTORIOS Y SVG GENÉRICOS PARA GRÁFICOS D3 AD-HOC
+   (mariposa, participación en el tiempo, etc.)
+===================================================== */
+.grafico-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.grafico-wrapper--centrado {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.grafico-svg {
+  font-family: v.$font-sistema;
+}
+
+.grafico-vacio {
+  color: var(--ink-light);
+  font-style: italic;
+  padding: 2rem 0;
+}
+
+.agentes-vacio {
+  color: var(--ink-light);
+  font-style: italic;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.grafico-eje-texto {
+  font-size: 11px;
+  fill: #555;
+}
+
+.grafico-serie-linea {
+  fill: none;
+  stroke-width: 2;
+}
+
+.grafico-etiqueta-serie {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.grafico-linea-guia {
+  stroke: #999;
+  stroke-dasharray: 3, 3;
+  opacity: 0;
+}
+
+.grafico-linea-guia--visible {
+  opacity: 1;
+}
+
+.grafico-rect-hit {
+  fill: transparent;
+  cursor: crosshair;
+}

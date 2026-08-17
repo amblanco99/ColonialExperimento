@@ -10,6 +10,8 @@
 // Se carga en BaseLayout, así que la reciben las 11 páginas.
 
 @use 'abstracts/variables' as v;
+// El único sitio donde se emite el bloque :root. Ver abstracts/_root.scss.
+@use 'abstracts/root';
 @use 'base/reset';
 @use 'base/typography';
 

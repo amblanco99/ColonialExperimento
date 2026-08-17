@@ -1,0 +1,56 @@
+// Portado de src/style/mariposa.css sin cambios de reglas.
+// Los tokens llegan por la inyección de astro.config.mjs; el bloque :root
+// lo emite solo abstracts/_root.scss desde global.scss.
+@use 'abstracts/variables' as v;
+
+/* =====================================================
+   GRÁFICOS "MARIPOSA" (AgentesButterfly.js / ButterflyGenero.js) — SVG
+===================================================== */
+.mariposa-eje-tick-linea {
+  stroke: #e8e8e8;
+}
+
+.mariposa-eje-tick-texto {
+  font-size: 10px;
+  fill: #999;
+}
+
+.mariposa-linea-central {
+  stroke: var(--rule, #c8b89a);
+}
+
+.mariposa-etiqueta-fila {
+  font-size: 10.5px;
+  fill: var(--ink-light, #4a3f35);
+}
+
+.mariposa-valor-texto {
+  font-size: 11px;
+  fill: var(--ink-light, #4a3f35);
+}
+
+.mariposa-encabezado-lado {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mariposa-barra-dato {
+  cursor: default;
+}
+
+.mariposa-fila-boton:hover .mariposa-etiqueta-fila {
+  fill: var(--accent, #7a3b1e);
+  font-weight: 700;
+}
+
+.mariposa-btn-volver {
+  display: inline-block;
+  margin-bottom: 6px;
+  background: none;
+  border: none;
+  color: var(--accent, #7a3b1e);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}

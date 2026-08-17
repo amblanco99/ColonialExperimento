@@ -162,6 +162,42 @@ un port. **La fase 4a no los toca**: no entran en el contrato, no se les busca e
 resuelvan a un valor no vacío en `:root` y lanza error si alguna falla. Corre en todas las
 páginas en modo dev. Convierte el fallo invisible en un error duro.
 
+**El build NO detecta que falte un token. Este chequeo es lo único que lo hace.** Comprobado a
+propósito en la fase 4a: se quitó `7: #3ab8b0` del mapa `$mapa-series`, se compiló y
+`npm run build:astro` **salió con exit 0, sin un solo aviso**, publicando nueve series en vez de
+diez. Sass no se queja (el `@each` simplemente itera sobre menos entradas), Astro tampoco, y el
+CSS resultante es válido. El gráfico habría usado el color hardcodeado de `SERIE_FALLBACK` sin
+que nada lo dijera. El chequeo sí la cazó:
+
+```
+[variables-css] 1 de 27 propiedades del contrato NO resuelven en :root.
+  · --mapa-serie-7
+```
+
+O sea: un build verde no dice nada sobre el contrato. Si alguna vez se quita este chequeo, se
+pierde la única señal que existe.
+
+**Trampa al añadir scripts solo de desarrollo.** La guarda tiene que ir **dentro** del
+`<script>`, no en el marcado que lo envuelve:
+
+```astro
+<!-- MAL: Astro empaqueta el script igual y acaba en producción -->
+{import.meta.env.DEV && <script>…</script>}
+
+<!-- BIEN: Vite sustituye DEV por false y elimina el import dinámico -->
+<script>
+  if (import.meta.env.DEV) {
+    const { verificarVariablesCss } = await import('../scripts/dev/verificarVariablesCss');
+    verificarVariablesCss();
+  }
+</script>
+```
+
+Astro recoge y empaqueta las etiquetas `<script>` de un componente **aunque el marcado que las
+rodea sea condicional**: la condición decide si se renderiza la etiqueta, no si el módulo entra
+al bundle. Se detectó a tiempo en la fase 4a, pero cualquiera que añada otro script de
+desarrollo se va a topar con lo mismo.
+
 ---
 
 ## 4. Otros puntos que no son mecánicos
@@ -551,6 +587,29 @@ esa página hoy no tiene: un cambio visual, no un port. Por eso el layout acepta
 
 Si algún día se decide que `caso` también lleve nav, es quitar esa prop de la página — pero es
 un cambio de diseño, no de migración.
+
+### Un solo :root, y por qué está separado de los tokens
+
+`astro.config.mjs` inyecta `@use "abstracts/variables"` en cada `.scss` que no esté bajo
+`abstracts/`. Mientras `_variables.scss` emitía también el bloque `:root`, esa inyección hacía
+que **cada hoja de página publicara su propia copia de las 27 propiedades**. Comprobado con una
+página de prueba con dos hojas propias: acababa con dos bloques `:root` idénticos, el de
+`global.scss` y el suyo.
+
+El problema no es el peso. Es que con varias fuentes declarando lo mismo **decide el orden de la
+cascada**, y eso no se ve hasta que alguien edita una de ellas y el resultado depende de en qué
+bundle acabó.
+
+Por eso el `:root` vive en `abstracts/_root.scss`, que solo carga `global.scss`. La inyección
+automática lleva únicamente variables SCSS, que no producen CSS. Verificado después de mover las
+14 hojas: **un bloque `:root` por página**, en las 11.
+
+### Dos valores distintos de fuente, no uno
+
+Al tokenizar las cinco declaraciones sueltas apareció que no eran el mismo valor: cuatro decían
+`system-ui, sans-serif` y la de `sunburst` solo `sans-serif`. Unificarlas habría metido
+`system-ui` delante en el sunburst, o sea **habría cambiado la fuente que se dibuja**. Se
+mantienen separadas: `$font-sistema` y `$font-sans`.
 
 ### Cómo comprobar de verdad la cadena de CSS de una página
 
