@@ -15,13 +15,16 @@ const tipoCaso =
   },
   marks: [
     Plot.barY(
-      MujeresMencionadas.filter(d => d.FechaInicial > 0 && d.FechaInicial < 1901), 
+      // FechaInicial llega como string desde d3.csv y se compara con números;
+      // funciona por la conversión que hace JS al comparar. Se castea para
+      // dejarlo tal cual: meter Number() aquí sería cambiar el runtime.
+      MujeresMencionadas.filter(d => (d.FechaInicial as unknown as number) > 0 && (d.FechaInicial as unknown as number) < 1901), 
       Plot.groupX(
         { y: "count" }, 
         {
           x: d => {
-            const siglo = Math.floor((d.FechaInicial - 1) / 100) + 1;
-            const romanos = {16: "XVI", 17: "XVII", 18: "XVIII", 19: "XIX"};
+            const siglo = Math.floor(((d.FechaInicial as unknown as number) - 1) / 100) + 1;
+            const romanos: Record<number, string> = {16: "XVI", 17: "XVII", 18: "XVIII", 19: "XIX"};
             return romanos[siglo];
           },
           fill: "TipoProceso",
@@ -40,6 +43,6 @@ const tipoCaso =
 });
 
   document
-    .getElementById("tipoCaso")
+    .getElementById("tipoCaso")!
     .append(tipoCaso);
 }

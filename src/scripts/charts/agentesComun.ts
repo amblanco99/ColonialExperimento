@@ -36,10 +36,9 @@ export const ATRIBUTOS_ORDEN = ["Víctima", "Perpetrador", "Cómplice"];
 
 export const SIGLOS = ["Siglo XVI", "Siglo XVII", "Siglo XVIII", "Siglo XIX"];
 
-// OJO: ConteoCrimenes.ts:38 llama a esta función con d.Año sin convertir, o sea
-// con un string. Funciona porque JS convierte el string al comparar con <=. Al
-// tipar ese módulo hay que resolverlo con un cast, no metiéndole un `+`, que
-// sería tocar el runtime.
+// Único llamante: TablasConteo.ts:44, que pasa `+d.Año`, o sea un número.
+// (Hay otras tres implementaciones locales de getSiglo en el proyecto; ver
+// MIGRATION.md, trabajo posterior.)
 export function getSiglo(año: number): string {
   if (año <= 1599) return "Siglo XVI";
   if (año <= 1699) return "Siglo XVII";
