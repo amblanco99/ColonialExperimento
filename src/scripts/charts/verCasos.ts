@@ -30,5 +30,5 @@ export function irATablasFiltradas(overrides = {}) {
     params.set("fecha", overrides.fecha);
     params.set("escala", overrides.escala || "decada");
   }
-  window.location.href = `../base-de-datos/index.html?${params.toString()}`;
+  window.location.href = `${import.meta.env.BASE_URL}base-de-datos/index.html?${params.toString()}`;
 }

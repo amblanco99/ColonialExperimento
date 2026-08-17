@@ -405,6 +405,19 @@ D3 corre solo en el navegador, importado desde un `<script>` a nivel de página,
 fijado en `node-version: 20`. Se sube a 22 en el pre-vuelo, no en el cambio final: si no, CI
 instalaría bien mientras `build` siga siendo Vite y reventaría justo al hacer el cambio.
 
+### OJO: `astro check` vale menos de lo que parece hasta la fase 5c
+
+Desde la fase 5a, `tsconfig.json` excluye `src/scripts/charts`, `src/scripts/tables` y
+`src/scripts/ui`. Los 18 módulos se renombraron a `.ts` sin tipar, y en modo strict dan **845
+errores** — 245 `ts(7006)` de parámetros con `any` implícito, 176 `ts(2339)`, 60 `ts(18047)`,
+57 `ts(2345)`, etc. Ninguno afecta a los `.astro`.
+
+Mientras esas tres líneas estén en los excludes, **un `npm run check -> exit 0` solo dice que
+las páginas y los componentes están bien; no dice nada de los 18 módulos**. En la fase 4 sí
+cubría todo lo que existía; ahora no. La fase 5c quita los excludes y le devuelve el alcance.
+
+Si alguien lee un check verde entre 5a y 5c como "todo tipado y correcto", se equivoca.
+
 ### Antes de la fase 4a: el juego de breakpoints es 600/640/720/768/900
 
 Al extraer las `$bp-*` a `_variables.scss` hay que partir de **cinco** valores, no de cuatro.

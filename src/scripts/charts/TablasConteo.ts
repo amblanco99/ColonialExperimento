@@ -20,7 +20,7 @@ function irATabla(filtros) {
   Object.entries(filtros).forEach(([clave, valor]) => {
     if (valor) params.set(clave, valor);
   });
-  window.location.href = `../base-de-datos/index.html?${params.toString()}`;
+  window.location.href = `${import.meta.env.BASE_URL}base-de-datos/index.html?${params.toString()}`;
 }
 
 function resumirGrupo(filas) {
@@ -63,8 +63,8 @@ export async function crearConteoInteractivo() {
   if (!container) return;
 
   const [datos, casos] = await Promise.all([
-    d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`),
-    d3.csv(`${import.meta.env.BASE_URL}/data/Casos.csv`),
+    d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`),
+    d3.csv(`${import.meta.env.BASE_URL}data/Casos.csv`),
   ]);
 
   const personas = datos.filter(d => d.Agente === "Persona" && d.ID_Agente);
@@ -99,8 +99,8 @@ export async function crearConteoInteractivo() {
   botonExpandir.textContent = "Expandir";
 
   dibujarToggle(encabezado, [
-    { label: "Personas", color: "var(--genero-mujer)", texto: "var(--ink)", destino: "personas.html", vista: vistaPersonas },
-    { label: "Otros agentes", color: "var(--tipo-institucion)", texto: "#fff", destino: "otrosAgentes.html", vista: vistaAgentes },
+    { label: "Personas", color: "var(--genero-mujer)", texto: "var(--ink)", destino: `${import.meta.env.BASE_URL}personas/personas.html`, vista: vistaPersonas },
+    { label: "Otros agentes", color: "var(--tipo-institucion)", texto: "#fff", destino: `${import.meta.env.BASE_URL}personas/otrosAgentes.html`, vista: vistaAgentes },
   ], opcion => {
     botonExpandir.href = opcion.destino;
     botonExpandir.style.setProperty("--cta-color", opcion.color);

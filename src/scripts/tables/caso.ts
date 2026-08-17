@@ -1,8 +1,8 @@
 import * as d3 from 'd3';
 
-const CSV_CRIMENES = `${import.meta.env.BASE_URL}/data/crimenes.csv`;
-const CSV_FUENTES  = `${import.meta.env.BASE_URL}/data/Source.csv`;
-const CSV_Personas    = `${import.meta.env.BASE_URL}/data/Visualizaciones.csv`;
+const CSV_CRIMENES = `${import.meta.env.BASE_URL}data/crimenes.csv`;
+const CSV_FUENTES  = `${import.meta.env.BASE_URL}data/Source.csv`;
+const CSV_Personas    = `${import.meta.env.BASE_URL}data/Visualizaciones.csv`;
 
 function buildCasesMap(crimenes, fuentes) {
   const fuentesIdx = {};

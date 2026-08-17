@@ -7,7 +7,7 @@ import { dibujarDelitosSunburstGenero } from "./DelitosSunburstGenero.js";
 const GENEROS = ["Mujer", "Hombre", "Sin información"];
 
 export async function crearPersonasDashboard() {
-  const raw = await d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`);
+  const raw = await d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`);
 
   const filtrosContainer = document.getElementById("personasFiltrosTop");
   if (!filtrosContainer) return;

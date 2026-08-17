@@ -8,7 +8,7 @@ export async function crearOtrosAgentesDashboard() {
   const filtrosContainer = document.getElementById("agentesFiltrosTop");
   if (!filtrosContainer) return;
 
-  const raw = await d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`);
+  const raw = await d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`);
 
   const vistos = new Set();
   const eventos = raw

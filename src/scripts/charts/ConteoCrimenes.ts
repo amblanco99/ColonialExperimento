@@ -5,7 +5,7 @@ export async function crearConteoCrimenes() {
   const container = document.getElementById("conteoCrimenes");
   if (!container) return;
 
-  const datos = await d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`);
+  const datos = await d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`);
 
   const getSiglo = (year) => {
     const y = +year;

@@ -27,10 +27,10 @@ export async function inicializarDashboard() {
   const COLORES_SERIE = SERIE_FALLBACK.map((valor, i) => leerVariableCss(`--mapa-serie-${i + 1}`, valor));
 
   const [NuevaGranadaRaw, rawViz, rawLugar, rawLinaje] = await Promise.all([
-    d3.json(`${import.meta.env.BASE_URL}/data/NuevaGranada.json`),
-    d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`),
-    d3.csv(`${import.meta.env.BASE_URL}/data/Lugar.csv`),
-    d3.csv(`${import.meta.env.BASE_URL}/data/Linaje.csv`),
+    d3.json(`${import.meta.env.BASE_URL}data/NuevaGranada.json`),
+    d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`),
+    d3.csv(`${import.meta.env.BASE_URL}data/Lugar.csv`),
+    d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`),
   ]);
 
   const NuevaGranada = rewind(NuevaGranadaRaw, { reverse: true });
@@ -130,7 +130,7 @@ export async function inicializarDashboard() {
     if (overrides.casos) {
       const params = new URLSearchParams();
       params.set("casos", overrides.casos.join(","));
-      window.location.href = `../base-de-datos/index.html?${params.toString()}`;
+      window.location.href = `${import.meta.env.BASE_URL}base-de-datos/index.html?${params.toString()}`;
       return;
     }
 
@@ -148,7 +148,7 @@ export async function inicializarDashboard() {
       params.set("fecha", fecha);
       params.set("escala", escala);
     }
-    window.location.href = `../base-de-datos/index.html?${params.toString()}`;
+    window.location.href = `${import.meta.env.BASE_URL}base-de-datos/index.html?${params.toString()}`;
   }
 
   function crearBotonVerCasos() {

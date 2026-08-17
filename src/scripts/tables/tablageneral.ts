@@ -8,8 +8,8 @@ export async function crearTabla() {
   }
 
   const [dataCrimenes, dataViz] = await Promise.all([
-    d3.csv(`${import.meta.env.BASE_URL}/data/crimenes.csv`),
-    d3.csv(`${import.meta.env.BASE_URL}/data/Visualizaciones.csv`)
+    d3.csv(`${import.meta.env.BASE_URL}data/crimenes.csv`),
+    d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`)
   ]);
 
   const params     = new URLSearchParams(window.location.search);
@@ -111,7 +111,7 @@ export async function crearTabla() {
       contenedor.innerHTML = `
         <span class="origen-filtro">Filtrado desde visualización →</span>
         ${etiquetas.map(e => `<span class="badge-filtro">${e}</span>`).join("")}
-        <button onclick="window.location.href='index.html'">✕ Limpiar</button>
+        <button onclick="window.location.href='${import.meta.env.BASE_URL}base-de-datos/index.html'">✕ Limpiar</button>
       `;
     }
   }
@@ -156,7 +156,7 @@ export async function crearTabla() {
     tablaContainer.querySelectorAll("tr[data-caso]").forEach(tr => {
       tr.addEventListener("click", () => {
         const casoId = tr.dataset.caso;
-        window.location.href = `caso.html?caso=${encodeURIComponent(casoId)}`;
+        window.location.href = `${import.meta.env.BASE_URL}base-de-datos/caso.html?caso=${encodeURIComponent(casoId)}`;
       });
     });
   }
