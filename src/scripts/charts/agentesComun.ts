@@ -1,4 +1,4 @@
-function leerVariableCss(nombre, fallback) {
+function leerVariableCss(nombre: string, fallback: string): string {
   const valor = getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
   return valor || fallback;
 }
@@ -11,7 +11,7 @@ export const PALETA_TIPO = {
   "Población Indígena Completa": leerVariableCss("--tipo-poblacion-indigena", "#7a3b1e"),
 };
 
-export function grupoDeTipo(tipo) {
+export function grupoDeTipo(tipo: string): string {
   return tipo === "Institución" ? "Instituciones" : "Poblaciones";
 }
 
@@ -36,7 +36,11 @@ export const ATRIBUTOS_ORDEN = ["Víctima", "Perpetrador", "Cómplice"];
 
 export const SIGLOS = ["Siglo XVI", "Siglo XVII", "Siglo XVIII", "Siglo XIX"];
 
-export function getSiglo(año) {
+// OJO: ConteoCrimenes.ts:38 llama a esta función con d.Año sin convertir, o sea
+// con un string. Funciona porque JS convierte el string al comparar con <=. Al
+// tipar ese módulo hay que resolverlo con un cast, no metiéndole un `+`, que
+// sería tocar el runtime.
+export function getSiglo(año: number): string {
   if (año <= 1599) return "Siglo XVI";
   if (año <= 1699) return "Siglo XVII";
   if (año <= 1799) return "Siglo XVIII";

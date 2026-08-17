@@ -10,15 +10,29 @@
     // la build que despliega deploy.yml.
     "src/main",
 
-    // Los 18 módulos movidos en la fase 5a. Van tal cual, sin tipar: en modo
-    // strict dan 845 errores, todos de código heredado (245 ts(7006) de
-    // parámetros con any implícito, 176 ts(2339), 60 ts(18047)…). Ninguno
-    // afecta a los .astro.
+    // Módulos pendientes de tipar en la fase 5c, de más simple a más complejo.
+    // El número es la cuenta de errores en modo strict al empezar.
+    // Cada commit de 5c quita una línea de aquí.
     //
-    // LA FASE 5C QUITA ESTAS TRES LÍNEAS. Mientras estén, `npm run check` no
-    // dice nada sobre estos archivos: sirve solo para las páginas y componentes.
-    "src/scripts/charts",
-    "src/scripts/tables",
-    "src/scripts/ui"
+    // Mientras quede alguna, un `npm run check -> exit 0` NO cubre esos
+    // archivos. Cuando la lista esté vacía, el chequeo vuelve a significar lo
+    // que significaba en la fase 4.
+    "src/scripts/charts/TiposCasos.ts", // 4
+    "src/scripts/charts/ConteoCrimenes.ts", // 5
+    "src/scripts/ui/vistaToggle.ts", // 12
+    "src/scripts/charts/PersonasDashboard.ts", // 17
+    "src/scripts/charts/verCasos.ts", // 17
+    "src/scripts/tables/tablageneral.ts", // 18
+    "src/scripts/tables/caso.ts", // 21
+    "src/scripts/charts/Linaje.ts", // 38
+    "src/scripts/charts/OtrosAgentesDashboard.ts", // 41
+    "src/scripts/charts/AgentesButterfly.ts", // 49
+    "src/scripts/charts/ButterflyGenero.ts", // 52
+    "src/scripts/charts/ParticipacionTiempo.ts", // 52
+    "src/scripts/charts/ParticipacionTiempoAgentes.ts", // 52
+    "src/scripts/charts/TablasConteo.ts", // 52
+    "src/scripts/charts/InstitucionesAtributo.ts", // 78
+    "src/scripts/charts/DelitosSunburstGenero.ts", // 80
+    "src/scripts/charts/TiempoCrimenesMapa.ts" // 253
   ]
 }
