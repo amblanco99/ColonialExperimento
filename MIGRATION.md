@@ -405,6 +405,38 @@ D3 corre solo en el navegador, importado desde un `<script>` a nivel de página,
 fijado en `node-version: 20`. Se sube a 22 en el pre-vuelo, no en el cambio final: si no, CI
 instalaría bien mientras `build` siga siendo Vite y reventaría justo al hacer el cambio.
 
+### Dos idioms para el `any` de la fase 5c
+
+Tipar los 18 módulos deja dos escapes recurrentes. Se escriben **siempre igual**, para que el
+trabajo posterior de tipado tenga una sola cosa que buscar en vez de diez variantes.
+
+**1. Nodos de jerarquía que d3 muta.** El patrón del árbol colapsable de d3 le cuelga campos
+propios a los nodos (`_children` para plegar, `x0`/`y0` para la posición anterior) y reasigna
+`id`. Nada de eso está en `HierarchyNode`. Aparece en `Linaje` y en `DelitosSunburstGenero`, y
+puede salir en cualquier otro que use `d3.hierarchy` o `d3.stratify`:
+
+```ts
+// TODO: type — nodo de jerarquía de d3 mutado por el patrón del árbol
+// colapsable: se le cuelgan _children, x0 e y0 y se le reasigna id, que no
+// están en HierarchyNode. Ver MIGRATION.md.
+type NodoMutable = any;
+```
+
+**2. Cadenas de selección y transición de d3.** Los genéricos de `Selection` y `Transition` no
+cuadran cuando el dato es un nodo mutado, y salen como `ts(2769) no overload matches this call`.
+No se pelean: se anota la cadena y se sigue.
+
+```ts
+// TODO: type — genéricos de selección/transición de d3. Ver MIGRATION.md.
+type SeleccionD3 = any;
+```
+
+**Búsqueda para el trabajo posterior:** `grep -rn "NodoMutable\|SeleccionD3" src/scripts/`.
+
+La regla de fondo no cambia: el `any` es para donde los genéricos de d3 se ponen feos, no para
+ahorrarse una anotación evidente. En `Linaje`, 18 de 38 errores venían de la mutación de nodos
+—una sola causa— y los otros 20 son anotaciones normales que sí se escriben.
+
 ### OJO: `astro check` vale menos de lo que parece hasta la fase 5c
 
 Desde la fase 5a, `tsconfig.json` excluye `src/scripts/charts`, `src/scripts/tables` y
