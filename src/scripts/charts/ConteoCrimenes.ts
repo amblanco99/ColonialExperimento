@@ -7,7 +7,9 @@ export async function crearConteoCrimenes() {
 
   const datos = await d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`);
 
-  const getSiglo = (year) => {
+  // Implementación local, distinta de la exportada en agentesComun: esta recibe
+  // el string crudo de d3.csv y convierte dentro. Ver MIGRATION.md.
+  const getSiglo = (year: string) => {
     const y = +year;
     if (y <= 1599) return "Siglo XVI";
     if (y >= 1600 && y <= 1699) return "Siglo XVII";
@@ -16,8 +18,8 @@ export async function crearConteoCrimenes() {
     return "Siglo XVI";
   };
 
-  function contarCrimenesUnicos(filas) {
-    const set = new Set();
+  function contarCrimenesUnicos(filas: d3.DSVRowString<string>[]) {
+    const set = new Set<string>();
     filas.forEach(d => {
       if (d.ID_Documento && d.Código) {
         set.add(`${d.ID_Documento}|${d.Código}`);
@@ -33,7 +35,7 @@ export async function crearConteoCrimenes() {
     "Siglo XIX"
   ];
 
-  const estructuraCrimenes = {};
+  const estructuraCrimenes: Record<string, number> = {};
   siglosInteres.forEach(siglo => {
     const crimenesSiglo = datos.filter(d => getSiglo(d.Año) === siglo);
     estructuraCrimenes[siglo] = contarCrimenesUnicos(crimenesSiglo);
