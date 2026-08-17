@@ -14,6 +14,7 @@
     "build:astro": "astro build",
     "preview:astro": "astro preview",
     "check": "astro check",
+    "identidad": "node tools/identidad-semantica.mjs",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

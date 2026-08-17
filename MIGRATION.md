@@ -529,10 +529,18 @@ Para cada una de las 10 páginas restantes, además de `npm run check` y `npm ru
   `tablageneral.ts:27`, `ConteoCrimenes.ts:10` y `TiempoCrimenesMapa.ts:40`. La exportada tiene
   **un solo llamante**, `TablasConteo.ts:44`.
 
-  Las implementaciones no son idénticas: la de `agentesComun` recibe un número y compara
-  directamente, mientras que las de `ConteoCrimenes` y `tablageneral` reciben el string crudo de
-  `d3.csv` y hacen `+year` dentro. Mismo resultado, distinto contrato. Unificarlas es trabajo
-  posterior: son cuatro llamadas y un borrado, pero toca runtime.
+  **Candidata clara a consolidación, pero no ahora.** Las cuatro no tienen el mismo contrato:
+
+  | dónde | recibe | convierte dentro |
+  |---|---|---|
+  | `agentesComun.ts:43` (exportada) | número | no |
+  | `ConteoCrimenes.ts:10` | string de `d3.csv` | sí (`+year`) |
+  | `tablageneral.ts:27` | string de `d3.csv` | sí |
+  | `TiempoCrimenesMapa.ts:40` | número | no, y **devuelve `null`** fuera de rango en vez del siglo XVI |
+
+  O sea que no es un copia-pega: la de `TiempoCrimenesMapa` **no se comporta igual** en los
+  bordes. Unificarlas exige decidir cuál es el contrato bueno y revisar los llamantes, y eso es
+  un cambio de runtime. Fuera de la migración.
 
 - **Evaluar Playwright para pruebas de regresión visual después de la fase 7.** Durante la
   migración se descartó a propósito: es una dependencia nueva y una superficie de fallo nueva a
