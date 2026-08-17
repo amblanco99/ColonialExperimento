@@ -529,7 +529,7 @@ Para cada una de las 10 páginas restantes, además de `npm run check` y `npm ru
   `tablageneral.ts:27`, `ConteoCrimenes.ts:10` y `TiempoCrimenesMapa.ts:40`. La exportada tiene
   **un solo llamante**, `TablasConteo.ts:44`.
 
-  **Candidata clara a consolidación, pero no ahora.** Las cuatro no tienen el mismo contrato:
+  **Las cuatro NO son equivalentes. Unificarlas a ciegas cambia lo que dibuja el mapa.**
 
   | dónde | recibe | convierte dentro |
   |---|---|---|
@@ -538,9 +538,16 @@ Para cada una de las 10 páginas restantes, además de `npm run check` y `npm ru
   | `tablageneral.ts:27` | string de `d3.csv` | sí |
   | `TiempoCrimenesMapa.ts:40` | número | no, y **devuelve `null`** fuera de rango en vez del siglo XVI |
 
-  O sea que no es un copia-pega: la de `TiempoCrimenesMapa` **no se comporta igual** en los
-  bordes. Unificarlas exige decidir cuál es el contrato bueno y revisar los llamantes, y eso es
-  un cambio de runtime. Fuera de la migración.
+  La divergencia importante está en la última fila y no es de estilo: **con un año fuera de
+  1500-1899, `TiempoCrimenesMapa` devuelve `null` y `agentesComun` devuelve `"Siglo XVI"`.**
+
+  En el mapa ese `null` es significativo: los registros sin siglo válido se descartan en vez de
+  amontonarse en el siglo XVI. Si alguien "consolida" las cuatro quedándose con la versión de
+  `agentesComun`, esos registros dejan de descartarse y **el mapa empieza a dibujar datos que
+  hoy no dibuja**, sin que falle nada ni cambie ningún test.
+
+  Así que esto no es una limpieza mecánica. Hay que decidir cuál es el contrato correcto para
+  cada llamante y revisarlos uno a uno. Es un cambio de runtime y queda fuera de la migración.
 
 - **Evaluar Playwright para pruebas de regresión visual después de la fase 7.** Durante la
   migración se descartó a propósito: es una dependencia nueva y una superficie de fallo nueva a
