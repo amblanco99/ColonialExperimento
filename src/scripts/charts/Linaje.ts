@@ -1,5 +1,13 @@
 import * as d3 from "d3";
 
+// TODO: type — nodo de jerarquía de d3 mutado por el patrón del árbol
+// colapsable: se le cuelgan _children, x0 e y0 y se le reasigna id, que no
+// están en HierarchyNode. Ver MIGRATION.md.
+type NodoMutable = any;
+
+// TODO: type — genéricos de selección/transición de d3. Ver MIGRATION.md.
+type SeleccionD3 = any;
+
 export async function crearLinaje() {
 
   const datos = await d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`);
@@ -11,8 +19,8 @@ export async function crearLinaje() {
   const marginLeft = 80;
 
   const stratifier = d3.stratify()
-    .id(d => String(d.Path))
-    .parentId(d => {
+    .id((d: any) => String(d.Path))
+    .parentId((d: any) => {
 
       const path = String(d.Path);
 
@@ -23,7 +31,7 @@ export async function crearLinaje() {
         : null;
     });
 
-  const root = stratifier(datos);
+  const root: NodoMutable = stratifier(datos);
 
   const dx = 18;
 
@@ -33,9 +41,9 @@ export async function crearLinaje() {
 
   const tree = d3.tree().nodeSize([dx, dy]);
 
-  const diagonal = d3.linkHorizontal()
-    .x(d => d.y)
-    .y(d => d.x);
+  const diagonal = (d3.linkHorizontal() as SeleccionD3)
+    .x((d: NodoMutable) => d.y)
+    .y((d: NodoMutable) => d.x);
 
   const svg = d3.create("svg")
     .attr("width", width)
@@ -54,7 +62,7 @@ export async function crearLinaje() {
     .attr("cursor", "pointer")
     .attr("pointer-events", "all");
 
-  function update(event, source) {
+  function update(event: MouseEvent | null, source: NodoMutable) {
 
     const duration = event?.altKey
       ? 2500
@@ -66,10 +74,10 @@ export async function crearLinaje() {
 
     tree(root);
 
-    let left = root;
-    let right = root;
+    let left: NodoMutable = root;
+    let right: NodoMutable = root;
 
-    root.eachBefore(node => {
+    root.eachBefore((node: NodoMutable) => {
 
       if (node.x < left.x) left = node;
 
@@ -85,15 +93,18 @@ export async function crearLinaje() {
       .duration(duration)
       .attr("height", height)
       .attr(
+        // d3 convierte el array a "a,b,c,d" al asignarlo, que es un viewBox
+        // válido. El cast lo deja igual; construir la cadena a mano sería
+        // cambiar el runtime.
         "viewBox",
-        [-marginLeft, left.x - marginTop, width, height]
+        [-marginLeft, left.x - marginTop, width, height] as unknown as string
       );
 
-    const node = gNode
+    const node : SeleccionD3 = gNode
       .selectAll("g")
-      .data(nodes, d => d.id);
+      .data(nodes, (d: NodoMutable) => d.id);
 
-    const nodeEnter = node.enter()
+    const nodeEnter : SeleccionD3 = node.enter()
       .append("g")
       .attr(
         "transform",
@@ -101,7 +112,7 @@ export async function crearLinaje() {
       )
       .attr("fill-opacity", 0)
       .attr("stroke-opacity", 0)
-      .on("click", (event, d) => {
+      .on("click", (event: MouseEvent, d: NodoMutable) => {
 
         d.children =
           d.children
@@ -115,7 +126,7 @@ export async function crearLinaje() {
       .attr("r", 3.5)
       .attr(
         "fill",
-        d => d._children
+        (d: NodoMutable) => d._children
           ? "#003f5c"
           : "#ebf0fa"
       )
@@ -126,13 +137,13 @@ export async function crearLinaje() {
       .attr("dy", "0.31em")
       .attr(
         "x",
-        d => d._children ? -8 : 8
+        (d: NodoMutable) => d._children ? -8 : 8
       )
       .attr(
         "text-anchor",
-        d => d._children ? "end" : "start"
+        (d: NodoMutable) => d._children ? "end" : "start"
       )
-      .text(d => d.data.Nombre)
+      .text((d: NodoMutable) => d.data.Nombre)
       .attr("stroke-linejoin", "round")
       .attr("stroke-width", 3)
       .attr("stroke", "white")
@@ -142,7 +153,7 @@ export async function crearLinaje() {
       .transition(transition)
       .attr(
         "transform",
-        d => `translate(${d.y},${d.x})`
+        (d: NodoMutable) => `translate(${d.y},${d.x})`
       )
       .attr("fill-opacity", 1)
       .attr("stroke-opacity", 1);
@@ -157,11 +168,11 @@ export async function crearLinaje() {
       .attr("fill-opacity", 0)
       .attr("stroke-opacity", 0);
 
-    const link = gLink
+    const link : SeleccionD3 = gLink
       .selectAll("path")
-      .data(links, d => d.target.id);
+      .data(links, (d: NodoMutable) => d.target.id);
 
-    const linkEnter = link.enter()
+    const linkEnter : SeleccionD3 = link.enter()
       .append("path")
       .attr("d", () => {
 
@@ -184,7 +195,7 @@ export async function crearLinaje() {
       .transition(transition)
       .remove();
 
-    root.eachBefore(d => {
+    root.eachBefore((d: NodoMutable) => {
 
       d.x0 = d.x;
       d.y0 = d.y;
@@ -194,7 +205,7 @@ export async function crearLinaje() {
   root.x0 = dy / 2;
   root.y0 = 0;
 
-  root.descendants().forEach((d, i) => {
+  root.descendants().forEach((d: NodoMutable, i: number) => {
 
     d.id = i;
 
@@ -207,6 +218,6 @@ export async function crearLinaje() {
   update(null, root);
 
   document
-    .getElementById("chartLinaje")
-    .append(svg.node());
+    .getElementById("chartLinaje")!
+    .append(svg.node()!);
 }

@@ -47,7 +47,8 @@ export async function crearOtrosAgentesDashboard() {
     .map(([nombre]) => nombre);
 
   const [decadaMin, decadaMax] = d3.extent(eventos, d => d.década);
-  const DECADAS = d3.range(decadaMin, decadaMax + 10, 10);
+  // d3.extent devuelve [T | undefined, T | undefined]; aquí siempre hay datos.
+  const DECADAS = d3.range(decadaMin!, decadaMax! + 10, 10);
 
   const estado = {
     tipo: null,
@@ -59,7 +60,7 @@ export async function crearOtrosAgentesDashboard() {
   function filtrarEventos() {
     return eventos.filter(d =>
       (!estado.tipo || d.tipo === estado.tipo) &&
-      d.década >= estado.decadaDesde && d.década <= estado.decadaHasta &&
+      d.década >= estado.decadaDesde! && d.década <= estado.decadaHasta! &&
       (estado.crimen === "Todos" || d.crimen === estado.crimen)
     );
   }
@@ -91,43 +92,43 @@ export async function crearOtrosAgentesDashboard() {
     </div>
   `;
 
-  const tipoFila = document.getElementById("agTipoFila");
-  const selectDecadaDesde = document.getElementById("agDecadaDesde");
-  const selectDecadaHasta = document.getElementById("agDecadaHasta");
-  const selectCrimen = document.getElementById("agCrimenSelect");
-  const leyenda = document.getElementById("agLeyenda");
+  const tipoFila = document.getElementById("agTipoFila")!;
+  const selectDecadaDesde = document.getElementById("agDecadaDesde") as HTMLSelectElement;
+  const selectDecadaHasta = document.getElementById("agDecadaHasta") as HTMLSelectElement;
+  const selectCrimen = document.getElementById("agCrimenSelect") as HTMLSelectElement;
+  const leyenda = document.getElementById("agLeyenda")!;
 
   TIPOS_PRESENTES.forEach(t => {
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "ag-chip";
     chip.textContent = t;
-    chip.style.setProperty("--chip-color", PALETA_TIPO[t]);
+    chip.style.setProperty("--chip-color", (PALETA_TIPO as Record<string, string>)[t]);
     chip.addEventListener("click", () => {
-      estado.tipo = estado.tipo === t ? null : t;
+      estado.tipo = estado.tipo === t ? null : t as any;
       onFiltroCambiado();
     });
     tipoFila.appendChild(chip);
   });
 
-  function llenarSelectDecadas(select) {
+  function llenarSelectDecadas(select: HTMLSelectElement) {
     DECADAS.forEach(dc => {
       const opt = document.createElement("option");
-      opt.value = dc;
-      opt.textContent = dc;
+      opt.value = dc as unknown as string;
+      opt.textContent = dc as unknown as string;
       select.appendChild(opt);
     });
   }
   llenarSelectDecadas(selectDecadaDesde);
   llenarSelectDecadas(selectDecadaHasta);
-  selectDecadaDesde.value = estado.decadaDesde;
-  selectDecadaHasta.value = estado.decadaHasta;
+  selectDecadaDesde.value = estado.decadaDesde as unknown as string;
+  selectDecadaHasta.value = estado.decadaHasta as unknown as string;
   selectDecadaDesde.addEventListener("change", () => {
-    estado.decadaDesde = Math.min(+selectDecadaDesde.value, estado.decadaHasta);
+    estado.decadaDesde = Math.min(+selectDecadaDesde.value, estado.decadaHasta!);
     onFiltroCambiado();
   });
   selectDecadaHasta.addEventListener("change", () => {
-    estado.decadaHasta = Math.max(+selectDecadaHasta.value, estado.decadaDesde);
+    estado.decadaHasta = Math.max(+selectDecadaHasta.value, estado.decadaDesde!);
     onFiltroCambiado();
   });
 
@@ -150,11 +151,11 @@ export async function crearOtrosAgentesDashboard() {
   TIPOS_PRESENTES.forEach(t => {
     const item = document.createElement("div");
     item.className = "ag-leyenda-item";
-    item.innerHTML = `<span class="ag-leyenda-swatch" style="background:${PALETA_TIPO[t]}"></span>${t}`;
+    item.innerHTML = `<span class="ag-leyenda-swatch" style="background:${(PALETA_TIPO as Record<string, string>)[t]}"></span>${t}`;
     leyenda.appendChild(item);
   });
 
-  document.getElementById("agLimpiar").addEventListener("click", () => {
+  document.getElementById("agLimpiar")!.addEventListener("click", () => {
     estado.tipo = null;
     estado.decadaDesde = decadaMin;
     estado.decadaHasta = decadaMax;
@@ -166,8 +167,8 @@ export async function crearOtrosAgentesDashboard() {
     tipoFila.querySelectorAll(".ag-chip").forEach(chip => {
       chip.classList.toggle("ag-chip-activo", chip.textContent === estado.tipo);
     });
-    selectDecadaDesde.value = estado.decadaDesde;
-    selectDecadaHasta.value = estado.decadaHasta;
+    selectDecadaDesde.value = estado.decadaDesde as unknown as string;
+    selectDecadaHasta.value = estado.decadaHasta as unknown as string;
     selectCrimen.value = estado.crimen;
   }
 
@@ -175,7 +176,7 @@ export async function crearOtrosAgentesDashboard() {
 
   function actualizarGraficas() {
     const eventosFiltrados = filtrarEventos();
-    const decadasRango = d3.range(estado.decadaDesde, estado.decadaHasta + 10, 10);
+    const decadasRango = d3.range(estado.decadaDesde!, estado.decadaHasta! + 10, 10);
     butterflyCtrl.actualizar(eventosFiltrados, estado.crimen);
     dibujarParticipacionTiempoAgentes({
       chartContainerId: "agParticipacionTiempo",
