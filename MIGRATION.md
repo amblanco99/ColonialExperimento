@@ -437,6 +437,33 @@ La regla de fondo no cambia: el `any` es para donde los genéricos de d3 se pone
 ahorrarse una anotación evidente. En `Linaje`, 18 de 38 errores venían de la mutación de nodos
 —una sola causa— y los otros 20 son anotaciones normales que sí se escriben.
 
+### Por qué la regla es "el JS emitido es idéntico" y no "se comporta igual"
+
+`tools/identidad-semantica.mjs` cazó dos cambios reales durante la fase 5c, los dos míos, y los
+dos habrían pasado una revisión a ojo.
+
+**1. `?? undefined` en `ParticipacionTiempo`.** Al tipar escribí:
+
+```diff
+- codigo: crimenActivo,
++ codigo: crimenActivo ?? undefined,
+```
+
+**El comportamiento observable habría sido idéntico.** `irATablasFiltradas` filtra con
+`if (overrides.codigo)`, y `null` y `undefined` son igual de falsos, así que la URL generada
+habría sido exactamente la misma en todos los casos. Aun así es una violación: el JS emitido
+cambia.
+
+Y ahí está el motivo de la regla. "Se comporta igual" es un juicio: hay que razonar sobre el
+llamante, convencerse de que ninguna rama distingue `null` de `undefined`, y acertar. "El JS
+emitido es idéntico" no se opina, se comprueba. La primera versión de esa afirmación habría
+sido correcta esta vez y no hay forma de saber cuándo dejaría de serlo.
+
+**2. Renombrar un parámetro sin usar.** En los dos sunburst renombré `event` a `_event` para
+callar un `ts(6133)`. Mismo caso: no cambia nada observable, cambia el JS emitido. Se revirtió
+y se deja el aviso: `ts(6133)` es una sugerencia, no un error, y no hace fallar el chequeo.
+**Vale más una sugerencia que un cambio de runtime no verificable.**
+
 ### Patrón recurrente: `d3.extent` devuelve `[T | undefined, T | undefined]`
 
 Sale en `PersonasDashboard`, `OtrosAgentesDashboard` y volverá a salir. Genera dos errores por
@@ -598,6 +625,18 @@ Para cada una de las 10 páginas restantes, además de `npm run check` y `npm ru
   Así que esto no es una limpieza mecánica. Hay que decidir cuál es el contrato correcto para
   cada llamante y revisarlos uno a uno. Es un cambio de runtime y queda fuera de la migración.
 
+- **Dos pares de módulos casi duplicados.** Salieron al tipar: en cada par, el perfil de errores
+  era idéntico código por código, lo que fue la primera pista.
+
+  | par | diferencia | qué cambia |
+  |---|---|---|
+  | `ParticipacionTiempo` / `ParticipacionTiempoAgentes` | 89 líneas | `genero` → `tipo` |
+  | `InstitucionesAtributo` / `DelitosSunburstGenero` | 117 líneas | `atributo` → `genero` |
+
+  Los cuatro se tiparon con el mismo script, uno por par, que es la prueba práctica de lo
+  parecidos que son. Unificar cada par en un módulo parametrizado por el campo es trabajo
+  posterior, junto a las cuatro copias de `getSiglo`: son cambios de runtime y quedan fuera de
+  la migración.
 - **Evaluar Playwright para pruebas de regresión visual después de la fase 7.** Durante la
   migración se descartó a propósito: es una dependencia nueva y una superficie de fallo nueva a
   mitad del port, y las 9 páginas se revisan en un teléfono de verdad, que además detecta cosas

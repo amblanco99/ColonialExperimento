@@ -1,15 +1,23 @@
 import * as d3 from "d3";
+
+// TODO: type — nodo de jerarquía de d3 mutado por el patrón del sunburst con
+// zoom: se le cuelgan current y target con las coordenadas de la animación, y
+// se leen x0/x1/y0/y1, que no están en HierarchyNode. Ver MIGRATION.md.
+type NodoMutable = any;
+
+// TODO: type — genéricos de selección/transición de d3. Ver MIGRATION.md.
+type SeleccionD3 = any;
 import { PALETA_TIPO, PALETA_ATRIBUTO } from "./agentesComun.js";
 import { crearBotonVerCasos, irATablasFiltradas } from "./verCasos.js";
 
-export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionado) {
+export function dibujarSunburst(containerId: string, eventosFiltrados: any[], crimenSeleccionado: string | null) {
   const contenedor = document.getElementById(containerId);
   if (!contenedor) return;
   contenedor.innerHTML = "";
 
   const hayCrimenFijado = !!crimenSeleccionado && crimenSeleccionado !== "Todos";
   const eventosHierarchy = hayCrimenFijado
-    ? eventosFiltrados.filter(d => d.crimen === crimenSeleccionado && d.subcrimen)
+    ? eventosFiltrados.filter((d: NodoMutable) => d.crimen === crimenSeleccionado && d.subcrimen)
     : eventosFiltrados;
 
   if (eventosHierarchy.length === 0) {
@@ -20,10 +28,10 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
   }
 
   const nestedMap = hayCrimenFijado
-    ? d3.rollup(eventosHierarchy, v => v.length, d => d.tipo, d => d.atributo, d => d.subcrimen)
-    : d3.rollup(eventosHierarchy, v => v.length, d => d.tipo, d => d.atributo, d => d.crimen);
+    ? d3.rollup(eventosHierarchy, v => v.length, (d: NodoMutable) => d.tipo, (d: NodoMutable) => d.atributo, (d: NodoMutable) => d.subcrimen)
+    : d3.rollup(eventosHierarchy, v => v.length, (d: NodoMutable) => d.tipo, (d: NodoMutable) => d.atributo, (d: NodoMutable) => d.crimen);
 
-  function mapToNode(name, value) {
+  function mapToNode(name: any, value: any): NodoMutable {
     if (typeof value === "number") {
       return { name, value };
     }
@@ -35,16 +43,16 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
 
   const hierarchyData = mapToNode("root", nestedMap);
 
-  const root = d3.hierarchy(hierarchyData)
-    .sum(d => d.value)
-    .sort((a, b) => b.value - a.value);
+  const root: NodoMutable = d3.hierarchy(hierarchyData)
+    .sum((d: NodoMutable) => d.value!)
+    .sort((a: NodoMutable, b: NodoMutable) => b.value! - a.value!);
 
   const width = 550;
   const height = width;
   const radius = width / 6;
 
   d3.partition().size([2 * Math.PI, root.height + 1])(root);
-  root.each(d => (d.current = d));
+  root.each((d: NodoMutable) => (d.current = d));
 
   const PASOS_SOMBRA = [
     { l: 0.30, s: -0.05 },
@@ -57,11 +65,11 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
     { l: -0.06, s: 0.08 },
   ];
 
-  function getColor(d) {
-    if (d.depth === 1) return PALETA_TIPO[d.data.name] || "#999";
-    if (d.depth === 2) return PALETA_ATRIBUTO[d.data.name] || "#888";
+  function getColor(d: NodoMutable) {
+    if (d.depth === 1) return (PALETA_TIPO as Record<string, string>)[d.data.name] || "#999";
+    if (d.depth === 2) return (PALETA_ATRIBUTO as Record<string, string>)[d.data.name] || "#888";
 
-    const base = d3.hsl(PALETA_ATRIBUTO[d.parent.data.name] || "#888");
+    const base = d3.hsl((PALETA_ATRIBUTO as Record<string, string>)[d.parent.data.name] || "#888");
     const hermanos = d.parent.children || [d];
     const idx = hermanos.indexOf(d);
     const paso = PASOS_SOMBRA[idx % PASOS_SOMBRA.length];
@@ -70,30 +78,30 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
     return d3.hsl(base.h, s, l).formatHex();
   }
 
-  const arc = d3.arc()
-    .startAngle(d => d.x0)
-    .endAngle(d => d.x1)
-    .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
+  const arc = (d3.arc() as SeleccionD3)
+    .startAngle((d: NodoMutable) => d.x0)
+    .endAngle((d: NodoMutable) => d.x1)
+    .padAngle((d: NodoMutable) => Math.min((d.x1 - d.x0) / 2, 0.005))
     .padRadius(radius * 1.5)
-    .innerRadius(d => d.y0 * radius)
-    .outerRadius(d => Math.max(d.y0 * radius, d.y1 * radius - 1));
+    .innerRadius((d: NodoMutable) => d.y0 * radius)
+    .outerRadius((d: NodoMutable) => Math.max(d.y0 * radius, d.y1 * radius - 1));
 
   const botonVerCasos = crearBotonVerCasos();
   contenedor.appendChild(botonVerCasos.boton);
 
-  function cadenaDe(d) {
-    return d.ancestors().map(n => n.data.name).reverse().slice(1).join(" → ");
+  function cadenaDe(d: NodoMutable) {
+    return d.ancestors().map((n: NodoMutable) => n.data.name).reverse().slice(1).join(" → ");
   }
 
-  let leafSeleccionado = null;
-  function overridesDeHoja(d) {
+  let leafSeleccionado: NodoMutable = null;
+  function overridesDeHoja(d: NodoMutable) {
     const agente = d.parent.parent.data.name;
     const atributo = d.parent.data.name;
     return hayCrimenFijado
       ? { agente, atributo, codigo: crimenSeleccionado, subcodigo: d.data.name }
       : { agente, atributo, codigo: d.data.name };
   }
-  function seleccionarHoja(d) {
+  function seleccionarHoja(d: NodoMutable) {
     if (leafSeleccionado === d) {
       leafSeleccionado = null;
       botonVerCasos.ocultar();
@@ -110,52 +118,52 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
   const g = svg.append("g")
     .attr("transform", `translate(${width / 2},${height / 2})`);
 
-  const path = g.append("g")
+  const path: SeleccionD3 = g.append("g")
     .selectAll("path")
     .data(root.descendants().slice(1))
     .join("path")
-    .attr("fill", d => getColor(d))
-    .attr("fill-opacity", d =>
+    .attr("fill", (d: NodoMutable) => getColor(d))
+    .attr("fill-opacity", (d: NodoMutable) =>
       arcVisible(d.current) ? (d.children ? 0.65 : 0.45) : 0
     )
-    .attr("pointer-events", d => arcVisible(d.current) ? "auto" : "none")
-    .attr("d", d => arc(d.current));
+    .attr("pointer-events", (d: NodoMutable) => arcVisible(d.current) ? "auto" : "none")
+    .attr("d", (d: NodoMutable) => arc(d.current));
 
-  path.append("title").text(d => {
+  path.append("title").text((d: NodoMutable) => {
     const pct = d.parent && d.parent.value
-      ? ((d.value / d.parent.value) * 100).toFixed(1)
+      ? ((d.value! / d.parent.value) * 100).toFixed(1)
       : "100";
     const ruta = d.ancestors()
-      .map(n => n.data.name)
+      .map((n: NodoMutable) => n.data.name)
       .reverse()
       .slice(1)
       .join(" → ");
-    return `${ruta}\n${d.value} agentes (${pct}% de "${d.parent?.data.name ?? ""}")`;
+    return `${ruta}\n${d.value!} agentes (${pct}% de "${d.parent?.data.name ?? ""}")`;
   });
 
-  path.filter(d => d.children)
+  (path as SeleccionD3).filter((d: NodoMutable) => d.children)
     .classed("sunburst-arco--clicable", true)
     .on("click", clicked);
 
-  path.filter(d => !d.children)
+  (path as SeleccionD3).filter((d: NodoMutable) => !d.children)
     .classed("sunburst-arco--clicable", true)
-    .on("click", (event, d) => {
+    .on("click", (event: MouseEvent, d: NodoMutable) => {
       event.stopPropagation();
       seleccionarHoja(d);
     });
 
-  const label = g.append("g")
+  const label: SeleccionD3 = g.append("g")
     .attr("class", "sunburst-etiquetas")
     .selectAll("text")
     .data(root.descendants().slice(1))
     .join("text")
     .attr("class", "sunburst-etiqueta")
     .attr("dy", "0.35em")
-    .attr("fill-opacity", d => +labelVisible(d.current))
-    .attr("transform", d => labelTransform(d.current))
-    .each(function (d) {
+    .attr("fill-opacity", (d: NodoMutable) => +labelVisible(d.current))
+    .attr("transform", (d: NodoMutable) => labelTransform(d.current))
+    .each(function (this: any, d: NodoMutable) {
       const pct = d.parent && d.parent.value
-        ? ((d.value / d.parent.value) * 100).toFixed(1)
+        ? ((d.value! / d.parent.value) * 100).toFixed(1)
         : "100";
       const name = truncate(d.data.name, d.current);
       d3.select(this).append("tspan")
@@ -179,10 +187,10 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
     .attr("class", "sunburst-texto-central")
     .text("← volver");
 
-  function clicked(event, p) {
+  function clicked(event: MouseEvent | null, p: NodoMutable) {
     parent.datum(p.parent || root);
 
-    root.each(d => (d.target = {
+    root.each((d: NodoMutable) => (d.target = {
       x0: Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
       x1: Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
       y0: Math.max(0, d.y0 - p.depth),
@@ -191,28 +199,28 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
 
     const t = g.transition().duration(750);
 
-    path.transition(t)
-      .tween("data", d => {
+    path.transition(t as SeleccionD3)
+      .tween("data", (d: NodoMutable) => {
         const i = d3.interpolate(d.current, d.target);
-        return t => (d.current = i(t));
+        return (t: number) => (d.current = i(t));
       })
-      .filter(function (d) {
-        return +this.getAttribute("fill-opacity") || arcVisible(d.target);
+      .filter(function (this: any, d: NodoMutable) {
+        return +(this as SVGElement).getAttribute("fill-opacity")! || arcVisible(d.target);
       })
-      .attr("fill-opacity", d =>
+      .attr("fill-opacity", (d: NodoMutable) =>
         arcVisible(d.target) ? (d.children ? 0.65 : 0.45) : 0
       )
-      .attr("pointer-events", d => arcVisible(d.target) ? "auto" : "none")
-      .attrTween("d", d => () => arc(d.current));
+      .attr("pointer-events", (d: NodoMutable) => arcVisible(d.target) ? "auto" : "none")
+      .attrTween("d", (d: NodoMutable) => () => arc(d.current));
 
-    label.filter(function (d) {
-      return +this.getAttribute("fill-opacity") || labelVisible(d.target);
-    }).transition(t)
-      .attr("fill-opacity", d => +labelVisible(d.target))
-      .attrTween("transform", d => () => labelTransform(d.current))
-      .each(function (d) {
+    (label as SeleccionD3).filter(function (this: any, d: NodoMutable) {
+      return +(this as SVGElement).getAttribute("fill-opacity")! || labelVisible(d.target);
+    }).transition(t as SeleccionD3)
+      .attr("fill-opacity", (d: NodoMutable) => +labelVisible(d.target))
+      .attrTween("transform", (d: NodoMutable) => () => labelTransform(d.current))
+      .each(function (this: any, d: NodoMutable) {
         const pct = d.parent && d.parent.value
-          ? ((d.value / d.parent.value) * 100).toFixed(1)
+          ? ((d.value! / d.parent.value) * 100).toFixed(1)
           : "100";
         d3.select(this).selectAll("tspan").remove();
         d3.select(this).append("tspan")
@@ -227,21 +235,21 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
     centerText.text(p === root ? "" : `↩ ${p.data.name}`);
   }
 
-  function arcVisible(d) {
+  function arcVisible(d: NodoMutable) {
     return d.y1 <= 3 && d.y0 >= 1 && d.x1 > d.x0;
   }
 
-  function labelVisible(d) {
+  function labelVisible(d: NodoMutable) {
     return d.y1 <= 3 && d.y0 >= 1 && (d.y1 - d.y0) * (d.x1 - d.x0) > 0.05;
   }
 
-  function labelTransform(d) {
+  function labelTransform(d: NodoMutable) {
     const x = ((d.x0 + d.x1) / 2) * (180 / Math.PI);
     const y = ((d.y0 + d.y1) / 2) * radius;
     return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
   }
 
-  function truncate(text, d) {
+  function truncate(text: any, d: NodoMutable) {
     const available = (d.y1 - d.y0) * radius;
     const maxChars = Math.floor(available / 7);
     if (text.length > maxChars && maxChars > 3) {
@@ -252,6 +260,6 @@ export function dibujarSunburst(containerId, eventosFiltrados, crimenSeleccionad
 
   const wrapper = document.createElement("div");
   wrapper.className = "grafico-wrapper";
-  wrapper.appendChild(svg.node());
+  wrapper.appendChild(svg.node()!);
   contenedor.appendChild(wrapper);
 }
