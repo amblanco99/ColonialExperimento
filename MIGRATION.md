@@ -437,6 +437,23 @@ La regla de fondo no cambia: el `any` es para donde los genéricos de d3 se pone
 ahorrarse una anotación evidente. En `Linaje`, 18 de 38 errores venían de la mutación de nodos
 —una sola causa— y los otros 20 son anotaciones normales que sí se escriben.
 
+### Patrón recurrente: `d3.extent` devuelve `[T | undefined, T | undefined]`
+
+Sale en `PersonasDashboard`, `OtrosAgentesDashboard` y volverá a salir. Genera dos errores por
+sitio, `ts(18048)` y `ts(2345)`:
+
+```ts
+const [decadaMin, decadaMax] = d3.extent(datos, d => d.década);
+const DECADAS = d3.range(decadaMin!, decadaMax! + 10, 10);
+```
+
+**Resolución estándar: `!`.** Está justificado porque en todos los casos la función ya sale
+antes si el array está vacío, así que `extent` no puede devolver `undefined` cuando se llega
+ahí. Un `if` en su lugar cambiaría el comportamiento: el gráfico pasaría a no dibujarse en
+silencio en vez de fallar.
+
+Si algún día se quita ese return temprano, estos `!` dejan de estar justificados.
+
 ### OJO: `astro check` vale menos de lo que parece hasta la fase 5c
 
 Desde la fase 5a, `tsconfig.json` excluye `src/scripts/charts`, `src/scripts/tables` y
