@@ -1,4 +1,7 @@
 import * as d3 from "d3";
+
+/** Fila de eventos tal como la arma PersonasDashboard. */
+type EventoPersona = any; // TODO: type
 import { PALETA_GENERO } from "./agentesComun.js";
 import { crearBotonVerCasos, irATablasFiltradas } from "./verCasos.js";
 
@@ -6,7 +9,7 @@ const GENEROS = ["Mujer", "Hombre", "Sin información"];
 const RADIO_PUNTA = 4;
 const MAX_CHARS_ETIQUETA = 30;
 
-function pathBarra(x, y, w, h, redondearDerecha) {
+function pathBarra(x: number, y: number, w: number, h: number, redondearDerecha: boolean) {
   if (w <= 0) return "";
   const r = Math.min(RADIO_PUNTA, w, h / 2);
   if (redondearDerecha) {
@@ -15,14 +18,22 @@ function pathBarra(x, y, w, h, redondearDerecha) {
   return `M${x + r},${y} L${x + w},${y} L${x + w},${y + h} L${x + r},${y + h} Q${x},${y + h} ${x},${y + h - r} L${x},${y + r} Q${x},${y} ${x + r},${y} Z`;
 }
 
-function truncar(texto, max = MAX_CHARS_ETIQUETA) {
+function truncar(texto: string, max = MAX_CHARS_ETIQUETA) {
   return texto.length > max ? `${texto.slice(0, max - 1).trimEnd()}…` : texto;
 }
 
 
-export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, datos, crimenTop, estadoLocal }) {
+interface OpcionesButterfly {
+  filtrosContainerId: string
+  chartContainerId: string
+  datos: EventoPersona[]
+  crimenTop: string
+  estadoLocal: any // TODO: type
+}
+
+export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, datos, crimenTop, estadoLocal }: OpcionesButterfly) {
   const filtrosContainer = document.getElementById(filtrosContainerId);
-  const chartContainer = document.getElementById(chartContainerId);
+  const chartContainer = document.getElementById(chartContainerId)!;
   if (!filtrosContainer || !chartContainer) return;
 
   filtrosContainer.innerHTML = "";
@@ -33,7 +44,7 @@ export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, d
     return;
   }
 
-  const CRIMENES = [...d3.rollup(datos, v => v.length, d => d.crimen)]
+  const CRIMENES = [...d3.rollup(datos, v => v.length, (d: EventoPersona) => d.crimen)]
     .sort((a, b) => b[1] - a[1])
     .map(([nombre]) => nombre);
 
@@ -42,13 +53,13 @@ export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, d
     const subs = [...d3.rollup(
       datos.filter(d => d.crimen === crimen && d.subcrimen),
       v => v.length,
-      d => d.subcrimen
+      (d: EventoPersona) => d.subcrimen
     )].sort((a, b) => b[1] - a[1]).map(([nombre]) => nombre);
     SUBCRIMENES_POR_CRIMEN.set(crimen, subs);
   });
 
   filtrosContainer.innerHTML = `<div class="filtros-chip-panel"></div>`;
-  const wrapperFiltros = filtrosContainer.querySelector(".filtros-chip-panel");
+  const wrapperFiltros = filtrosContainer!.querySelector(".filtros-chip-panel")!;
 
   function renderFiltros() {
     wrapperFiltros.innerHTML = "";
@@ -56,7 +67,7 @@ export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, d
     const barra = document.createElement("div");
     barra.className = "filtros-barra-selectores";
 
-    function crearSelectorLado(etiqueta, ladoKey) {
+    function crearSelectorLado(etiqueta: string, ladoKey: string) {
       const grupo = document.createElement("div");
       grupo.className = "filtro-selector filtro-selector--ancho";
       const label = document.createElement("div");
@@ -143,11 +154,11 @@ export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, d
       return;
     }
 
-    function conteoPorFila(genero) {
-      const mapa = new Map(nombresFila.map(f => [f, 0]));
+    function conteoPorFila(genero: string) {
+      const mapa = new Map<string, number>(nombresFila.map((f: any) => [f, 0]));
       filasGeneros.filter(d => d.genero === genero).forEach(d => {
         const clave = enSubnivel ? d.subcrimen : d.crimen;
-        if (mapa.has(clave)) mapa.set(clave, mapa.get(clave) + 1);
+        if (mapa.has(clave)) mapa.set(clave, mapa.get(clave)! + 1);
       });
       return mapa;
     }
@@ -165,17 +176,17 @@ export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, d
       return;
     }
 
-    const filasConDatos = nombresFila.filter(f => conteoIzq.get(f) > 0 || conteoDer.get(f) > 0);
+    const filasConDatos = nombresFila.filter((f: any) => conteoIzq.get(f)! > 0 || conteoDer.get(f)! > 0);
     const IH = filasConDatos.length * PASO_FILA;
     const HEIGHT = MARGIN.top + IH + MARGIN.bottom;
 
-    const máximoFila = d3.max(filasConDatos, f => Math.max(conteoIzq.get(f), conteoDer.get(f))) || 1;
+    const máximoFila = d3.max(filasConDatos, (f: any) => Math.max(conteoIzq.get(f)!, conteoDer.get(f)!)) || 1;
 
     const escala = d3.scaleLinear().domain([0, máximoFila]).nice().range([0, IW_MITAD]);
     const y = d3.scaleBand().domain(filasConDatos).range([0, IH]).paddingInner(0.35);
     const centroX = CENTRO_X;
-    const colorIzq = PALETA_GENERO[estadoLocal.generoIzquierda];
-    const colorDer = PALETA_GENERO[estadoLocal.generoDerecha];
+    const colorIzq = (PALETA_GENERO as Record<string, string>)[estadoLocal.generoIzquierda];
+    const colorDer = (PALETA_GENERO as Record<string, string>)[estadoLocal.generoDerecha];
 
     const wrapper = document.createElement("div");
     wrapper.className = "grafico-wrapper--centrado";
@@ -184,7 +195,7 @@ export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, d
     const tooltip = document.createElement("div");
     tooltip.className = "tooltip-grafico tooltip-grafico--neutro";
     wrapper.appendChild(tooltip);
-    function moverTooltip(event) {
+    function moverTooltip(event: MouseEvent) {
       const rect = wrapper.getBoundingClientRect();
       tooltip.style.left = (event.clientX - rect.left + 12) + "px";
       tooltip.style.top = (event.clientY - rect.top + 12) + "px";
@@ -233,12 +244,12 @@ export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, d
       .attr("y1", -8).attr("y2", IH)
       .attr("class", "mariposa-linea-central");
 
-    filasConDatos.forEach(nombreFila => {
-      const yTop = y(nombreFila);
+    filasConDatos.forEach((nombreFila: string) => {
+      const yTop = y(nombreFila)!;
       const alto = Math.min(20, y.bandwidth());
       const yCentrado = yTop + (y.bandwidth() - alto) / 2;
-      const valorIzq = conteoIzq.get(nombreFila);
-      const valorDer = conteoDer.get(nombreFila);
+      const valorIzq = conteoIzq.get(nombreFila)!;
+      const valorDer = conteoDer.get(nombreFila)!;
 
       const filaGrupo = g.append("g")
         .attr("class", `mariposa-fila${!enSubnivel ? " mariposa-fila-boton" : ""}`);
@@ -267,7 +278,7 @@ export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, d
         .text(truncar(nombreFila));
       etiquetaTexto.append("title").text(nombreFila);
 
-      function dibujarLado(valor, genero, color, esDerecha) {
+      function dibujarLado(valor: number, genero: string, color: string, esDerecha: boolean) {
         const anchoPx = escala(valor);
         const xBase = esDerecha ? centroX : centroX - anchoPx;
         const d = pathBarra(xBase, yCentrado, anchoPx, alto, esDerecha);
@@ -278,7 +289,7 @@ export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, d
             .attr("class", "mariposa-barra-dato");
           if (enSubnivel && valor > 0) {
             barra.style("cursor", "pointer")
-              .on("click", event => {
+              .on("click", (event: MouseEvent) => {
                 event.stopPropagation();
                 botonVerCasos.mostrar(`${genero} · ${nombreFila}`, () => irATablasFiltradas({
                   genero,
@@ -305,7 +316,7 @@ export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, d
       dibujarLado(valorIzq, estadoLocal.generoIzquierda, colorIzq, false);
       dibujarLado(valorDer, estadoLocal.generoDerecha, colorDer, true);
 
-      filaGrupo.on("mouseenter", (event) => {
+      filaGrupo.on("mouseenter", (event: MouseEvent) => {
         tooltip.innerHTML = `
           <strong>${nombreFila}</strong><br/>
           ${estadoLocal.generoIzquierda}: ${valorIzq.toLocaleString("es")} · ${estadoLocal.generoDerecha}: ${valorDer.toLocaleString("es")}
@@ -318,7 +329,7 @@ export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, d
         .on("mouseleave", () => tooltip.classList.remove("tooltip-grafico--visible"));
     });
 
-    wrapper.appendChild(svg.node());
+    wrapper.appendChild(svg.node()!);
 
     const nota = document.createElement("p");
     nota.className = "filtro-nota filtro-nota--centrada";

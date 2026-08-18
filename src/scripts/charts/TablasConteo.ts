@@ -1,6 +1,9 @@
 import * as d3 from "d3";
 import { PALETA_GENERO, PALETA_TIPO, PALETA_ATRIBUTO, SIGLOS, getSiglo } from "./agentesComun.js";
 
+/** Fila cruda de Visualizaciones.csv / Casos.csv. */
+type Fila = any; // TODO: type
+
 const GENEROS = ["Mujer", "Hombre", "Sin información"];
 const TIPOS_OTROS_AGENTES = [
   { label: "Institución", nombre: "Instituciones" },
@@ -8,14 +11,14 @@ const TIPOS_OTROS_AGENTES = [
   { label: "Población Completa", nombre: "Población General" },
 ];
 
-const coincideGenero = (valor, genero) => {
+const coincideGenero = (valor: string, genero: string) => {
   if (genero === "Sin información") {
     return !valor || valor.trim() === "" || valor === "Sin información" || valor === "null";
   }
   return valor === genero;
 };
 
-function irATabla(filtros) {
+function irATabla(filtros: Record<string, string>) {
   const params = new URLSearchParams();
   Object.entries(filtros).forEach(([clave, valor]) => {
     if (valor) params.set(clave, valor);
@@ -23,7 +26,7 @@ function irATabla(filtros) {
   window.location.href = `${import.meta.env.BASE_URL}base-de-datos/index.html?${params.toString()}`;
 }
 
-function resumirGrupo(filas) {
+function resumirGrupo(filas: Fila[]) {
   const idCasos = new Set(filas.map(d => d.ID_Caso));
   const idAgentes = new Set(filas.map(d => d.ID_Agente));
   const victimas = filas.filter(d => d.Atributo === "Víctima").length;
@@ -39,8 +42,8 @@ function resumirGrupo(filas) {
   });
   const delitoTop = [...conteoDelitos.entries()].sort((a, b) => b[1] - a[1])[0] || null;
 
-  const siglos = {};
-  SIGLOS.forEach(siglo => {
+  const siglos: Record<string, number> = {};
+  SIGLOS.forEach((siglo: string) => {
     siglos[siglo] = filas.filter(d => getSiglo(+d.Año) === siglo).length;
   });
 
@@ -101,7 +104,7 @@ export async function crearConteoInteractivo() {
   dibujarToggle(encabezado, [
     { label: "Personas", color: "var(--genero-mujer)", texto: "var(--ink)", destino: `${import.meta.env.BASE_URL}personas/personas.html`, vista: vistaPersonas },
     { label: "Otros agentes", color: "var(--tipo-institucion)", texto: "#fff", destino: `${import.meta.env.BASE_URL}personas/otrosAgentes.html`, vista: vistaAgentes },
-  ], opcion => {
+  ], (opcion: any) => {
     botonExpandir.href = opcion.destino;
     botonExpandir.style.setProperty("--cta-color", opcion.color);
     botonExpandir.style.setProperty("--cta-texto", opcion.texto);
@@ -115,7 +118,7 @@ export async function crearConteoInteractivo() {
   dibujarCuadrosConDetalle(vistaPersonas, GENEROS.map(genero => ({
     clave: genero,
     etiqueta: genero,
-    color: PALETA_GENERO[genero],
+    color: (PALETA_GENERO as Record<string, string>)[genero],
     stats: statsPorGenero.get(genero),
     filtroBase: { agente: "Persona", genero },
     extra: genero === "Mujer" ? { valor: casosConMencion, total: totalCasos } : null,
@@ -124,7 +127,7 @@ export async function crearConteoInteractivo() {
   dibujarCuadrosConDetalle(vistaAgentes, TIPOS_OTROS_AGENTES.map(({ label, nombre }) => ({
     clave: label,
     etiqueta: nombre,
-    color: PALETA_TIPO[label],
+    color: (PALETA_TIPO as Record<string, string>)[label],
     stats: statsPorTipo.get(label),
     filtroBase: { agente: label },
   })));
@@ -136,12 +139,12 @@ export async function crearConteoInteractivo() {
 // "Experiment" / "Data". `onActivar` se llama con la opción activa cada
 // vez que cambia la pestaña (incluida la activación inicial), para que
 // quien llama pueda sincronizar otros elementos (el botón "Expandir").
-function dibujarToggle(padre, opciones, onActivar) {
+function dibujarToggle(padre: HTMLElement, opciones: any[], onActivar?: (o: any) => void) {
   const barra = document.createElement("div");
   barra.className = "conteo-toggle";
   padre.appendChild(barra);
 
-  const botones = opciones.map((opcion, indice) => {
+  const botones = opciones.map((opcion: any, indice: number) => {
     const boton = document.createElement("button");
     boton.type = "button";
     boton.className = "conteo-toggle-btn";
@@ -152,8 +155,8 @@ function dibujarToggle(padre, opciones, onActivar) {
     return boton;
   });
 
-  function activar(indice) {
-    opciones.forEach((opcion, i) => {
+  function activar(indice: number) {
+    opciones.forEach((opcion: any, i: number) => {
       const activo = i === indice;
       botones[i].classList.toggle("conteo-toggle-btn--activo", activo);
       opcion.vista.hidden = !activo;
@@ -164,7 +167,7 @@ function dibujarToggle(padre, opciones, onActivar) {
   activar(0);
 }
 
-function formatoPct(parte, total) {
+function formatoPct(parte: number, total: number) {
   return total > 0 ? `${((parte / total) * 100).toFixed(1)}%` : "—";
 }
 
@@ -172,7 +175,7 @@ function formatoPct(parte, total) {
 // el número grande siempre se lea (--genero-sin-info es muy oscuro y
 // necesita texto blanco; --genero-mujer/--genero-hombre son claros y
 // funcionan mejor con la tinta oscura del sitio).
-function colorTextoParaFondo(hex) {
+function colorTextoParaFondo(hex: string) {
   const c = hex.replace("#", "");
   const r = parseInt(c.substring(0, 2), 16);
   const g = parseInt(c.substring(2, 4), 16);
@@ -190,7 +193,7 @@ const DIAM_BURBUJA_MAX = 130;
 // apoyadas sobre un mismo tallo que llega a una línea base común, como en
 // la imagen de referencia. El número va dentro de la burbuja; el siglo
 // queda debajo, en la base.
-function crearTimeline(s, filtroBase, color) {
+function crearTimeline(s: any, filtroBase: any, color: string) {
   const timeline = document.createElement("div");
   timeline.className = "conteo-detalle-timeline";
 
@@ -198,7 +201,7 @@ function crearTimeline(s, filtroBase, color) {
   linea.className = "conteo-detalle-timeline-linea";
   timeline.appendChild(linea);
 
-  const valores = SIGLOS.map(siglo => s.siglos[siglo]);
+  const valores = SIGLOS.map((siglo: string) => s.siglos[siglo]);
   const maxValor = Math.max(...valores, 1);
   const texto = colorTextoParaFondo(color);
 
@@ -247,7 +250,7 @@ function crearTimeline(s, filtroBase, color) {
 // a la derecha. Clic en una pestaña abre su panel debajo con más
 // información; clic de nuevo lo cierra. Solo una pestaña puede estar
 // abierta a la vez.
-function crearFolderTabs({ delitoTop, filtroBase, mencion }) {
+function crearFolderTabs({ delitoTop, filtroBase, mencion }: { delitoTop: any; filtroBase: any; mencion: any }) {
   const contenedor = document.createElement("div");
   contenedor.className = "conteo-detalle-folder";
 
@@ -259,15 +262,15 @@ function crearFolderTabs({ delitoTop, filtroBase, mencion }) {
   panel.className = "conteo-detalle-tab-panel";
   contenedor.appendChild(panel);
 
-  let tabActiva = null;
+  let tabActiva: string | null = null;
 
   function pintarTabs() {
-    tabs.querySelectorAll(".conteo-detalle-tab").forEach(t => {
+    tabs.querySelectorAll<HTMLElement>(".conteo-detalle-tab").forEach(t => {
       t.classList.toggle("conteo-detalle-tab--activa", t.dataset.tab === tabActiva);
     });
   }
 
-  function abrir(clave, construirContenido) {
+  function abrir(clave: string, construirContenido: () => HTMLElement) {
     tabActiva = clave;
     panel.innerHTML = "";
     panel.appendChild(construirContenido());
@@ -275,7 +278,7 @@ function crearFolderTabs({ delitoTop, filtroBase, mencion }) {
     pintarTabs();
   }
 
-  function alternar(clave, construirContenido) {
+  function alternar(clave: string, construirContenido: () => HTMLElement) {
     if (tabActiva === clave) {
       tabActiva = null;
       panel.hidden = true;
@@ -337,7 +340,7 @@ function crearFolderTabs({ delitoTop, filtroBase, mencion }) {
   return contenedor;
 }
 
-function dibujarCuadrosConDetalle(padre, items) {
+function dibujarCuadrosConDetalle(padre: HTMLElement, items: any[]) {
   const cuadros = document.createElement("div");
   cuadros.className = "conteo-stat-cuadros";
   padre.appendChild(cuadros);
@@ -347,17 +350,17 @@ function dibujarCuadrosConDetalle(padre, items) {
   detalle.hidden = true;
   padre.appendChild(detalle);
 
-  let claveAbierta = null;
+  let claveAbierta: string | null = null;
 
   function pintarActivo() {
-    cuadros.querySelectorAll(".conteo-stat-cuadro").forEach(btn => {
+    cuadros.querySelectorAll<HTMLElement>(".conteo-stat-cuadro").forEach(btn => {
       const activo = btn.dataset.clave === claveAbierta;
       btn.classList.toggle("conteo-stat-cuadro--activo", activo);
-      btn.querySelector(".conteo-stat-cuadro-flecha").textContent = activo ? "▾" : "▸";
+      btn.querySelector(".conteo-stat-cuadro-flecha")!.textContent = activo ? "▾" : "▸";
     });
   }
 
-  function renderDetalle(item) {
+  function renderDetalle(item: any) {
     const { etiqueta, color, stats: s, filtroBase, extra } = item;
     detalle.innerHTML = "";
     detalle.style.setProperty("--detalle-color", color);
@@ -378,7 +381,7 @@ function dibujarCuadrosConDetalle(padre, items) {
     const atributos = document.createElement("div");
     atributos.className = "conteo-detalle-atributos";
     ATRIBUTOS_DETALLE.forEach(({ nombre, etiqueta: etiquetaAtributo, valor }) => {
-      const colorAtributo = PALETA_ATRIBUTO[nombre];
+      const colorAtributo = (PALETA_ATRIBUTO as Record<string, string>)[nombre];
       const pct = totalAtributos > 0 ? Math.round((valor / totalAtributos) * CELDAS_WAFFLE) : 0;
 
       const panel = document.createElement("button");
@@ -427,7 +430,7 @@ function dibujarCuadrosConDetalle(padre, items) {
     detalle.hidden = false;
   }
 
-  items.forEach(item => {
+  items.forEach((item: any) => {
     const { clave, etiqueta, color, stats: s } = item;
     const cuadro = document.createElement("button");
     cuadro.type = "button";
@@ -435,7 +438,7 @@ function dibujarCuadrosConDetalle(padre, items) {
     cuadro.dataset.clave = clave;
     cuadro.style.setProperty("--cuadro-color", color);
     cuadro.style.setProperty("--cuadro-texto", colorTextoParaFondo(color));
-    cuadro.style.flexGrow = Math.sqrt(Math.max(s.personas, 1));
+    cuadro.style.flexGrow = Math.sqrt(Math.max(s.personas, 1)) as unknown as string;
     cuadro.innerHTML = `
       <span class="conteo-stat-cuadro-flecha">▸</span>
       <div class="conteo-stat-cuadro-valor">${s.personas.toLocaleString("es")}</div>

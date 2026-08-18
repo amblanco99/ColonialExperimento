@@ -17,10 +17,6 @@
     // Mientras quede alguna, un `npm run check -> exit 0` NO cubre esos
     // archivos. Cuando la lista esté vacía, el chequeo vuelve a significar lo
     // que significaba en la fase 4.
-    "src/scripts/charts/ButterflyGenero.ts", // 52
-    "src/scripts/charts/ParticipacionTiempo.ts", // 52
-    "src/scripts/charts/ParticipacionTiempoAgentes.ts", // 52
-    "src/scripts/charts/TablasConteo.ts", // 52
     "src/scripts/charts/InstitucionesAtributo.ts", // 78
     "src/scripts/charts/DelitosSunburstGenero.ts", // 80
     "src/scripts/charts/TiempoCrimenesMapa.ts" // 253

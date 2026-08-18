@@ -1,4 +1,11 @@
 import * as d3 from "d3";
+
+/** Fila de eventos tal como la arman los dashboards. */
+type FilaEvento = any; // TODO: type
+
+/** El módulo guarda el id del temporizador colgándolo del propio contenedor.
+ *  No es una propiedad estándar de HTMLElement, así que se declara aquí. */
+type ContenedorConTimer = HTMLElement & { _timerLineas?: any };
 import { PALETA_GENERO } from "./agentesComun.js";
 import { crearBotonVerCasos, irATablasFiltradas } from "./verCasos.js";
 
@@ -8,9 +15,9 @@ const ALTO_LINEA = 380;
 const DURACION_LINEA = 700;
 const PAUSA_LINEA = 130;
 
-function contarPorDecada(filas, decadas, generos) {
-  const idsPorGeneroDecada = new Map(
-    generos.map(g => [g, new Map(decadas.map(dc => [dc, new Set()]))])
+function contarPorDecada(filas: FilaEvento[], decadas: number[], generos: string[]) {
+  const idsPorGeneroDecada = new Map<string, Map<number, Set<string>>>(
+    generos.map((g: string) => [g, new Map(decadas.map((dc: number) => [dc, new Set<string>()]))] as [string, Map<number, Set<string>>])
   );
   filas.forEach(d => {
     const mapaDecada = idsPorGeneroDecada.get(d.genero);
@@ -18,18 +25,18 @@ function contarPorDecada(filas, decadas, generos) {
     if (set) set.add(d.idAgente);
   });
   const conteos = new Map();
-  idsPorGeneroDecada.forEach((mapaDecada, genero) => {
-    const serie = decadas.map(dc => ({ década: dc, valor: mapaDecada.get(dc).size }));
+  idsPorGeneroDecada.forEach((mapaDecada: Map<number, Set<string>>, genero: string) => {
+    const serie = decadas.map((dc: number) => ({ década: dc, valor: mapaDecada.get(dc)!.size }));
     conteos.set(genero, serie);
   });
   return conteos;
 }
 
-function crearTooltip(padreRelativo) {
+function crearTooltip(padreRelativo: HTMLElement) {
   const tooltip = document.createElement("div");
   tooltip.className = "tooltip-grafico tooltip-grafico--neutro";
   padreRelativo.appendChild(tooltip);
-  function mover(event) {
+  function mover(event: MouseEvent) {
     const rect = padreRelativo.getBoundingClientRect();
     tooltip.style.left = (event.clientX - rect.left + 12) + "px";
     tooltip.style.top = (event.clientY - rect.top + 12) + "px";
@@ -37,8 +44,16 @@ function crearTooltip(padreRelativo) {
   return { tooltip, mover };
 }
 
-export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, generosActivos, etiquetaCrimen }) {
-  const chartContainer = document.getElementById(chartContainerId);
+interface OpcionesParticipacion {
+  chartContainerId: string
+  datos: FilaEvento[]
+  decadas: number[]
+  generosActivos: string[]
+  etiquetaCrimen: string
+}
+
+export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, generosActivos, etiquetaCrimen }: OpcionesParticipacion) {
+  const chartContainer = document.getElementById(chartContainerId) as ContenedorConTimer;
   if (!chartContainer) return;
 
   if (chartContainer._timerLineas) {
@@ -57,15 +72,15 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
   const botonVerCasos = crearBotonVerCasos();
   chartContainer.appendChild(botonVerCasos.boton);
 
-  function dibujarLeyenda(padre) {
+  function dibujarLeyenda(padre: HTMLElement) {
     const leyenda = document.createElement("div");
     leyenda.className = "leyenda-swatches";
-    generosActivos.forEach(g => {
+    generosActivos.forEach((g: string) => {
       const item = document.createElement("div");
       item.className = "leyenda-swatch-item";
       const swatch = document.createElement("span");
       swatch.className = "leyenda-swatch-color";
-      swatch.style.background = PALETA_GENERO[g];
+      swatch.style.background = (PALETA_GENERO as Record<string, string>)[g];
       const texto = document.createElement("span");
       texto.textContent = g;
       item.appendChild(swatch);
@@ -75,14 +90,14 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
     padre.appendChild(leyenda);
   }
 
-  function dibujarLinea(padre, conteosPorGenero) {
+  function dibujarLinea(padre: HTMLElement, conteosPorGenero: any) {
     const IW = WIDTH_LINEA - MARGIN_LINEA.left - MARGIN_LINEA.right;
     const IH = ALTO_LINEA - MARGIN_LINEA.top - MARGIN_LINEA.bottom;
 
-    const maxValor = d3.max(generosActivos, g => d3.max(conteosPorGenero.get(g), d => d.valor)) || 1;
+    const maxValor = d3.max(generosActivos, (g: string) => d3.max(conteosPorGenero.get(g), (d: FilaEvento) => d.valor)) || 1;
 
-    const x = d3.scaleLinear().domain(d3.extent(decadas)).range([0, IW]);
-    const y = d3.scaleLinear().domain([0, maxValor]).nice().range([IH, 0]);
+    const x = d3.scaleLinear().domain(d3.extent(decadas) as [number, number]).range([0, IW]);
+    const y = d3.scaleLinear().domain([0, maxValor as number]).nice().range([IH, 0]);
 
     const wrapper = document.createElement("div");
     wrapper.className = "grafico-wrapper lineas-wrapper";
@@ -90,8 +105,8 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
 
     const { tooltip, mover } = crearTooltip(wrapper);
 
-    let seleccionGenero = null;
-    let seleccionPuntoClave = null;
+    let seleccionGenero: string | null = null;
+    let seleccionPuntoClave: string | null = null;
     const gruposPorGenero = new Map();
 
     function aplicarResaltadoLinea() {
@@ -107,14 +122,14 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
       aplicarResaltadoLinea();
     }
 
-    function seleccionarGenero(genero) {
+    function seleccionarGenero(genero: string) {
       seleccionGenero = seleccionGenero === genero ? null : genero;
       seleccionPuntoClave = null;
       botonVerCasos.ocultar();
       aplicarResaltadoLinea();
     }
 
-    function seleccionarPunto(genero, década) {
+    function seleccionarPunto(genero: string, década: number) {
       const clave = `${genero}||${década}`;
       if (seleccionPuntoClave === clave) { limpiarSeleccionLinea(); return; }
       seleccionPuntoClave = clave;
@@ -122,7 +137,7 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
       aplicarResaltadoLinea();
       botonVerCasos.mostrar(`${genero} · ${década}`, () => irATablasFiltradas({
         genero,
-        codigo: crimenActivo,
+        codigo: crimenActivo as string | undefined,
         fecha: década,
         escala: "decada",
       }));
@@ -148,14 +163,14 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
       .selectAll("text")
       .attr("class", "grafico-eje-texto");
 
-    const línea = d3.line()
-      .x(d => x(d.década))
-      .y(d => y(d.valor))
+    const línea = (d3.line() as any)
+      .x((d: FilaEvento) => x(d.década))
+      .y((d: FilaEvento) => y(d.valor))
       .curve(d3.curveMonotoneX);
 
-    function dibujarSerieInstante(genero) {
+    function dibujarSerieInstante(genero: string) {
       const serie = conteosPorGenero.get(genero);
-      const color = PALETA_GENERO[genero];
+      const color = (PALETA_GENERO as Record<string, string>)[genero];
       const grupo = g.append("g").attr("class", "lineas-grupo-serie");
       gruposPorGenero.set(genero, grupo);
 
@@ -171,7 +186,7 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
         .attr("d", línea)
         .attr("fill", "none")
         .attr("class", "lineas-trazo-hit")
-        .on("click", event => {
+        .on("click", (event: MouseEvent) => {
           event.stopPropagation();
           seleccionarGenero(genero);
         });
@@ -179,12 +194,12 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
       grupo.selectAll(null)
         .data(serie)
         .join("circle")
-        .attr("cx", d => x(d.década))
-        .attr("cy", d => y(d.valor))
+        .attr("cx", (d: FilaEvento) => x(d.década))
+        .attr("cy", (d: FilaEvento) => y(d.valor))
         .attr("r", 3)
         .attr("fill", color)
         .attr("class", "lineas-punto")
-        .on("mouseenter", (event, d) => {
+        .on("mouseenter", (event: MouseEvent, d: FilaEvento) => {
           tooltip.innerHTML = `
             <strong>${etiquetaCrimen}</strong><br/>
             ${genero} · década de ${d.década}<br/>
@@ -195,7 +210,7 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
         })
         .on("mousemove", mover)
         .on("mouseleave", () => tooltip.classList.remove("tooltip-grafico--visible"))
-        .on("click", (event, d) => {
+        .on("click", (event: MouseEvent, d: FilaEvento) => {
           event.stopPropagation();
           seleccionarPunto(genero, d.década);
         });
@@ -203,11 +218,11 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
       aplicarResaltadoLinea();
     }
 
-    function revelarSecuencial(idx) {
+    function revelarSecuencial(idx: number) {
       if (idx >= generosActivos.length) return;
       const genero = generosActivos[idx];
       const serie = conteosPorGenero.get(genero);
-      const color = PALETA_GENERO[genero];
+      const color = (PALETA_GENERO as Record<string, string>)[genero];
       const grupoTemp = g.append("g");
       const pathTemp = grupoTemp.append("path")
         .datum(serie)
@@ -215,7 +230,7 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
         .attr("fill", "none")
         .attr("stroke", color)
         .attr("class", "lineas-trazo");
-      const totalLength = pathTemp.node().getTotalLength();
+      const totalLength = pathTemp.node()!.getTotalLength();
       pathTemp
         .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
         .attr("stroke-dashoffset", totalLength)
@@ -227,7 +242,7 @@ export function dibujarParticipacionTiempo({ chartContainerId, datos, decadas, g
         });
     }
 
-    wrapper.appendChild(svg.node());
+    wrapper.appendChild(svg.node()!);
     chartContainer._timerLineas = d3.timeout(() => revelarSecuencial(0), 100);
   }
 
