@@ -1,8 +1,6 @@
 import * as d3 from "d3";
-
-/** Fila de eventos tal como la arma PersonasDashboard. */
-type EventoPersona = any; // TODO: type
 import { PALETA_GENERO } from "./agentesComun.js";
+import type { FilaCsv } from "./agentesComun.js";
 import { crearBotonVerCasos, irATablasFiltradas } from "./verCasos.js";
 
 const GENEROS = ["Mujer", "Hombre", "Sin información"];
@@ -26,7 +24,7 @@ function truncar(texto: string, max = MAX_CHARS_ETIQUETA) {
 interface OpcionesButterfly {
   filtrosContainerId: string
   chartContainerId: string
-  datos: EventoPersona[]
+  datos: FilaCsv[]
   crimenTop: string
   estadoLocal: any // TODO: type
 }
@@ -44,7 +42,7 @@ export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, d
     return;
   }
 
-  const CRIMENES = [...d3.rollup(datos, v => v.length, (d: EventoPersona) => d.crimen)]
+  const CRIMENES = [...d3.rollup(datos, v => v.length, (d: FilaCsv) => d.crimen)]
     .sort((a, b) => b[1] - a[1])
     .map(([nombre]) => nombre);
 
@@ -53,7 +51,7 @@ export function dibujarButterflyGenero({ filtrosContainerId, chartContainerId, d
     const subs = [...d3.rollup(
       datos.filter(d => d.crimen === crimen && d.subcrimen),
       v => v.length,
-      (d: EventoPersona) => d.subcrimen
+      (d: FilaCsv) => d.subcrimen
     )].sort((a, b) => b[1] - a[1]).map(([nombre]) => nombre);
     SUBCRIMENES_POR_CRIMEN.set(crimen, subs);
   });

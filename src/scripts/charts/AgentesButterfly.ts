@@ -1,8 +1,6 @@
 import * as d3 from "d3";
-
-/** Fila de eventos de agentes tal como la arma OtrosAgentesDashboard. */
-type EventoAgente = any; // TODO: type
 import { PALETA_GRUPO } from "./agentesComun.js";
+import type { FilaCsv } from "./agentesComun.js";
 import { crearBotonVerCasos, irATablasFiltradas } from "./verCasos.js";
 
 const TOP_CRIMENES = 10;
@@ -40,7 +38,7 @@ export function crearAgentesButterfly(containerId: string) {
   const PASO_FILA = 46;
 
   const estadoLocal: { crimenLocal: string | null } = { crimenLocal: null };
-  let ultimoEventos: EventoAgente[] = [];
+  let ultimoEventos: FilaCsv[] = [];
   let ultimoCrimenTop = "Todos";
 
   function crearBotonVolver() {
@@ -57,7 +55,7 @@ export function crearAgentesButterfly(containerId: string) {
 
   const botonVerCasos = crearBotonVerCasos();
 
-  function actualizar(eventosFiltrados: EventoAgente[], crimenTop = "Todos") {
+  function actualizar(eventosFiltrados: FilaCsv[], crimenTop = "Todos") {
     ultimoEventos = eventosFiltrados;
     ultimoCrimenTop = crimenTop;
     wrapperChart.innerHTML = "";
@@ -80,16 +78,16 @@ export function crearAgentesButterfly(containerId: string) {
       wrapperChart.appendChild(botonVerCasos.boton);
     }
 
-    let filasBase: EventoAgente[];
+    let filasBase: FilaCsv[];
     let nombresFila: any[]; // TODO: type
     if (enSubnivel) {
       filasBase = eventosFiltrados.filter(d => d.crimen === crimenActivoLocal);
-      nombresFila = [...d3.rollup(filasBase.filter(d => d.subcrimen), v => v.length, (d: EventoAgente) => d.subcrimen)]
+      nombresFila = [...d3.rollup(filasBase.filter(d => d.subcrimen), v => v.length, (d: FilaCsv) => d.subcrimen)]
         .sort((a, b) => b[1] - a[1])
         .map(([nombre]) => nombre);
     } else {
       filasBase = eventosFiltrados;
-      nombresFila = [...d3.rollup(eventosFiltrados, v => v.length, (d: EventoAgente) => d.crimen)]
+      nombresFila = [...d3.rollup(eventosFiltrados, v => v.length, (d: FilaCsv) => d.crimen)]
         .sort((a, b) => b[1] - a[1])
         .slice(0, TOP_CRIMENES)
         .map(([nombre]) => nombre);

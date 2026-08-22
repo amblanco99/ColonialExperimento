@@ -452,10 +452,10 @@ suelta de un CSV.
 **Excepción deliberada:** `tables/caso.ts` usa `d3.DSVRowString<string>` y funciona. **No se
 degrada a `FilaCsv`** solo por uniformidad: es más preciso que el alias y ya está escrito.
 
-**Pendiente:** cinco módulos inventaron su propio alias antes de que existiera este (`Fila` en
-`TablasConteo`, `FilaEvento` en los dos de participación, `EventoPersona` en `ButterflyGenero`,
-`EventoAgente` en `AgentesButterfly`). Unificarlos con `FilaCsv` es un commit aparte, después
-del mapa.
+**Hecho:** los cinco módulos que se habían inventado su propio alias (`Fila` en `TablasConteo`,
+`FilaEvento` en los dos de participación, `EventoPersona` en `ButterflyGenero`, `EventoAgente`
+en `AgentesButterfly`) usan ya el `FilaCsv` compartido. Solo queda `tables/caso.ts`, con su
+`DSVRowString<string>`, que es la excepción deliberada de arriba.
 
 **4. Estado mutable inicializado a `null`.** Muy común en los módulos con interacción:
 `let seleccionNodo = null` y compañía, que TypeScript infiere como `any` implícito

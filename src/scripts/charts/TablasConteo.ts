@@ -1,8 +1,6 @@
 import * as d3 from "d3";
 import { PALETA_GENERO, PALETA_TIPO, PALETA_ATRIBUTO, SIGLOS, getSiglo } from "./agentesComun.js";
-
-/** Fila cruda de Visualizaciones.csv / Casos.csv. */
-type Fila = any; // TODO: type
+import type { FilaCsv } from "./agentesComun.js";
 
 const GENEROS = ["Mujer", "Hombre", "Sin información"];
 const TIPOS_OTROS_AGENTES = [
@@ -26,7 +24,7 @@ function irATabla(filtros: Record<string, string>) {
   window.location.href = `${import.meta.env.BASE_URL}base-de-datos/index.html?${params.toString()}`;
 }
 
-function resumirGrupo(filas: Fila[]) {
+function resumirGrupo(filas: FilaCsv[]) {
   const idCasos = new Set(filas.map(d => d.ID_Caso));
   const idAgentes = new Set(filas.map(d => d.ID_Agente));
   const victimas = filas.filter(d => d.Atributo === "Víctima").length;

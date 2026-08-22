@@ -1,12 +1,10 @@
 import * as d3 from "d3";
 
-/** Fila de eventos tal como la arman los dashboards. */
-type FilaEvento = any; // TODO: type
-
 /** Igual que en ParticipacionTiempo: el id del temporizador se cuelga del
  *  contenedor, que no es una propiedad estándar de HTMLElement. */
 type ContenedorConTimer = HTMLElement & { _timerLineas?: any };
 import { PALETA_TIPO } from "./agentesComun.js";
+import type { FilaCsv } from "./agentesComun.js";
 import { crearBotonVerCasos, irATablasFiltradas } from "./verCasos.js";
 
 const MARGIN_LINEA = { top: 30, right: 20, bottom: 36, left: 50 };
@@ -15,7 +13,7 @@ const ALTO_LINEA = 380;
 const DURACION_LINEA = 700;
 const PAUSA_LINEA = 130;
 
-function contarPorDecada(eventos: FilaEvento[], decadas: number[], tipos: string[]) {
+function contarPorDecada(eventos: FilaCsv[], decadas: number[], tipos: string[]) {
   const idsPorTipoDecada = new Map<string, Map<number, Set<string>>>(
     tipos.map((t: string) => [t, new Map(decadas.map((dc: number) => [dc, new Set<string>()]))] as [string, Map<number, Set<string>>])
   );
@@ -46,7 +44,7 @@ function crearTooltip(padreRelativo: HTMLElement) {
 
 interface OpcionesParticipacionAgentes {
   chartContainerId: string
-  eventos: FilaEvento[]
+  eventos: FilaCsv[]
   decadas: number[]
   tiposActivos: string[]
   crimenActivo: string | null
@@ -93,7 +91,7 @@ export function dibujarParticipacionTiempoAgentes({ chartContainerId, eventos, d
     const IW = WIDTH_LINEA - MARGIN_LINEA.left - MARGIN_LINEA.right;
     const IH = ALTO_LINEA - MARGIN_LINEA.top - MARGIN_LINEA.bottom;
 
-    const maxValor = d3.max(tiposActivos, (t: string) => d3.max(conteosPorTipo.get(t), (d: FilaEvento) => d.valor)) || 1;
+    const maxValor = d3.max(tiposActivos, (t: string) => d3.max(conteosPorTipo.get(t), (d: FilaCsv) => d.valor)) || 1;
 
     const x = d3.scaleLinear().domain(d3.extent(decadas) as [number, number]).range([0, IW]);
     const y = d3.scaleLinear().domain([0, maxValor as number]).nice().range([IH, 0]);
@@ -163,8 +161,8 @@ export function dibujarParticipacionTiempoAgentes({ chartContainerId, eventos, d
       .attr("class", "grafico-eje-texto");
 
     const línea = (d3.line() as any)
-      .x((d: FilaEvento) => x(d.década))
-      .y((d: FilaEvento) => y(d.valor))
+      .x((d: FilaCsv) => x(d.década))
+      .y((d: FilaCsv) => y(d.valor))
       .curve(d3.curveMonotoneX);
 
     function dibujarSerieInstante(tipo: string) {
@@ -193,12 +191,12 @@ export function dibujarParticipacionTiempoAgentes({ chartContainerId, eventos, d
       grupo.selectAll(null)
         .data(serie)
         .join("circle")
-        .attr("cx", (d: FilaEvento) => x(d.década))
-        .attr("cy", (d: FilaEvento) => y(d.valor))
+        .attr("cx", (d: FilaCsv) => x(d.década))
+        .attr("cy", (d: FilaCsv) => y(d.valor))
         .attr("r", 3)
         .attr("fill", color)
         .attr("class", "lineas-punto")
-        .on("mouseenter", (event: MouseEvent, d: FilaEvento) => {
+        .on("mouseenter", (event: MouseEvent, d: FilaCsv) => {
           tooltip.innerHTML = `
             <strong>${tipo}</strong><br/>
             década de ${d.década}<br/>
@@ -209,7 +207,7 @@ export function dibujarParticipacionTiempoAgentes({ chartContainerId, eventos, d
         })
         .on("mousemove", mover)
         .on("mouseleave", () => tooltip.classList.remove("tooltip-grafico--visible"))
-        .on("click", (event: MouseEvent, d: FilaEvento) => {
+        .on("click", (event: MouseEvent, d: FilaCsv) => {
           event.stopPropagation();
           seleccionarPunto(tipo, d.década);
         });
