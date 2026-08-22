@@ -60,20 +60,84 @@ const opciones = {
 };
 
 /**
- * Transpila y normaliza: deja solo lo que se ejecuta.
+ * Reduce un módulo a su programa: la ESTRUCTURA de lo que se ejecuta.
  *
- * Además de colapsar espacios, quita los paréntesis de las flechas de un solo
- * parámetro. Al anotar `y => …` hay que escribir `(y: number) => …`, y el
- * transpilador emite `(y) => …`: son el mismo programa, pero comparados como
- * texto no coinciden. Es la única normalización que se permite aquí, y es
- * puramente sintáctica.
+ * Dos pasos:
+ *
+ *  1. `transpileModule` borra los tipos y los comentarios.
+ *  2. El JS resultante se parsea y se recorre el AST emitiendo, por cada nodo,
+ *     su tipo y —cuando es un identificador o un literal— su VALOR. El
+ *     resultado es una huella de la estructura del programa.
+ *
+ * Comparar la huella y no el texto es lo correcto, y hizo falta en cuanto entró
+ * Prettier: comillas simples o dobles, paréntesis de una flecha de un
+ * parámetro, comillas en las claves de un objeto, sangrías y saltos son
+ * decisiones de formato que no cambian el programa, y como texto no coinciden.
+ * Reimprimir con el printer de TypeScript no bastaba: reutiliza el texto
+ * original de los nodos que no se han tocado.
+ *
+ * Qué SÍ detecta, que es lo que importa: un `if` de más, un `?.` colado, un
+ * argumento reordenado, una llamada cambiada, una cadena con otro contenido o
+ * un número distinto.
+ *
+ * Los `ParenthesizedExpression` se desenvuelven: unos paréntesis redundantes no
+ * cambian nada. Si los paréntesis alteraran la precedencia, el árbol de debajo
+ * sería distinto y la diferencia saldría igual.
  */
-const aJs = (codigo) =>
-  ts
-    .transpileModule(codigo, opciones)
-    .outputText.replace(/\s+/g, ' ')
-    .replace(/\(([A-Za-z_$][\w$]*)\) =>/g, '$1 =>')
-    .trim();
+const huella = (codigo) => {
+  const js = ts.transpileModule(codigo, opciones).outputText;
+  const sf = ts.createSourceFile('m.js', js, ts.ScriptTarget.ESNext, true, ts.ScriptKind.JS);
+  const partes = [];
+
+  // El nombre de una propiedad es el mismo esté entrecomillado o no:
+  // { "Institución": x } y { Institución: x } crean la misma clave. Prettier
+  // quita las comillas cuando la clave es un identificador válido, así que se
+  // canoniza a "clave + valor". Las claves computadas ([k]) NO entran aquí:
+  // esas sí son otra cosa.
+  const esNombrePropiedad = (nodo) => {
+    const padre = nodo.parent;
+    if (!padre || padre.name !== nodo) return false;
+    return (
+      ts.isPropertyAssignment(padre) ||
+      ts.isMethodDeclaration(padre) ||
+      ts.isGetAccessorDeclaration(padre) ||
+      ts.isSetAccessorDeclaration(padre) ||
+      ts.isPropertyDeclaration(padre)
+    );
+  };
+
+  const visitar = (nodo) => {
+    // Paréntesis redundantes: se ignora el envoltorio, se sigue con el interior.
+    if (ts.isParenthesizedExpression(nodo)) return visitar(nodo.expression);
+
+    if (esNombrePropiedad(nodo) && (ts.isIdentifier(nodo) || ts.isStringLiteral(nodo) || ts.isNumericLiteral(nodo))) {
+      partes.push('NombrePropiedad', JSON.stringify(nodo.text));
+      return;
+    }
+
+    partes.push(ts.SyntaxKind[nodo.kind]);
+    if (
+      ts.isIdentifier(nodo) ||
+      ts.isPrivateIdentifier(nodo) ||
+      ts.isStringLiteral(nodo) ||
+      ts.isNumericLiteral(nodo) ||
+      ts.isBigIntLiteral(nodo) ||
+      ts.isRegularExpressionLiteral(nodo) ||
+      ts.isNoSubstitutionTemplateLiteral(nodo) ||
+      ts.isTemplateHead(nodo) ||
+      ts.isTemplateMiddle(nodo) ||
+      ts.isTemplateTail(nodo)
+    ) {
+      partes.push(JSON.stringify(nodo.text));
+    }
+    nodo.forEachChild(visitar);
+  };
+
+  sf.forEachChild(visitar);
+  return partes.join(' ');
+};
+
+const aJs = huella;
 
 const enRef = (ref, ruta) => execSync(`git show ${ref}:${ruta}`, { cwd: raiz }).toString();
 

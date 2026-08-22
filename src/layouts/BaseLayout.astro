@@ -48,7 +48,8 @@ const { title, active, conNav = true } = Astro.props;
   </head>
 
   <body>
-    {/*
+    {
+      /*
       Solo en desarrollo: comprueba que las 27 custom properties del contrato
       resuelvan en :root.
 
@@ -61,12 +62,11 @@ const { title, active, conNav = true } = Astro.props;
       etiquetas <script> aunque el marcado que las envuelve sea condicional.
       Vite sustituye import.meta.env.DEV por false al compilar para producción,
       así que el import dinámico se elimina del bundle publicado.
-    */}
+    */
+    }
     <script>
       if (import.meta.env.DEV) {
-        const { verificarVariablesCss } = await import(
-          '../scripts/dev/verificarVariablesCss'
-        );
+        const { verificarVariablesCss } = await import('../scripts/dev/verificarVariablesCss');
         verificarVariablesCss();
       }
     </script>

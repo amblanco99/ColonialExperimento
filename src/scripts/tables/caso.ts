@@ -5,8 +5,8 @@ import * as d3 from 'd3';
 type Fila = d3.DSVRowString<string>;
 
 const CSV_CRIMENES = `${import.meta.env.BASE_URL}data/crimenes.csv`;
-const CSV_FUENTES  = `${import.meta.env.BASE_URL}data/Source.csv`;
-const CSV_Personas    = `${import.meta.env.BASE_URL}data/Visualizaciones.csv`;
+const CSV_FUENTES = `${import.meta.env.BASE_URL}data/Source.csv`;
+const CSV_Personas = `${import.meta.env.BASE_URL}data/Visualizaciones.csv`;
 
 function buildCasesMap(crimenes: Fila[], fuentes: Fila[]) {
   const fuentesIdx: Record<string, Fila> = {};
@@ -39,10 +39,10 @@ function buildCasesMap(crimenes: Fila[], fuentes: Fila[]) {
 }
 
 export function inicializarCaso() {
-  const params  = new URLSearchParams(window.location.search);
-  const casoId  = params.get('caso');
+  const params = new URLSearchParams(window.location.search);
+  const casoId = params.get('caso');
 
-  const main    = document.getElementById('main-content');
+  const main = document.getElementById('main-content');
   const loading = document.getElementById('loading-msg');
 
   if (!casoId) {
@@ -52,7 +52,10 @@ export function inicializarCaso() {
   }
 }
 
-async function loadCase(id: string, { main, loading }: { main: HTMLElement | null; loading: HTMLElement | null }) {
+async function loadCase(
+  id: string,
+  { main, loading }: { main: HTMLElement | null; loading: HTMLElement | null },
+) {
   try {
     const [crimenes, fuentes, personas] = await Promise.all([
       d3.csv(CSV_CRIMENES),
@@ -71,7 +74,6 @@ async function loadCase(id: string, { main, loading }: { main: HTMLElement | nul
     loading!.remove();
 
     renderCase(caso, personas, main!);
-
   } catch (err) {
     loading!.textContent = 'Error al cargar los datos. Revisa la consola.';
     console.error(err);
@@ -81,7 +83,6 @@ async function loadCase(id: string, { main, loading }: { main: HTMLElement | nul
 // TODO: type — `caso` es la estructura que arma buildCasesMap; tiparla exige
 // modelar todo el mapa de casos y documentos, que es más de lo que toca aquí.
 function renderCase(caso: any, personas: Fila[], main: HTMLElement) {
-
   const header = document.createElement('div');
   header.innerHTML = `
     <h1 class="case-title">${caso.descripcion}</h1>
@@ -100,9 +101,10 @@ function renderCase(caso: any, personas: Fila[], main: HTMLElement) {
 
   const secTitle = document.createElement('h2');
   secTitle.className = 'section-title';
-  secTitle.textContent = caso.documentos.length === 1
-    ? 'Crimen registrado'
-    : `Crímenes registrados (${caso.documentos.length})`;
+  secTitle.textContent =
+    caso.documentos.length === 1
+      ? 'Crimen registrado'
+      : `Crímenes registrados (${caso.documentos.length})`;
   main.appendChild(secTitle);
 
   const list = document.createElement('div');
@@ -112,33 +114,33 @@ function renderCase(caso: any, personas: Fila[], main: HTMLElement) {
     const card = document.createElement('article');
     card.className = 'crime-card';
 
-const agentesDocumento = personas.filter(
-  (p: Fila) => String(p.ID_Documento).trim() === String(doc.id_documento).trim()
-);
+    const agentesDocumento = personas.filter(
+      (p: Fila) => String(p.ID_Documento).trim() === String(doc.id_documento).trim(),
+    );
 
-let agentesHTML = "";
+    let agentesHTML = '';
 
-if (agentesDocumento.length > 0) {
+    if (agentesDocumento.length > 0) {
+      const grupos: Record<string, Fila[]> = {};
 
-  const grupos: Record<string, Fila[]> = {};
+      agentesDocumento.forEach((p: Fila) => {
+        const atributo = p.Atributo || 'Sin especificar';
 
-  agentesDocumento.forEach((p: Fila) => {
-    const atributo = p.Atributo || "Sin especificar";
+        if (!grupos[atributo]) {
+          grupos[atributo] = [];
+        }
 
-    if (!grupos[atributo]) {
-      grupos[atributo] = [];
-    }
+        grupos[atributo].push(p);
+      });
 
-    grupos[atributo].push(p);
-  });
-
-  agentesHTML = `
+      agentesHTML = `
         <div class="agents-block">
 
           <h4>Agentes involucrados</h4>
 
           ${Object.entries(grupos)
-            .map(([atributo, personasGrupo]) => `
+            .map(
+              ([atributo, personasGrupo]) => `
 
               <div class="agent-group">
 
@@ -163,26 +165,23 @@ if (agentesDocumento.length > 0) {
                               { label: 'Calidad', valor: p.Calidad },
                               { label: 'Labor', valor: p.Labor },
                             ]
-                              .filter(
-                                c =>
-                                  c.valor &&
-                                  c.valor !== "null"
-                              )
-                              .map(c => `<span data-tooltip="${c.label}">${c.valor}</span>`)
-                              .join(" · ")}
+                              .filter((c) => c.valor && c.valor !== 'null')
+                              .map((c) => `<span data-tooltip="${c.label}">${c.valor}</span>`)
+                              .join(' · ')}
                           </div>
 
                         </div>
-                      `
+                      `,
                     )
-                    .join("")}
+                    .join('')}
 
                 </div>
 
               </div>
 
-            `)
-            .join("")}
+            `,
+            )
+            .join('')}
 
         </div>
       `;

@@ -1,6 +1,6 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import prettier from 'eslint-config-prettier'
+import js from '@eslint/js';
+import globals from 'globals';
+import prettier from 'eslint-config-prettier';
 
 export default [
   { ignores: ['dist/**', 'node_modules/**'] },
@@ -16,4 +16,4 @@ export default [
     },
   },
   prettier,
-]
+];

@@ -1,6 +1,6 @@
-import * as d3 from "d3";
-import rewind from "@turf/rewind";
-import type { FilaCsv } from "./agentesComun.js";
+import * as d3 from 'd3';
+import rewind from '@turf/rewind';
+import type { FilaCsv } from './agentesComun.js';
 
 // TODO: type — nodo/dato mutado por d3 (grafo de relación, jerarquías). Ver MIGRATION.md.
 type NodoMutable = any;
@@ -18,9 +18,16 @@ declare global {
 }
 
 const SERIE_FALLBACK = [
-  "#bb4e99", "#4e9bbb", "#e8a838", "#56b87e",
-  "#e05a5a", "#7b5ea7", "#3ab8b0", "#d4784e",
-  "#6a8fce", "#a05080",
+  '#bb4e99',
+  '#4e9bbb',
+  '#e8a838',
+  '#56b87e',
+  '#e05a5a',
+  '#7b5ea7',
+  '#3ab8b0',
+  '#d4784e',
+  '#6a8fce',
+  '#a05080',
 ];
 
 function leerVariableCss(nombre: string, fallback: string): string {
@@ -30,17 +37,19 @@ function leerVariableCss(nombre: string, fallback: string): string {
 
 export async function inicializarDashboard() {
   const PALETA = {
-    fondoPergamino: leerVariableCss("--mapa-fondo-pergamino", "#f4ecd8"),
-    panel: leerVariableCss("--mapa-panel", "#efe4c8"),
-    tierra: leerVariableCss("--mapa-tierra", "#e8dcc0"),
-    borde: leerVariableCss("--mapa-borde", "#6b4f2a"),
-    tintaOscura: leerVariableCss("--mapa-tinta-oscura", "#3a2d1a"),
-    acentoLinea: leerVariableCss("--mapa-acento-linea", "#bb4e99"),
-    acentoSecundario: leerVariableCss("--mapa-acento-secundario", "#4e9bbb"),
-    tarjetaFondo: leerVariableCss("--mapa-tarjeta-fondo", "#fdf8ec"),
+    fondoPergamino: leerVariableCss('--mapa-fondo-pergamino', '#f4ecd8'),
+    panel: leerVariableCss('--mapa-panel', '#efe4c8'),
+    tierra: leerVariableCss('--mapa-tierra', '#e8dcc0'),
+    borde: leerVariableCss('--mapa-borde', '#6b4f2a'),
+    tintaOscura: leerVariableCss('--mapa-tinta-oscura', '#3a2d1a'),
+    acentoLinea: leerVariableCss('--mapa-acento-linea', '#bb4e99'),
+    acentoSecundario: leerVariableCss('--mapa-acento-secundario', '#4e9bbb'),
+    tarjetaFondo: leerVariableCss('--mapa-tarjeta-fondo', '#fdf8ec'),
   };
 
-  const COLORES_SERIE = SERIE_FALLBACK.map((valor, i) => leerVariableCss(`--mapa-serie-${i + 1}`, valor));
+  const COLORES_SERIE = SERIE_FALLBACK.map((valor, i) =>
+    leerVariableCss(`--mapa-serie-${i + 1}`, valor),
+  );
 
   const [NuevaGranadaRaw, rawViz, rawLugar, rawLinaje] = await Promise.all([
     d3.json(`${import.meta.env.BASE_URL}data/NuevaGranada.json`),
@@ -53,13 +62,13 @@ export async function inicializarDashboard() {
   // FeatureCollection, que es lo que trae NuevaGranada.json.
   const NuevaGranada = rewind(NuevaGranadaRaw as any, { reverse: true }) as any;
 
-  const SIGLOS = ["Siglo XVI", "Siglo XVII", "Siglo XVIII", "Siglo XIX"];
+  const SIGLOS = ['Siglo XVI', 'Siglo XVII', 'Siglo XVIII', 'Siglo XIX'];
 
   const getSiglo = (y: number) => {
-    if (y >= 1500 && y <= 1599) return "Siglo XVI";
-    if (y >= 1600 && y <= 1699) return "Siglo XVII";
-    if (y >= 1700 && y <= 1799) return "Siglo XVIII";
-    if (y >= 1800 && y <= 1899) return "Siglo XIX";
+    if (y >= 1500 && y <= 1599) return 'Siglo XVI';
+    if (y >= 1600 && y <= 1699) return 'Siglo XVII';
+    if (y >= 1700 && y <= 1799) return 'Siglo XVIII';
+    if (y >= 1800 && y <= 1899) return 'Siglo XIX';
     return null;
   };
 
@@ -76,7 +85,9 @@ export async function inicializarDashboard() {
   });
 
   const datosLimpios = rawViz
-    .filter((d: FilaCsv) => d.Año && d.Nombre_Codigo && d.ID_Documento && d.Lugar && d.Nombre_Sub_Codigo)
+    .filter(
+      (d: FilaCsv) => d.Año && d.Nombre_Codigo && d.ID_Documento && d.Lugar && d.Nombre_Sub_Codigo,
+    )
     .map((d: FilaCsv) => ({
       ...d,
       año: +d.Año,
@@ -87,22 +98,24 @@ export async function inicializarDashboard() {
     }))
     .filter((d: FilaCsv) => d.siglo);
 
-  const DECADAS = [...new Set(datosLimpios.map((d: FilaCsv) => d.decada))].sort((a: NodoMutable, b: NodoMutable) => a - b);
+  const DECADAS = [...new Set(datosLimpios.map((d: FilaCsv) => d.decada))].sort(
+    (a: NodoMutable, b: NodoMutable) => a - b,
+  );
 
   const linajeFilas = rawLinaje.map((d: FilaCsv) => ({
-    idCodigo: (d["ID_Código"] || "").trim(),
-    nombre: (d.Nombre || "").trim(),
-    nivel: (d.Nivel || "").trim(),
+    idCodigo: (d['ID_Código'] || '').trim(),
+    nombre: (d.Nombre || '').trim(),
+    nivel: (d.Nivel || '').trim(),
   }));
   const nombresGenerales = new Set(
-    linajeFilas.filter((f: any) => f.nivel === "Nivel 0").map((f: any) => f.nombre)
+    linajeFilas.filter((f: any) => f.nivel === 'Nivel 0').map((f: any) => f.nombre),
   );
   const ordenPorCodigo = new Map(linajeFilas.map((f, i) => [f.idCodigo, i]));
 
   const codigoPorNombreSub = new Map();
   datosLimpios.forEach((d: FilaCsv) => {
     if (d.Nombre_Sub_Codigo && !codigoPorNombreSub.has(d.Nombre_Sub_Codigo)) {
-      codigoPorNombreSub.set(d.Nombre_Sub_Codigo, (d["Sub_Código"] || "").trim());
+      codigoPorNombreSub.set(d.Nombre_Sub_Codigo, (d['Sub_Código'] || '').trim());
     }
   });
 
@@ -116,75 +129,86 @@ export async function inicializarDashboard() {
   function getProvincia(coords: [number, number]) {
     const features = NuevaGranada.features ? NuevaGranada.features : [NuevaGranada];
     const feature = features.find((f: any) => d3.geoContains(f, coords));
-    return feature ? (feature.properties?.Nombre || "Desconocida") : "Desconocida";
+    return feature ? feature.properties?.Nombre || 'Desconocida' : 'Desconocida';
   }
 
   const lugaresLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.lugar))].sort();
-  const subcrimenesLista = [...new Set(
-    datosLimpios.filter((d: FilaCsv) => !nombresGenerales.has(d.Nombre_Sub_Codigo)).map((d: FilaCsv) => d.Nombre_Sub_Codigo)
-  )].sort(compararPorLinaje);
+  const subcrimenesLista = [
+    ...new Set(
+      datosLimpios
+        .filter((d: FilaCsv) => !nombresGenerales.has(d.Nombre_Sub_Codigo))
+        .map((d: FilaCsv) => d.Nombre_Sub_Codigo),
+    ),
+  ].sort(compararPorLinaje);
   const crimenesLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Nombre_Codigo))].sort();
 
   const estado = {
-    modoTiempo: "siglo",
-    tiempoIdx: SIGLOS.indexOf("Siglo XVII"),
-    crimen: "Todos",
-    subcrimen: "Todos",
-    lugar: "Todos",
+    modoTiempo: 'siglo',
+    tiempoIdx: SIGLOS.indexOf('Siglo XVII'),
+    crimen: 'Todos',
+    subcrimen: 'Todos',
+    lugar: 'Todos',
     lugaresFijados: new Set(),
   };
 
   function tiempoListaActual() {
-    return estado.modoTiempo === "siglo" ? SIGLOS : DECADAS;
+    return estado.modoTiempo === 'siglo' ? SIGLOS : DECADAS;
   }
   function valorTiempoActual() {
     return tiempoListaActual()[estado.tiempoIdx];
   }
   function campoTiempoActual() {
-    return estado.modoTiempo === "siglo" ? "siglo" : "decada";
+    return estado.modoTiempo === 'siglo' ? 'siglo' : 'decada';
   }
 
   function irATablasFiltradas(overrides: Record<string, any> = {}) {
     if (overrides.casos) {
       const params = new URLSearchParams();
-      params.set("casos", overrides.casos.join(","));
+      params.set('casos', overrides.casos.join(','));
       window.location.href = `${import.meta.env.BASE_URL}base-de-datos/index.html?${params.toString()}`;
       return;
     }
 
-    const lugar = "lugar" in overrides ? overrides.lugar : (estado.lugar !== "Todos" ? estado.lugar : null);
-    const codigo = "codigo" in overrides ? overrides.codigo : (estado.crimen !== "Todos" ? estado.crimen : null);
-    const subcodigo = "subcodigo" in overrides ? overrides.subcodigo : (estado.subcrimen !== "Todos" ? estado.subcrimen : null);
-    const fecha = "fecha" in overrides ? overrides.fecha : valorTiempoActual();
-    const escala = "escala" in overrides ? overrides.escala : campoTiempoActual();
+    const lugar =
+      'lugar' in overrides ? overrides.lugar : estado.lugar !== 'Todos' ? estado.lugar : null;
+    const codigo =
+      'codigo' in overrides ? overrides.codigo : estado.crimen !== 'Todos' ? estado.crimen : null;
+    const subcodigo =
+      'subcodigo' in overrides
+        ? overrides.subcodigo
+        : estado.subcrimen !== 'Todos'
+          ? estado.subcrimen
+          : null;
+    const fecha = 'fecha' in overrides ? overrides.fecha : valorTiempoActual();
+    const escala = 'escala' in overrides ? overrides.escala : campoTiempoActual();
 
     const params = new URLSearchParams();
-    if (lugar) params.set("lugar", lugar);
-    if (codigo) params.set("codigo", codigo);
-    if (subcodigo) params.set("subcodigo", subcodigo);
+    if (lugar) params.set('lugar', lugar);
+    if (codigo) params.set('codigo', codigo);
+    if (subcodigo) params.set('subcodigo', subcodigo);
     if (fecha != null) {
-      params.set("fecha", fecha);
-      params.set("escala", escala);
+      params.set('fecha', fecha);
+      params.set('escala', escala);
     }
     window.location.href = `${import.meta.env.BASE_URL}base-de-datos/index.html?${params.toString()}`;
   }
 
   function crearBotonVerCasos() {
-    const boton = document.createElement("button");
-    boton.type = "button";
-    boton.className = "btn-mapa-ver-casos";
+    const boton = document.createElement('button');
+    boton.type = 'button';
+    boton.className = 'btn-mapa-ver-casos';
     let handlerActivo: (() => void) | null = null;
-    boton.addEventListener("click", () => {
+    boton.addEventListener('click', () => {
       if (handlerActivo) handlerActivo();
     });
 
     function ocultar() {
-      boton.classList.remove("btn-mapa--visible");
+      boton.classList.remove('btn-mapa--visible');
       handlerActivo = null;
     }
     function mostrar(texto: string, handler: () => void) {
       boton.textContent = `Ver casos: ${texto}`;
-      boton.classList.add("btn-mapa--visible");
+      boton.classList.add('btn-mapa--visible');
       handlerActivo = handler;
     }
     return { boton, mostrar, ocultar };
@@ -192,9 +216,9 @@ export async function inicializarDashboard() {
 
   function datosFiltradosBase() {
     return datosLimpios.filter((d: FilaCsv) => {
-      const okCrimen = estado.crimen === "Todos" || d.Nombre_Codigo === estado.crimen;
-      const okSub = estado.subcrimen === "Todos" || d.Nombre_Sub_Codigo === estado.subcrimen;
-      const okLugar = estado.lugar === "Todos" || d.lugar === estado.lugar;
+      const okCrimen = estado.crimen === 'Todos' || d.Nombre_Codigo === estado.crimen;
+      const okSub = estado.subcrimen === 'Todos' || d.Nombre_Sub_Codigo === estado.subcrimen;
+      const okLugar = estado.lugar === 'Todos' || d.lugar === estado.lugar;
       return okCrimen && okSub && okLugar;
     });
   }
@@ -202,13 +226,18 @@ export async function inicializarDashboard() {
   function datosReferenciaLugar(lugar: string) {
     const campo = campoTiempoActual();
     const valor = valorTiempoActual();
-    const filas = datosFiltradosBase().filter((d: FilaCsv) => d.lugar === lugar && d[campo] === valor);
+    const filas = datosFiltradosBase().filter(
+      (d: FilaCsv) => d.lugar === lugar && d[campo] === valor,
+    );
 
     const map: Record<string, any> = {};
     filas.forEach((d: FilaCsv) => {
-      const key = estado.crimen === "Todos"
-        ? d.Nombre_Codigo
-        : (nombresGenerales.has(d.Nombre_Sub_Codigo) ? d.Nombre_Codigo : d.Nombre_Sub_Codigo);
+      const key =
+        estado.crimen === 'Todos'
+          ? d.Nombre_Codigo
+          : nombresGenerales.has(d.Nombre_Sub_Codigo)
+            ? d.Nombre_Codigo
+            : d.Nombre_Sub_Codigo;
       if (!map[key]) map[key] = new Set();
       map[key].add(`${d.ID_Documento}|${d.Sub_Código}`);
     });
@@ -222,7 +251,7 @@ export async function inicializarDashboard() {
     const campo = campoTiempoActual();
     const valor = valorTiempoActual();
     const filas = datosFiltradosBase().filter(
-      (d: FilaCsv) => d[campo] === valor && d.coords && !isNaN(d.coords[0]) && !isNaN(d.coords[1])
+      (d: FilaCsv) => d[campo] === valor && d.coords && !isNaN(d.coords[0]) && !isNaN(d.coords[1]),
     );
 
     const map: Record<string, any> = {};
@@ -238,116 +267,124 @@ export async function inicializarDashboard() {
       map[key].docs.add(d.ID_Documento);
     });
 
-    return Object.values(map).map(r => ({
+    return Object.values(map).map((r) => ({
       ...r,
       count: r.docs.size,
     }));
   }
 
-  const mapaContenedor = document.getElementById("mapa-contenedor");
+  const mapaContenedor = document.getElementById('mapa-contenedor');
   if (!mapaContenedor) return;
-  const contenedorLineasEl = document.getElementById("crimenesChart");
+  const contenedorLineasEl = document.getElementById('crimenesChart');
   const dashboardWrap = mapaContenedor.parentElement;
 
-  const contenedorGrafoEl = document.createElement("div");
-  contenedorGrafoEl.id = "grafoRelacionContenedor";
+  const contenedorGrafoEl = document.createElement('div');
+  contenedorGrafoEl.id = 'grafoRelacionContenedor';
 
-  const mainContenedor = document.querySelector("main.container");
+  const mainContenedor = document.querySelector('main.container');
   if (mainContenedor) {
-    mainContenedor.classList.add("mapa-main-ancho");
+    mainContenedor.classList.add('mapa-main-ancho');
   }
 
   function envolverEnTarjeta(el: HTMLElement, titulo: string, subtitulo?: string) {
-    const tarjeta = document.createElement("div");
-    tarjeta.className = "mapa-tarjeta";
-    const encabezado = document.createElement("div");
-    encabezado.className = "mapa-tarjeta-encabezado";
-    const h = document.createElement("div");
+    const tarjeta = document.createElement('div');
+    tarjeta.className = 'mapa-tarjeta';
+    const encabezado = document.createElement('div');
+    encabezado.className = 'mapa-tarjeta-encabezado';
+    const h = document.createElement('div');
     h.textContent = titulo as unknown as string;
-    h.className = "mapa-tarjeta-titulo";
+    h.className = 'mapa-tarjeta-titulo';
     encabezado.appendChild(h);
     if (subtitulo) {
-      const sub = document.createElement("div");
+      const sub = document.createElement('div');
       sub.textContent = subtitulo as unknown as string;
-      sub.className = "mapa-tarjeta-subtitulo";
+      sub.className = 'mapa-tarjeta-subtitulo';
       encabezado.appendChild(sub);
     }
     tarjeta.appendChild(encabezado);
-    const divisor = document.createElement("div");
-    divisor.className = "mapa-tarjeta-divisor";
+    const divisor = document.createElement('div');
+    divisor.className = 'mapa-tarjeta-divisor';
     tarjeta.appendChild(divisor);
     tarjeta.appendChild(el);
     return tarjeta;
   }
 
-  let panelFiltros = document.getElementById("panel-filtros");
+  let panelFiltros = document.getElementById('panel-filtros');
   if (!panelFiltros) {
-    panelFiltros = document.createElement("div");
-    panelFiltros.id = "panel-filtros";
+    panelFiltros = document.createElement('div');
+    panelFiltros.id = 'panel-filtros';
   }
 
-  let columnaViz = document.getElementById("columna-visualizaciones");
+  let columnaViz = document.getElementById('columna-visualizaciones');
   if (!columnaViz) {
-    columnaViz = document.createElement("div");
-    columnaViz.id = "columna-visualizaciones";
+    columnaViz = document.createElement('div');
+    columnaViz.id = 'columna-visualizaciones';
   }
-  columnaViz.classList.add("mapa-columna-viz");
+  columnaViz.classList.add('mapa-columna-viz');
 
-  const columnaIzquierda = document.createElement("div");
-  columnaIzquierda.id = "columna-izquierda";
-  columnaIzquierda.className = "mapa-columna-izquierda";
+  const columnaIzquierda = document.createElement('div');
+  columnaIzquierda.id = 'columna-izquierda';
+  columnaIzquierda.className = 'mapa-columna-izquierda';
 
   function paraColumnaVertical(tarjeta: HTMLElement) {
-    tarjeta.classList.add("mapa-tarjeta--vertical");
+    tarjeta.classList.add('mapa-tarjeta--vertical');
     return tarjeta;
   }
 
   if (contenedorLineasEl) {
     columnaIzquierda.appendChild(
       paraColumnaVertical(
-        envolverEnTarjeta(contenedorLineasEl, "Evolución en el tiempo", "Casos por siglo o década según las selecciones")
-      )
+        envolverEnTarjeta(
+          contenedorLineasEl,
+          'Evolución en el tiempo',
+          'Casos por siglo o década según las selecciones',
+        ),
+      ),
     );
   }
   columnaIzquierda.appendChild(
     paraColumnaVertical(
       envolverEnTarjeta(
         contenedorGrafoEl,
-        "Relación entre crímenes",
-        "Crímenes cometidos en un mismo caso · Selecciona los filtros para una visión granular"
-      )
-    )
+        'Relación entre crímenes',
+        'Crímenes cometidos en un mismo caso · Selecciona los filtros para una visión granular',
+      ),
+    ),
   );
 
   columnaViz.appendChild(columnaIzquierda);
   columnaViz.appendChild(
-    envolverEnTarjeta(mapaContenedor, "Distribución geográfica", "Haz clic en un punto para fijarlo y compararlo")
+    envolverEnTarjeta(
+      mapaContenedor,
+      'Distribución geográfica',
+      'Haz clic en un punto para fijarlo y compararlo',
+    ),
   );
 
   if (dashboardWrap) {
-    dashboardWrap.classList.add("mapa-dashboard-wrap");
+    dashboardWrap.classList.add('mapa-dashboard-wrap');
     dashboardWrap.appendChild(panelFiltros);
     dashboardWrap.appendChild(columnaViz);
   }
 
-  let barraModoTiempo = document.getElementById("barra-modo-tiempo");
+  let barraModoTiempo = document.getElementById('barra-modo-tiempo');
   if (!barraModoTiempo) {
-    barraModoTiempo = document.createElement("div");
-    barraModoTiempo.id = "barra-modo-tiempo";
+    barraModoTiempo = document.createElement('div');
+    barraModoTiempo.id = 'barra-modo-tiempo';
   }
-  barraModoTiempo.className = "mapa-barra-modo-tiempo";
+  barraModoTiempo.className = 'mapa-barra-modo-tiempo';
 
   const MODOS_TIEMPO = [
-    { modo: "decada", etiqueta: "Década" },
-    { modo: "siglo", etiqueta: "Siglo" },
+    { modo: 'decada', etiqueta: 'Década' },
+    { modo: 'siglo', etiqueta: 'Siglo' },
   ];
   const botonesModoTiempo: Record<string, any> = {};
   MODOS_TIEMPO.forEach(({ modo, etiqueta }) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
+    const btn = document.createElement('button');
+    btn.type = 'button';
     btn.textContent = etiqueta as unknown as string;
-    btn.className = "btn-mapa-modo";
-    btn.addEventListener("click", () => cambiarModoTiempo(modo));
+    btn.className = 'btn-mapa-modo';
+    btn.addEventListener('click', () => cambiarModoTiempo(modo));
     botonesModoTiempo[modo] = btn;
     barraModoTiempo.appendChild(btn);
   });
@@ -356,54 +393,66 @@ export async function inicializarDashboard() {
     dashboardWrap.parentElement.insertBefore(barraModoTiempo, dashboardWrap);
   }
 
-  mapaContenedor.classList.add("mapa-panel-ancho-completo");
+  mapaContenedor.classList.add('mapa-panel-ancho-completo');
   if (contenedorLineasEl) {
-    contenedorLineasEl.classList.add("mapa-panel-ancho-completo");
+    contenedorLineasEl.classList.add('mapa-panel-ancho-completo');
   }
 
-  panelFiltros!.classList.add("panel-filtros-mapa");
+  panelFiltros!.classList.add('panel-filtros-mapa');
 
-  const tituloPanel = document.createElement("div");
-  tituloPanel.textContent = "Filtros";
-  tituloPanel.className = "panel-filtros-titulo";
+  const tituloPanel = document.createElement('div');
+  tituloPanel.textContent = 'Filtros';
+  tituloPanel.className = 'panel-filtros-titulo';
   panelFiltros!.appendChild(tituloPanel);
 
-  function crearComboBuscable({ etiqueta, opciones, valorInicial, onChange, notaVacia }: { etiqueta: string; opciones: any[]; valorInicial?: any; onChange: (v: any) => void; notaVacia?: string }) {
-    const wrap = document.createElement("div");
-    wrap.className = "filtro-combo";
+  function crearComboBuscable({
+    etiqueta,
+    opciones,
+    valorInicial,
+    onChange,
+    notaVacia,
+  }: {
+    etiqueta: string;
+    opciones: any[];
+    valorInicial?: any;
+    onChange: (v: any) => void;
+    notaVacia?: string;
+  }) {
+    const wrap = document.createElement('div');
+    wrap.className = 'filtro-combo';
 
-    const label = document.createElement("label");
+    const label = document.createElement('label');
     label.textContent = etiqueta as unknown as string;
-    label.className = "filtro-label";
+    label.className = 'filtro-label';
 
-    const input = document.createElement("input");
-    input.type = "text";
+    const input = document.createElement('input');
+    input.type = 'text';
     input.value = valorInicial as unknown as string;
     input.readOnly = true;
-    input.className = "filtro-combo-input";
+    input.className = 'filtro-combo-input';
 
-    const lista = document.createElement("ul");
-    lista.className = "filtro-combo-lista";
+    const lista = document.createElement('ul');
+    lista.className = 'filtro-combo-lista';
 
-    const nota = document.createElement("div");
-    nota.className = "filtro-combo-nota";
+    const nota = document.createElement('div');
+    nota.className = 'filtro-combo-nota';
 
-    let opcionesCompletas = ["Todos", ...opciones];
+    let opcionesCompletas = ['Todos', ...opciones];
 
     function pintarLista(filtro: any) {
-      lista.innerHTML = "";
+      lista.innerHTML = '';
       const f = filtro.trim().toLowerCase();
       const filtradas = f
-        ? opcionesCompletas.filter(o => o.toLowerCase().includes(f))
+        ? opcionesCompletas.filter((o) => o.toLowerCase().includes(f))
         : opcionesCompletas;
-      filtradas.slice(0, 200).forEach(op => {
-        const li = document.createElement("li");
+      filtradas.slice(0, 200).forEach((op) => {
+        const li = document.createElement('li');
         li.textContent = op as unknown as string;
-        li.className = "filtro-combo-item";
-        li.addEventListener("mousedown", e => e.preventDefault());
-        li.addEventListener("click", () => {
+        li.className = 'filtro-combo-item';
+        li.addEventListener('mousedown', (e) => e.preventDefault());
+        li.addEventListener('click', () => {
           input.value = op as unknown as string;
-          lista.classList.remove("filtro-combo-lista--abierta");
+          lista.classList.remove('filtro-combo-lista--abierta');
           input.blur();
           onChange(op);
         });
@@ -411,23 +460,23 @@ export async function inicializarDashboard() {
       });
     }
 
-    input.addEventListener("click", () => {
+    input.addEventListener('click', () => {
       input.readOnly = false;
       const valorActual = input.value;
-      input.value = "" as unknown as string;
-      pintarLista("");
-      lista.classList.add("filtro-combo-lista--abierta");
+      input.value = '' as unknown as string;
+      pintarLista('');
+      lista.classList.add('filtro-combo-lista--abierta');
       input.dataset.valorPrevio = valorActual;
     });
 
-    input.addEventListener("input", () => pintarLista(input.value));
+    input.addEventListener('input', () => pintarLista(input.value));
 
-    input.addEventListener("blur", () => {
+    input.addEventListener('blur', () => {
       setTimeout(() => {
-        lista.classList.remove("filtro-combo-lista--abierta");
+        lista.classList.remove('filtro-combo-lista--abierta');
         input.readOnly = true;
         if (!opcionesCompletas.includes(input.value)) {
-          input.value = input.dataset.valorPrevio || valorInicial as unknown as string;
+          input.value = input.dataset.valorPrevio || (valorInicial as unknown as string);
         }
       }, 100);
     });
@@ -436,41 +485,41 @@ export async function inicializarDashboard() {
     panelFiltros!.appendChild(wrap);
 
     function actualizarOpciones(nuevasOpciones: any[]) {
-      opcionesCompletas = ["Todos", ...nuevasOpciones];
-      input.value = "Todos" as unknown as string;
+      opcionesCompletas = ['Todos', ...nuevasOpciones];
+      input.value = 'Todos' as unknown as string;
       if (nuevasOpciones.length === 0) {
-        input.classList.add("filtro-combo-input--oculto");
-        nota.textContent = notaVacia || "Sin opciones disponibles para la selección actual.";
-        nota.classList.add("filtro-combo-nota--visible");
+        input.classList.add('filtro-combo-input--oculto');
+        nota.textContent = notaVacia || 'Sin opciones disponibles para la selección actual.';
+        nota.classList.add('filtro-combo-nota--visible');
       } else {
-        input.classList.remove("filtro-combo-input--oculto");
-        nota.classList.remove("filtro-combo-nota--visible");
+        input.classList.remove('filtro-combo-input--oculto');
+        nota.classList.remove('filtro-combo-nota--visible');
       }
     }
 
     return { wrap, actualizarOpciones };
   }
 
-  const wrapTiempo = document.createElement("div");
-  wrapTiempo.className = "mapa-wrap-tiempo";
+  const wrapTiempo = document.createElement('div');
+  wrapTiempo.className = 'mapa-wrap-tiempo';
 
-  const labelTiempo = document.createElement("label");
-  labelTiempo.textContent = "Fecha";
-  labelTiempo.className = "filtro-label";
+  const labelTiempo = document.createElement('label');
+  labelTiempo.textContent = 'Fecha';
+  labelTiempo.className = 'filtro-label';
 
-  const slider = document.createElement("input");
-  slider.type = "range";
-  slider.className = "mapa-slider";
+  const slider = document.createElement('input');
+  slider.type = 'range';
+  slider.className = 'mapa-slider';
 
-  const filaSiglos = document.createElement("div");
-  filaSiglos.className = "mapa-fila-siglos";
+  const filaSiglos = document.createElement('div');
+  filaSiglos.className = 'mapa-fila-siglos';
   const botonesSiglo: Record<string, any> = {};
-  SIGLOS.forEach(siglo => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.textContent = siglo.replace("Siglo ", "");
-    btn.className = "btn-mapa-siglo";
-    btn.addEventListener("click", () => {
+  SIGLOS.forEach((siglo) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = siglo.replace('Siglo ', '');
+    btn.className = 'btn-mapa-siglo';
+    btn.addEventListener('click', () => {
       estado.tiempoIdx = SIGLOS.indexOf(siglo);
       sincronizarSlider();
       actualizarMapa();
@@ -480,31 +529,36 @@ export async function inicializarDashboard() {
     filaSiglos.appendChild(btn);
   });
 
-  const etiquetaTiempo = document.createElement("div");
-  etiquetaTiempo.className = "mapa-etiqueta-tiempo";
+  const etiquetaTiempo = document.createElement('div');
+  etiquetaTiempo.className = 'mapa-etiqueta-tiempo';
 
   function sincronizarSlider() {
     const lista = tiempoListaActual();
-    const esSiglo = estado.modoTiempo === "siglo";
+    const esSiglo = estado.modoTiempo === 'siglo';
     slider.min = 0 as unknown as string;
-    slider.max = lista.length - 1 as unknown as string;
+    slider.max = (lista.length - 1) as unknown as string;
     slider.step = 1 as unknown as string;
     slider.value = estado.tiempoIdx as unknown as string;
-    slider.classList.toggle("mapa-slider--oculto", esSiglo);
-    filaSiglos.classList.toggle("mapa-fila-siglos--oculta", !esSiglo);
+    slider.classList.toggle('mapa-slider--oculto', esSiglo);
+    filaSiglos.classList.toggle('mapa-fila-siglos--oculta', !esSiglo);
     etiquetaTiempo.textContent = valorTiempoActual();
     Object.entries(botonesModoTiempo).forEach(([modo, btn]) => {
-      btn.classList.toggle("btn-mapa--activo", estado.modoTiempo === modo);
+      btn.classList.toggle('btn-mapa--activo', estado.modoTiempo === modo);
     });
     Object.entries(botonesSiglo).forEach(([siglo, btn]) => {
-      btn.classList.toggle("btn-mapa--activo", esSiglo && valorTiempoActual() === siglo);
+      btn.classList.toggle('btn-mapa--activo', esSiglo && valorTiempoActual() === siglo);
     });
   }
 
   function añoRepresentativoActual() {
     const valor = valorTiempoActual();
-    if (estado.modoTiempo === "siglo") {
-      const base: Record<string, number> = { "Siglo XVI": 1550, "Siglo XVII": 1650, "Siglo XVIII": 1750, "Siglo XIX": 1850 };
+    if (estado.modoTiempo === 'siglo') {
+      const base: Record<string, number> = {
+        'Siglo XVI': 1550,
+        'Siglo XVII': 1650,
+        'Siglo XVIII': 1750,
+        'Siglo XIX': 1850,
+      };
       return base[valor] ?? 1650;
     }
     return valor;
@@ -515,7 +569,10 @@ export async function inicializarDashboard() {
     let mejorDist = Infinity;
     lista.forEach((v, i) => {
       const dist = Math.abs(v - valor);
-      if (dist < mejorDist) { mejorDist = dist; mejorIdx = i; }
+      if (dist < mejorDist) {
+        mejorDist = dist;
+        mejorIdx = i;
+      }
     });
     return mejorIdx;
   }
@@ -524,7 +581,7 @@ export async function inicializarDashboard() {
     if (estado.modoTiempo === modo) return;
     const añoRef = añoRepresentativoActual();
     estado.modoTiempo = modo;
-    if (modo === "siglo") {
+    if (modo === 'siglo') {
       const siglo = getSiglo(añoRef) || SIGLOS[0];
       estado.tiempoIdx = Math.max(0, SIGLOS.indexOf(siglo));
     } else {
@@ -536,7 +593,7 @@ export async function inicializarDashboard() {
     actualizarGrafoRelacion();
   }
 
-  slider.addEventListener("input", () => {
+  slider.addEventListener('input', () => {
     estado.tiempoIdx = +slider.value;
     etiquetaTiempo.textContent = valorTiempoActual();
     actualizarMapa();
@@ -547,31 +604,36 @@ export async function inicializarDashboard() {
   panelFiltros!.appendChild(wrapTiempo);
 
   function subcrimenesParaCrimen(crimen: string) {
-    if (crimen === "Todos") return subcrimenesLista;
-    return [...new Set(
-      datosLimpios
-        .filter((d: FilaCsv) => d.Nombre_Codigo === crimen && !nombresGenerales.has(d.Nombre_Sub_Codigo))
-        .map((d: FilaCsv) => d.Nombre_Sub_Codigo)
-    )].sort(compararPorLinaje);
+    if (crimen === 'Todos') return subcrimenesLista;
+    return [
+      ...new Set(
+        datosLimpios
+          .filter(
+            (d: FilaCsv) =>
+              d.Nombre_Codigo === crimen && !nombresGenerales.has(d.Nombre_Sub_Codigo),
+          )
+          .map((d: FilaCsv) => d.Nombre_Sub_Codigo),
+      ),
+    ].sort(compararPorLinaje);
   }
 
-  const wrapCrimen = document.createElement("div");
-  wrapCrimen.className = "mapa-wrap-crimen";
-  const labelCrimen = document.createElement("label");
-  labelCrimen.textContent = "Crimen";
-  labelCrimen.className = "filtro-label";
-  const selectCrimen = document.createElement("select");
-  selectCrimen.className = "filtro-select";
-  ["Todos", ...crimenesLista].forEach(c => {
-    const opt = document.createElement("option");
+  const wrapCrimen = document.createElement('div');
+  wrapCrimen.className = 'mapa-wrap-crimen';
+  const labelCrimen = document.createElement('label');
+  labelCrimen.textContent = 'Crimen';
+  labelCrimen.className = 'filtro-label';
+  const selectCrimen = document.createElement('select');
+  selectCrimen.className = 'filtro-select';
+  ['Todos', ...crimenesLista].forEach((c) => {
+    const opt = document.createElement('option');
     opt.value = c as unknown as string;
     opt.textContent = c as unknown as string;
     selectCrimen.appendChild(opt);
   });
   selectCrimen.value = estado.crimen as unknown as string;
-  selectCrimen.addEventListener("change", e => {
+  selectCrimen.addEventListener('change', (e) => {
     estado.crimen = (e.target as HTMLInputElement).value;
-    estado.subcrimen = "Todos";
+    estado.subcrimen = 'Todos';
     comboSubcrimen.actualizarOpciones(subcrimenesParaCrimen(estado.crimen));
     actualizarMapa();
     actualizarPanelSecundario(true);
@@ -580,10 +642,10 @@ export async function inicializarDashboard() {
   panelFiltros!.appendChild(wrapCrimen);
 
   const comboSubcrimen = crearComboBuscable({
-    etiqueta: "Subcrimen",
+    etiqueta: 'Subcrimen',
     opciones: subcrimenesParaCrimen(estado.crimen),
     valorInicial: estado.subcrimen,
-    notaVacia: "Este crimen no tiene subcrímenes registrados.",
+    notaVacia: 'Este crimen no tiene subcrímenes registrados.',
     onChange: (valor: any) => {
       estado.subcrimen = valor;
       actualizarMapa();
@@ -592,7 +654,7 @@ export async function inicializarDashboard() {
   });
 
   crearComboBuscable({
-    etiqueta: "Lugar",
+    etiqueta: 'Lugar',
     opciones: lugaresLista,
     valorInicial: estado.lugar,
     onChange: (valor: number) => {
@@ -601,35 +663,37 @@ export async function inicializarDashboard() {
     },
   });
 
-  const btnLimpiarPines = document.createElement("button");
-  btnLimpiarPines.type = "button";
-  btnLimpiarPines.textContent = "Quitar comparaciones";
-  btnLimpiarPines.className = "btn-mapa-limpiar";
-  btnLimpiarPines.addEventListener("click", () => {
+  const btnLimpiarPines = document.createElement('button');
+  btnLimpiarPines.type = 'button';
+  btnLimpiarPines.textContent = 'Quitar comparaciones';
+  btnLimpiarPines.className = 'btn-mapa-limpiar';
+  btnLimpiarPines.addEventListener('click', () => {
     estado.lugaresFijados.clear();
-    btnLimpiarPines.classList.remove("btn-mapa--visible");
+    btnLimpiarPines.classList.remove('btn-mapa--visible');
     actualizarMapa();
     actualizarPanelSecundario(true);
   });
   panelFiltros!.appendChild(btnLimpiarPines);
 
-  const avisoSinDatos = document.createElement("div");
-  avisoSinDatos.className = "filtro-aviso-sin-datos";
+  const avisoSinDatos = document.createElement('div');
+  avisoSinDatos.className = 'filtro-aviso-sin-datos';
   panelFiltros!.appendChild(avisoSinDatos);
 
   function actualizarAvisoLugar() {
-    if (estado.lugar === "Todos") {
-      avisoSinDatos.classList.remove("filtro-aviso-sin-datos--visible");
+    if (estado.lugar === 'Todos') {
+      avisoSinDatos.classList.remove('filtro-aviso-sin-datos--visible');
       return;
     }
     const campo = campoTiempoActual();
     const valor = valorTiempoActual();
-    const hayDatos = datosFiltradosBase().some((d: FilaCsv) => d.lugar === estado.lugar && d[campo] === valor);
+    const hayDatos = datosFiltradosBase().some(
+      (d: FilaCsv) => d.lugar === estado.lugar && d[campo] === valor,
+    );
     if (hayDatos) {
-      avisoSinDatos.classList.remove("filtro-aviso-sin-datos--visible");
+      avisoSinDatos.classList.remove('filtro-aviso-sin-datos--visible');
     } else {
       avisoSinDatos.textContent = `No hay datos para "${estado.lugar}" en ${valor}.`;
-      avisoSinDatos.classList.add("filtro-aviso-sin-datos--visible");
+      avisoSinDatos.classList.add('filtro-aviso-sin-datos--visible');
     }
   }
 
@@ -639,25 +703,25 @@ export async function inicializarDashboard() {
   const height = 820;
 
   const RADIO_PUNTO = 2;
-  const PUNTO_COLOR = leerVariableCss("--mapa-punto-color", "#7b5ea7");
+  const PUNTO_COLOR = leerVariableCss('--mapa-punto-color', '#7b5ea7');
   const rScale = d3.scaleLog().range([RADIO_PUNTO, 18]);
   const colorScaleMap = d3.scaleSequentialLog(
-    d3.interpolateHcl(PALETA.acentoSecundario, PALETA.acentoLinea)
+    d3.interpolateHcl(PALETA.acentoSecundario, PALETA.acentoLinea),
   );
   let escalarPorCantidad = false;
 
   const botonVerCasosMapa = crearBotonVerCasos();
-  botonVerCasosMapa.boton.classList.add("btn-mapa-ver-casos--separado");
+  botonVerCasosMapa.boton.classList.add('btn-mapa-ver-casos--separado');
   mapaContenedor.appendChild(botonVerCasosMapa.boton);
 
-  const btnEscalarTamanio = document.createElement("button");
-  btnEscalarTamanio.type = "button";
-  btnEscalarTamanio.textContent = "Tamaño según cantidad de crímenes";
-  btnEscalarTamanio.className = "btn-mapa-escalar";
+  const btnEscalarTamanio = document.createElement('button');
+  btnEscalarTamanio.type = 'button';
+  btnEscalarTamanio.textContent = 'Tamaño según cantidad de crímenes';
+  btnEscalarTamanio.className = 'btn-mapa-escalar';
   function actualizarEstiloBotonEscalar() {
-    btnEscalarTamanio.classList.toggle("btn-mapa--activo", escalarPorCantidad);
+    btnEscalarTamanio.classList.toggle('btn-mapa--activo', escalarPorCantidad);
   }
-  btnEscalarTamanio.addEventListener("click", () => {
+  btnEscalarTamanio.addEventListener('click', () => {
     escalarPorCantidad = !escalarPorCantidad;
     actualizarEstiloBotonEscalar();
     actualizarMapa();
@@ -665,47 +729,62 @@ export async function inicializarDashboard() {
   actualizarEstiloBotonEscalar();
   mapaContenedor.appendChild(btnEscalarTamanio);
 
-  const svgMapa = d3.select(mapaContenedor)
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("viewBox", [0, 0, width, height])
-    .attr("class", "mapa-svg");
+  const svgMapa = d3
+    .select(mapaContenedor)
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', [0, 0, width, height])
+    .attr('class', 'mapa-svg');
 
   const domainFeature = {
-    type: "Feature",
-    geometry: { type: "MultiPoint", coordinates: [[-83, -5], [-60, 12]] },
+    type: 'Feature',
+    geometry: {
+      type: 'MultiPoint',
+      coordinates: [
+        [-83, -5],
+        [-60, 12],
+      ],
+    },
   };
 
-  const projection = d3.geoMercator().fitExtent([[0, 0], [width, height]], domainFeature as any);
+  const projection = d3.geoMercator().fitExtent(
+    [
+      [0, 0],
+      [width, height],
+    ],
+    domainFeature as any,
+  );
   const path = d3.geoPath(projection);
-  const gZoom = svgMapa.append("g").attr("class", "capa-zoom");
-  const gMapaBase = gZoom.append("g").attr("class", "capa-mapa");
+  const gZoom = svgMapa.append('g').attr('class', 'capa-zoom');
+  const gMapaBase = gZoom.append('g').attr('class', 'capa-mapa');
 
-  gMapaBase.selectAll("path")
+  gMapaBase
+    .selectAll('path')
     .data(NuevaGranada.features ? NuevaGranada.features : [NuevaGranada])
-    .join("path")
-    .attr("d", path as any)
-    .attr("fill", PALETA.tierra)
-    .attr("stroke", PALETA.borde)
-    .attr("stroke-opacity", 0.7);
+    .join('path')
+    .attr('d', path as any)
+    .attr('fill', PALETA.tierra)
+    .attr('stroke', PALETA.borde)
+    .attr('stroke-opacity', 0.7);
 
-  const gPuntos = gZoom.append("g").attr("class", "capa-puntos");
-  const gCapsulas = gZoom.append("g").attr("class", "capa-capsulas");
+  const gPuntos = gZoom.append('g').attr('class', 'capa-puntos');
+  const gCapsulas = gZoom.append('g').attr('class', 'capa-capsulas');
 
   let lugarHoverActivo: NodoMutable = null;
 
-  const zoom = d3.zoom()
+  const zoom = d3
+    .zoom()
     .scaleExtent([1, 12])
-    .on("zoom", (event: any) => {
-      gZoom.attr("transform", event.transform);
+    .on('zoom', (event: any) => {
+      gZoom.attr('transform', event.transform);
       const k = event.transform.k;
-      gMapaBase.selectAll("path").attr("stroke-width", 0.5 / k);
-      gPuntos.selectAll("circle").attr("stroke-width", 0.5 / k);
+      gMapaBase.selectAll('path').attr('stroke-width', 0.5 / k);
+      gPuntos.selectAll('circle').attr('stroke-width', 0.5 / k);
       dibujarCapsulasFijadas();
       if (lugarHoverActivo) {
-        gCapsulas.selectAll("g.capsula-hover").remove();
-        const gTemp = gCapsulas.append("g").attr("class", "capsula-hover");
+        gCapsulas.selectAll('g.capsula-hover').remove();
+        const gTemp = gCapsulas.append('g').attr('class', 'capsula-hover');
         construirCapsula(gTemp, lugarHoverActivo.lugar, lugarHoverActivo.coords);
       }
     });
@@ -716,7 +795,7 @@ export async function inicializarDashboard() {
 
   function redibujarCapsulasVisibles() {
     dibujarCapsulasFijadas();
-    const gHover = gCapsulas.select("g.capsula-hover");
+    const gHover = gCapsulas.select('g.capsula-hover');
     if (!gHover.empty() && lugarHoverActivo) {
       construirCapsula(gHover, lugarHoverActivo.lugar, lugarHoverActivo.coords);
     }
@@ -729,14 +808,18 @@ export async function inicializarDashboard() {
   }
 
   function seleccionarFilaCapsula(lugar: string, nombreFila: string) {
-    if (seleccionFilaMapa && seleccionFilaMapa.lugar === lugar && seleccionFilaMapa.nombre === nombreFila) {
+    if (
+      seleccionFilaMapa &&
+      seleccionFilaMapa.lugar === lugar &&
+      seleccionFilaMapa.nombre === nombreFila
+    ) {
       limpiarSeleccionFilaMapa();
       return;
     }
     seleccionFilaMapa = { lugar, nombre: nombreFila };
     redibujarCapsulasVisibles();
     botonVerCasosMapa.mostrar(`${nombreFila} · ${lugar}`, () => {
-      if (estado.crimen === "Todos") {
+      if (estado.crimen === 'Todos') {
         irATablasFiltradas({ lugar, codigo: nombreFila });
       } else if (nombreFila === estado.crimen) {
         irATablasFiltradas({ lugar, codigo: estado.crimen, subcodigo: null });
@@ -755,92 +838,125 @@ export async function inicializarDashboard() {
     return { referencia, filasVisibles, totalCasos, anchoC, altoC };
   }
 
-  function construirCapsula(g: SeleccionD3, lugar: string, coords: [number, number], posOverride?: any) {
+  function construirCapsula(
+    g: SeleccionD3,
+    lugar: string,
+    coords: [number, number],
+    posOverride?: any,
+  ) {
     const { filasVisibles, totalCasos, anchoC, altoC } = medirCapsula(lugar);
     const provincia = getProvincia(coords);
 
     const k = d3.zoomTransform(svgMapa.node()!).k;
     const px = projection(coords)![0];
     const py = projection(coords)![1];
-    const destino = posOverride || { x: px - (anchoC / 2) / k, y: py - (altoC + 16) / k };
-    g.attr("transform", `translate(${destino.x}, ${destino.y}) scale(${1 / k})`);
-    g.selectAll("*").remove();
+    const destino = posOverride || { x: px - anchoC / 2 / k, y: py - (altoC + 16) / k };
+    g.attr('transform', `translate(${destino.x}, ${destino.y}) scale(${1 / k})`);
+    g.selectAll('*').remove();
 
     const puntaLocalX = anchoC / 2;
     const puntaLocalY = altoC;
     const puntoLocalX = (px - destino.x) * k;
     const puntoLocalY = (py - destino.y) * k;
     if (Math.abs(puntoLocalX - puntaLocalX) > 1 || Math.abs(puntoLocalY - (puntaLocalY + 8)) > 1) {
-      g.append("line")
-        .attr("x1", puntaLocalX).attr("y1", puntaLocalY + 4)
-        .attr("x2", puntoLocalX).attr("y2", puntoLocalY)
-        .attr("class", "mapa-capsula-linea-guia");
-      g.append("circle")
-        .attr("cx", puntoLocalX).attr("cy", puntoLocalY).attr("r", 3)
-        .attr("class", "mapa-capsula-punto-guia");
+      g.append('line')
+        .attr('x1', puntaLocalX)
+        .attr('y1', puntaLocalY + 4)
+        .attr('x2', puntoLocalX)
+        .attr('y2', puntoLocalY)
+        .attr('class', 'mapa-capsula-linea-guia');
+      g.append('circle')
+        .attr('cx', puntoLocalX)
+        .attr('cy', puntoLocalY)
+        .attr('r', 3)
+        .attr('class', 'mapa-capsula-punto-guia');
     }
 
-    g.append("rect")
-      .attr("width", anchoC)
-      .attr("height", altoC)
-      .attr("rx", 5)
-      .attr("class", "mapa-capsula-fondo mapa-capsula-fondo--interactivo");
+    g.append('rect')
+      .attr('width', anchoC)
+      .attr('height', altoC)
+      .attr('rx', 5)
+      .attr('class', 'mapa-capsula-fondo mapa-capsula-fondo--interactivo');
 
-    g.append("text")
-      .attr("x", 10).attr("y", 16)
-      .attr("class", "mapa-capsula-titulo")
-      .text(lugar.length > 26 ? lugar.slice(0, 24) + "…" : lugar);
+    g.append('text')
+      .attr('x', 10)
+      .attr('y', 16)
+      .attr('class', 'mapa-capsula-titulo')
+      .text(lugar.length > 26 ? lugar.slice(0, 24) + '…' : lugar);
 
-    g.append("text")
-      .attr("x", 10).attr("y", 30)
-      .attr("class", "mapa-capsula-subtitulo")
+    g.append('text')
+      .attr('x', 10)
+      .attr('y', 30)
+      .attr('class', 'mapa-capsula-subtitulo')
       .text(`${provincia} · ${valorTiempoActual()}`);
 
     if (totalCasos === 0) {
-      g.append("text")
-        .attr("x", anchoC / 2).attr("y", altoC - 16)
-        .attr("text-anchor", "middle")
-        .attr("class", "mapa-capsula-sin-casos")
-        .text("Sin casos");
+      g.append('text')
+        .attr('x', anchoC / 2)
+        .attr('y', altoC - 16)
+        .attr('text-anchor', 'middle')
+        .attr('class', 'mapa-capsula-sin-casos')
+        .text('Sin casos');
     } else {
       const maxCasos = d3.max(filasVisibles, (d: FilaCsv) => d.casos) || 1;
       const xBarra = d3.scaleLinear().domain([0, maxCasos]).range([0, 60]);
       filasVisibles.forEach((r, i) => {
         const yRow = 38 + i * 20;
-        const filaSeleccionada = !!(seleccionFilaMapa && seleccionFilaMapa.lugar === lugar && seleccionFilaMapa.nombre === r.nombre);
-        g.append("text")
-          .attr("x", 10).attr("y", yRow + 10)
-          .attr("class", `mapa-capsula-fila-texto${filaSeleccionada ? " mapa-capsula-fila-texto--activa" : ""}`)
-          .text(r.nombre.length > 18 ? r.nombre.slice(0, 16) + "…" : r.nombre);
-        g.append("rect")
-          .attr("x", 122).attr("y", yRow + 2)
-          .attr("width", xBarra(r.casos)).attr("height", 9).attr("rx", 2)
-          .attr("class", "mapa-capsula-barra")
-          .attr("stroke", filaSeleccionada ? "#fff" : "none")
-          .attr("stroke-width", filaSeleccionada ? 1 : 0);
-        g.append("text")
-          .attr("x", anchoC - 10).attr("y", yRow + 10)
-          .attr("text-anchor", "end")
-          .attr("class", "mapa-capsula-fila-conteo")
+        const filaSeleccionada = !!(
+          seleccionFilaMapa &&
+          seleccionFilaMapa.lugar === lugar &&
+          seleccionFilaMapa.nombre === r.nombre
+        );
+        g.append('text')
+          .attr('x', 10)
+          .attr('y', yRow + 10)
+          .attr(
+            'class',
+            `mapa-capsula-fila-texto${filaSeleccionada ? ' mapa-capsula-fila-texto--activa' : ''}`,
+          )
+          .text(r.nombre.length > 18 ? r.nombre.slice(0, 16) + '…' : r.nombre);
+        g.append('rect')
+          .attr('x', 122)
+          .attr('y', yRow + 2)
+          .attr('width', xBarra(r.casos))
+          .attr('height', 9)
+          .attr('rx', 2)
+          .attr('class', 'mapa-capsula-barra')
+          .attr('stroke', filaSeleccionada ? '#fff' : 'none')
+          .attr('stroke-width', filaSeleccionada ? 1 : 0);
+        g.append('text')
+          .attr('x', anchoC - 10)
+          .attr('y', yRow + 10)
+          .attr('text-anchor', 'end')
+          .attr('class', 'mapa-capsula-fila-conteo')
           .text(r.casos);
 
-        g.append("rect")
-          .attr("x", 0).attr("y", yRow - 3)
-          .attr("width", anchoC).attr("height", 20)
-          .attr("class", "mapa-capsula-fila-clic")
-          .attr("fill", filaSeleccionada ? "rgba(255,255,255,0.16)" : "transparent")
-          .on("mouseenter", function (this: any) { if (!filaSeleccionada) d3.select(this).attr("fill", "rgba(255,255,255,0.08)"); })
-          .on("mouseleave", function (this: any) { if (!filaSeleccionada) d3.select(this).attr("fill", "transparent"); })
-          .on("click", (event: MouseEvent) => {
+        g.append('rect')
+          .attr('x', 0)
+          .attr('y', yRow - 3)
+          .attr('width', anchoC)
+          .attr('height', 20)
+          .attr('class', 'mapa-capsula-fila-clic')
+          .attr('fill', filaSeleccionada ? 'rgba(255,255,255,0.16)' : 'transparent')
+          .on('mouseenter', function (this: any) {
+            if (!filaSeleccionada) d3.select(this).attr('fill', 'rgba(255,255,255,0.08)');
+          })
+          .on('mouseleave', function (this: any) {
+            if (!filaSeleccionada) d3.select(this).attr('fill', 'transparent');
+          })
+          .on('click', (event: MouseEvent) => {
             event.stopPropagation();
             seleccionarFilaCapsula(lugar, r.nombre);
           });
       });
     }
 
-    g.append("path")
-      .attr("d", `M${anchoC / 2 - 5},${altoC} L${anchoC / 2 + 5},${altoC} L${anchoC / 2},${altoC + 8} Z`)
-      .attr("class", "mapa-capsula-fondo");
+    g.append('path')
+      .attr(
+        'd',
+        `M${anchoC / 2 - 5},${altoC} L${anchoC / 2 + 5},${altoC} L${anchoC / 2},${altoC + 8} Z`,
+      )
+      .attr('class', 'mapa-capsula-fondo');
   }
 
   function actualizarMapa() {
@@ -853,27 +969,32 @@ export async function inicializarDashboard() {
     const radioDe = (d: FilaCsv) => (escalarPorCantidad ? rScale(d.count) : RADIO_PUNTO);
     const colorDe = (d: FilaCsv) => (escalarPorCantidad ? colorScaleMap(d.count) : PUNTO_COLOR);
 
-    const puntos = gPuntos.selectAll("circle")
-      .data(datos, (d: FilaCsv) => d.lugar);
+    const puntos = gPuntos.selectAll('circle').data(datos, (d: FilaCsv) => d.lugar);
 
     puntos.join(
-      enter => enter.append("circle")
-        .attr("class", "mapa-punto")
-        .attr("cx", (d: FilaCsv) => projection(d.coords)![0] as any)
-        .attr("cy", (d: FilaCsv) => projection(d.coords)![1] as any)
-        .attr("r", 0)
-        .attr("fill", colorDe)
-        .call(enter => enter.transition().duration(220).attr("r", radioDe))
-        .on("mouseenter", (event: MouseEvent, d: FilaCsv) => manejarHoverPunto(event, d, true))
-        .on("mouseleave", (event: MouseEvent, d: FilaCsv) => manejarHoverPunto(event, d, false))
-        .on("click", (event: MouseEvent, d: FilaCsv) => alternarPin(d.lugar)),
-      update => update
-        .call(update => update.transition().duration(180)
-          .attr("cx", (d: FilaCsv) => projection(d.coords)![0] as any)
-          .attr("cy", (d: FilaCsv) => projection(d.coords)![1] as any)
-          .attr("r", radioDe)
-          .attr("fill", colorDe)),
-      exit => exit.transition().duration(150).attr("r", 0).remove()
+      (enter) =>
+        enter
+          .append('circle')
+          .attr('class', 'mapa-punto')
+          .attr('cx', (d: FilaCsv) => projection(d.coords)![0] as any)
+          .attr('cy', (d: FilaCsv) => projection(d.coords)![1] as any)
+          .attr('r', 0)
+          .attr('fill', colorDe)
+          .call((enter) => enter.transition().duration(220).attr('r', radioDe))
+          .on('mouseenter', (event: MouseEvent, d: FilaCsv) => manejarHoverPunto(event, d, true))
+          .on('mouseleave', (event: MouseEvent, d: FilaCsv) => manejarHoverPunto(event, d, false))
+          .on('click', (event: MouseEvent, d: FilaCsv) => alternarPin(d.lugar)),
+      (update) =>
+        update.call((update) =>
+          update
+            .transition()
+            .duration(180)
+            .attr('cx', (d: FilaCsv) => projection(d.coords)![0] as any)
+            .attr('cy', (d: FilaCsv) => projection(d.coords)![1] as any)
+            .attr('r', radioDe)
+            .attr('fill', colorDe),
+        ),
+      (exit) => exit.transition().duration(150).attr('r', 0).remove(),
     );
 
     dibujarCapsulasFijadas();
@@ -885,10 +1006,12 @@ export async function inicializarDashboard() {
       cancelarOcultarCapsulaHover();
       if (!estado.lugaresFijados.has(d.lugar)) {
         lugarHoverActivo = { lugar: d.lugar, coords: d.coords };
-        gCapsulas.selectAll("g.capsula-hover").remove();
-        const gTemp = gCapsulas.append("g").attr("class", "capsula-hover")
-          .on("mouseenter", cancelarOcultarCapsulaHover)
-          .on("mouseleave", programarOcultarCapsulaHover);
+        gCapsulas.selectAll('g.capsula-hover').remove();
+        const gTemp = gCapsulas
+          .append('g')
+          .attr('class', 'capsula-hover')
+          .on('mouseenter', cancelarOcultarCapsulaHover)
+          .on('mouseleave', programarOcultarCapsulaHover);
         construirCapsula(gTemp, d.lugar, d.coords);
       }
     } else {
@@ -909,7 +1032,7 @@ export async function inicializarDashboard() {
     cancelarOcultarCapsulaHover();
     hideCapsulaHoverTimer = setTimeout(() => {
       lugarHoverActivo = null;
-      gCapsulas.selectAll("g.capsula-hover").remove();
+      gCapsulas.selectAll('g.capsula-hover').remove();
     }, 220);
   }
 
@@ -919,7 +1042,7 @@ export async function inicializarDashboard() {
     } else {
       estado.lugaresFijados.add(lugar);
     }
-    btnLimpiarPines.classList.toggle("btn-mapa--visible", estado.lugaresFijados.size > 0);
+    btnLimpiarPines.classList.toggle('btn-mapa--visible', estado.lugaresFijados.size > 0);
     dibujarCapsulasFijadas();
     actualizarPanelSecundario(true);
   }
@@ -934,7 +1057,7 @@ export async function inicializarDashboard() {
   }
 
   function dibujarCapsulasFijadas() {
-    gCapsulas.selectAll("g.capsula-fija").remove();
+    gCapsulas.selectAll('g.capsula-fija').remove();
     const datosActuales = agruparMapaInstante();
     const GAP = 10;
     const cajasOcupadas: any[] = [];
@@ -954,31 +1077,32 @@ export async function inicializarDashboard() {
 
       let caja = { x: sx - anchoC / 2, y: sy - altoC - 16, w: anchoC, h: altoC };
       let intento = 0;
-      while (cajasOcupadas.some(c => seSuperponen(c, caja)) && intento < 24) {
+      while (cajasOcupadas.some((c) => seSuperponen(c, caja)) && intento < 24) {
         intento++;
         const lado = intento % 2 === 0 ? 1 : -1;
         const paso = Math.ceil(intento / 2);
         caja = {
           x: sx - anchoC / 2 + lado * paso * (anchoC + GAP),
           y: sy - altoC - 16 - Math.floor(paso / 3) * (altoC + GAP),
-          w: anchoC, h: altoC,
+          w: anchoC,
+          h: altoC,
         };
       }
       cajasOcupadas.push(caja);
 
       const destino = { x: (caja.x - t.x) / k, y: (caja.y - t.y) / k };
 
-      const g = gCapsulas.append("g").attr("class", "capsula-fija");
+      const g = gCapsulas.append('g').attr('class', 'capsula-fija');
       construirCapsula(g, lugar, coords, destino);
-      g.select("rect").attr("stroke", PALETA.acentoLinea).attr("stroke-width", 1.5);
+      g.select('rect').attr('stroke', PALETA.acentoLinea).attr('stroke-width', 1.5);
     });
   }
 
-  const contenedorLineas = document.getElementById("crimenesChart");
+  const contenedorLineas = document.getElementById('crimenesChart');
   let timerRef: NodoMutable = null;
 
   if (contenedorLineas) {
-    contenedorLineas!.classList.add("mapa-contenedor-lineas");
+    contenedorLineas!.classList.add('mapa-contenedor-lineas');
 
     const botonVerCasosLinea = crearBotonVerCasos();
     if (contenedorLineas!.parentElement) {
@@ -987,11 +1111,12 @@ export async function inicializarDashboard() {
     let seleccionPuntoLinea: NodoMutable = null;
     let lineGroupsPorSerie = new Map();
 
-    const tooltipLineas = document.createElement("div");
-    tooltipLineas.className = "tooltip-grafico tooltip-grafico--sans";
+    const tooltipLineas = document.createElement('div');
+    tooltipLineas.className = 'tooltip-grafico tooltip-grafico--sans';
 
     const MARGIN = { top: 60, right: 170, bottom: 50, left: 55 };
-    const WIDTH = 700, HEIGHT = 300;
+    const WIDTH = 700,
+      HEIGHT = 300;
     const IW = WIDTH - MARGIN.left - MARGIN.right;
     const IH = HEIGHT - MARGIN.top - MARGIN.bottom;
     const DURACION_LINEA = 700;
@@ -1001,25 +1126,37 @@ export async function inicializarDashboard() {
       const lista = tiempoListaActual();
       const campo = campoTiempoActual();
       const filtrados = datosFiltradosBase();
-      const puntos = lista.map(t => {
-        const set = new Set(filtrados.filter((d: FilaCsv) => d[campo] === t).map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`));
+      const puntos = lista.map((t) => {
+        const set = new Set(
+          filtrados
+            .filter((d: FilaCsv) => d[campo] === t)
+            .map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`),
+        );
         const cantidad = set.size;
         return { tiempo: t, cantidad, etiqueta: `Todos los crímenes\n${t}: ${cantidad} casos` };
       });
       const total = puntos.reduce((a, p) => a + p.cantidad, 0);
-      return [{ nombre: "Todos los crímenes", total, puntos }];
+      return [{ nombre: 'Todos los crímenes', total, puntos }];
     }
 
     function buildSeriesSubcrimen() {
       const lista = tiempoListaActual();
       const campo = campoTiempoActual();
       const filtrados = datosFiltradosBase();
-      const filtradosConSubcrimen = filtrados.filter((d: FilaCsv) => !nombresGenerales.has(d.Nombre_Sub_Codigo));
-      const subNombres = [...new Set(filtradosConSubcrimen.map((d: FilaCsv) => d.Nombre_Sub_Codigo))].sort(compararPorLinaje);
+      const filtradosConSubcrimen = filtrados.filter(
+        (d: FilaCsv) => !nombresGenerales.has(d.Nombre_Sub_Codigo),
+      );
+      const subNombres = [
+        ...new Set(filtradosConSubcrimen.map((d: FilaCsv) => d.Nombre_Sub_Codigo)),
+      ].sort(compararPorLinaje);
 
       if (subNombres.length === 0) {
-        const puntos = lista.map(t => {
-          const set = new Set(filtrados.filter((d: FilaCsv) => d[campo] === t).map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`));
+        const puntos = lista.map((t) => {
+          const set = new Set(
+            filtrados
+              .filter((d: FilaCsv) => d[campo] === t)
+              .map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`),
+          );
           const cantidad = set.size;
           return { tiempo: t, cantidad, etiqueta: `${estado.crimen}\n${t}: ${cantidad} casos` };
         });
@@ -1027,10 +1164,14 @@ export async function inicializarDashboard() {
         return [{ nombre: estado.crimen, total, puntos }];
       }
 
-      return subNombres.map(sub => {
+      return subNombres.map((sub) => {
         const filas = filtradosConSubcrimen.filter((d: FilaCsv) => d.Nombre_Sub_Codigo === sub);
-        const puntos = lista.map(t => {
-          const set = new Set(filas.filter((d: FilaCsv) => d[campo] === t).map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`));
+        const puntos = lista.map((t) => {
+          const set = new Set(
+            filas
+              .filter((d: FilaCsv) => d[campo] === t)
+              .map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`),
+          );
           const cantidad = set.size;
           return { tiempo: t, cantidad, etiqueta: `${sub}\n${t}: ${cantidad} casos` };
         });
@@ -1046,8 +1187,12 @@ export async function inicializarDashboard() {
 
       return [...estado.lugaresFijados].map((lugar: any) => {
         const filas = filtrados.filter((d: FilaCsv) => d.lugar === lugar);
-        const puntos = lista.map(t => {
-          const set = new Set(filas.filter((d: FilaCsv) => d[campo] === t).map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`));
+        const puntos = lista.map((t) => {
+          const set = new Set(
+            filas
+              .filter((d: FilaCsv) => d[campo] === t)
+              .map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`),
+          );
           const cantidad = set.size;
           return { tiempo: t, cantidad, etiqueta: `${lugar}\n${t}: ${cantidad} casos` };
         });
@@ -1057,8 +1202,11 @@ export async function inicializarDashboard() {
     }
 
     function renderPanelSecundario(conAnimacion: boolean) {
-      if (timerRef) { timerRef.stop(); timerRef = null; }
-      contenedorLineas!.innerHTML = "";
+      if (timerRef) {
+        timerRef.stop();
+        timerRef = null;
+      }
+      contenedorLineas!.innerHTML = '';
       contenedorLineas!.appendChild(tooltipLineas);
 
       seleccionPuntoLinea = null;
@@ -1068,7 +1216,7 @@ export async function inicializarDashboard() {
       const enModoComparacion = estado.lugaresFijados.size > 0;
       const series = enModoComparacion
         ? buildSeriesLugaresFijados()
-        : estado.crimen === "Todos"
+        : estado.crimen === 'Todos'
           ? buildSerieTotal()
           : buildSeriesSubcrimen();
       const lista = tiempoListaActual();
@@ -1077,23 +1225,33 @@ export async function inicializarDashboard() {
       function irDesdeLineaSerie(serie: NodoMutable, tiempo: number) {
         if (enModoComparacion) {
           irATablasFiltradas({ lugar: serie.nombre, fecha: tiempo, escala: campoTiempoActual() });
-        } else if (estado.crimen === "Todos") {
+        } else if (estado.crimen === 'Todos') {
           irATablasFiltradas({ fecha: tiempo, escala: campoTiempoActual() });
         } else if (serie.nombre === estado.crimen) {
-          irATablasFiltradas({ codigo: estado.crimen, subcodigo: null, fecha: tiempo, escala: campoTiempoActual() });
+          irATablasFiltradas({
+            codigo: estado.crimen,
+            subcodigo: null,
+            fecha: tiempo,
+            escala: campoTiempoActual(),
+          });
         } else {
-          irATablasFiltradas({ codigo: estado.crimen, subcodigo: serie.nombre, fecha: tiempo, escala: campoTiempoActual() });
+          irATablasFiltradas({
+            codigo: estado.crimen,
+            subcodigo: serie.nombre,
+            fecha: tiempo,
+            escala: campoTiempoActual(),
+          });
         }
       }
 
       function aplicarResaltadoLinea() {
         if (!seleccionPuntoLinea) {
-          lineGroupsPorSerie.forEach(grp => grp.style("opacity", 1));
+          lineGroupsPorSerie.forEach((grp) => grp.style('opacity', 1));
           return;
         }
-        const nombreSerieActiva = seleccionPuntoLinea.split("||")[0];
+        const nombreSerieActiva = seleccionPuntoLinea.split('||')[0];
         lineGroupsPorSerie.forEach((grp, nombre) => {
-          grp.style("opacity", nombre === nombreSerieActiva ? 1 : 0.2);
+          grp.style('opacity', nombre === nombreSerieActiva ? 1 : 0.2);
         });
       }
 
@@ -1105,131 +1263,197 @@ export async function inicializarDashboard() {
 
       function seleccionarPuntoLinea(serie: NodoMutable, tiempo: number) {
         const clave = `${serie.nombre}||${tiempo}`;
-        if (seleccionPuntoLinea === clave) { limpiarSeleccionLinea(); return; }
+        if (seleccionPuntoLinea === clave) {
+          limpiarSeleccionLinea();
+          return;
+        }
         seleccionPuntoLinea = clave;
         aplicarResaltadoLinea();
-        botonVerCasosLinea.mostrar(`${serie.nombre} · ${tiempo}`, () => irDesdeLineaSerie(serie, tiempo));
+        botonVerCasosLinea.mostrar(`${serie.nombre} · ${tiempo}`, () =>
+          irDesdeLineaSerie(serie, tiempo),
+        );
       }
 
       if (totalGeneral === 0) {
-        const aviso = document.createElement("div");
-        aviso.className = "mapa-aviso-vacio";
-        aviso.textContent = "Sin casos con los filtros actuales";
+        const aviso = document.createElement('div');
+        aviso.className = 'mapa-aviso-vacio';
+        aviso.textContent = 'Sin casos con los filtros actuales';
         contenedorLineas!.appendChild(aviso);
         return;
       }
 
-      const colorScaleLine = d3.scaleOrdinal().domain(series.map(s => s.nombre)).range(COLORES_SERIE);
+      const colorScaleLine = d3
+        .scaleOrdinal()
+        .domain(series.map((s) => s.nombre))
+        .range(COLORES_SERIE);
 
-      const svgLine = d3.create("svg")
-        .attr("viewBox", `0 0 ${WIDTH} ${HEIGHT}`)
-        .attr("class", "mapa-linea-svg")
-        .on("click", () => limpiarSeleccionLinea());
+      const svgLine = d3
+        .create('svg')
+        .attr('viewBox', `0 0 ${WIDTH} ${HEIGHT}`)
+        .attr('class', 'mapa-linea-svg')
+        .on('click', () => limpiarSeleccionLinea());
 
-      const g = svgLine.append("g").attr("transform", `translate(${MARGIN.left},${MARGIN.top})`);
+      const g = svgLine.append('g').attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
       const x = d3.scalePoint().domain(lista).range([0, IW]).padding(0.2);
-      const valores = series.flatMap(s => s.puntos.map(p => p.cantidad));
+      const valores = series.flatMap((s) => s.puntos.map((p) => p.cantidad));
       const yMax = d3.max(valores) || 1;
       const yTope = Math.ceil(yMax * 1.15) || 1;
       const y = d3.scaleLinear().domain([0, yTope]).range([IH, 0]);
 
-      g.append("g")
-        .call(d3.axisLeft(y).ticks(5).tickSize(-IW).tickFormat("" as any))
-        .call(gg => { gg.select(".domain").remove(); gg.selectAll("line").attr("class", "mapa-linea-grid-linea"); });
-
-      const ejeXTiempo = d3.axisBottom(x).tickSize(0);
-      if (estado.modoTiempo !== "siglo" && lista.length > 2) {
-        ejeXTiempo.tickValues([lista[0], lista[lista.length - 1]]);
-      }
-      const haySigloXIXTruncado = estado.modoTiempo === "siglo" && lista.includes("Siglo XIX");
-      ejeXTiempo.tickFormat((d: FilaCsv) => (d === "Siglo XIX" ? `${d} *` : d));
-      g.append("g")
-        .attr("transform", `translate(0,${IH})`)
-        .call(ejeXTiempo)
-        .call(gg => {
-          gg.select(".domain").attr("class", "mapa-linea-eje-dominio");
-          gg.selectAll("text").attr("class", "mapa-linea-eje-x-texto").style("font-size", lista.length > 6 ? "9px" : "12px").attr("dy", "1.4em");
+      g.append('g')
+        .call(
+          d3
+            .axisLeft(y)
+            .ticks(5)
+            .tickSize(-IW)
+            .tickFormat('' as any),
+        )
+        .call((gg) => {
+          gg.select('.domain').remove();
+          gg.selectAll('line').attr('class', 'mapa-linea-grid-linea');
         });
 
-      g.append("g")
-        .call(d3.axisLeft(y).ticks(5).tickFormat(d3.format("d")))
-        .call(gg => { gg.select(".domain").remove(); gg.selectAll("text").attr("class", "mapa-linea-eje-y-texto"); });
+      const ejeXTiempo = d3.axisBottom(x).tickSize(0);
+      if (estado.modoTiempo !== 'siglo' && lista.length > 2) {
+        ejeXTiempo.tickValues([lista[0], lista[lista.length - 1]]);
+      }
+      const haySigloXIXTruncado = estado.modoTiempo === 'siglo' && lista.includes('Siglo XIX');
+      ejeXTiempo.tickFormat((d: FilaCsv) => (d === 'Siglo XIX' ? `${d} *` : d));
+      g.append('g')
+        .attr('transform', `translate(0,${IH})`)
+        .call(ejeXTiempo)
+        .call((gg) => {
+          gg.select('.domain').attr('class', 'mapa-linea-eje-dominio');
+          gg.selectAll('text')
+            .attr('class', 'mapa-linea-eje-x-texto')
+            .style('font-size', lista.length > 6 ? '9px' : '12px')
+            .attr('dy', '1.4em');
+        });
+
+      g.append('g')
+        .call(d3.axisLeft(y).ticks(5).tickFormat(d3.format('d')))
+        .call((gg) => {
+          gg.select('.domain').remove();
+          gg.selectAll('text').attr('class', 'mapa-linea-eje-y-texto');
+        });
 
       const tituloTexto = enModoComparacion
         ? `Comparando ${series.length} lugar(es) fijado(s)`
-        : (estado.crimen === "Todos" ? "Todos los crímenes" : estado.crimen);
+        : estado.crimen === 'Todos'
+          ? 'Todos los crímenes'
+          : estado.crimen;
 
-      svgLine.append("text")
-        .attr("x", MARGIN.left + IW / 2).attr("y", 22)
-        .attr("text-anchor", "middle").attr("class", "mapa-linea-titulo")
+      svgLine
+        .append('text')
+        .attr('x', MARGIN.left + IW / 2)
+        .attr('y', 22)
+        .attr('text-anchor', 'middle')
+        .attr('class', 'mapa-linea-titulo')
         .text(tituloTexto);
 
-      svgLine.append("text")
-        .attr("x", MARGIN.left + IW / 2).attr("y", 40)
-        .attr("text-anchor", "middle").attr("class", "mapa-linea-subtitulo")
-        .text(`${totalGeneral} registros únicos · ${estado.modoTiempo === "siglo" ? "por siglo" : "por década"}`);
+      svgLine
+        .append('text')
+        .attr('x', MARGIN.left + IW / 2)
+        .attr('y', 40)
+        .attr('text-anchor', 'middle')
+        .attr('class', 'mapa-linea-subtitulo')
+        .text(
+          `${totalGeneral} registros únicos · ${estado.modoTiempo === 'siglo' ? 'por siglo' : 'por década'}`,
+        );
 
       if (haySigloXIXTruncado) {
-        svgLine.append("text")
-          .attr("x", MARGIN.left + IW).attr("y", HEIGHT - 8)
-          .attr("text-anchor", "end").attr("class", "mapa-linea-nota")
-          .text("* Siglo XIX: solo hasta 1824");
+        svgLine
+          .append('text')
+          .attr('x', MARGIN.left + IW)
+          .attr('y', HEIGHT - 8)
+          .attr('text-anchor', 'end')
+          .attr('class', 'mapa-linea-nota')
+          .text('* Siglo XIX: solo hasta 1824');
       }
 
-      const lineGen = (d3.line() as any).x((d: FilaCsv) => x(d.tiempo)).y((d: FilaCsv) => y(d.cantidad)).curve(d3.curveLinear);
+      const lineGen = (d3.line() as any)
+        .x((d: FilaCsv) => x(d.tiempo))
+        .y((d: FilaCsv) => y(d.cantidad))
+        .curve(d3.curveLinear);
 
       function dibujarSerieInstante(idx: number) {
         const serie = series[idx];
         const color = colorScaleLine(serie.nombre);
-        const lineGroup = g.append("g");
+        const lineGroup = g.append('g');
         lineGroupsPorSerie.set(serie.nombre, lineGroup);
         if (seleccionPuntoLinea) {
-          const nombreSerieActiva = seleccionPuntoLinea.split("||")[0];
-          lineGroup.style("opacity", serie.nombre === nombreSerieActiva ? 1 : 0.2);
+          const nombreSerieActiva = seleccionPuntoLinea.split('||')[0];
+          lineGroup.style('opacity', serie.nombre === nombreSerieActiva ? 1 : 0.2);
         }
 
-        lineGroup.append("path")
-          .datum(serie.puntos as any).attr("class", "mapa-linea-trazo").attr("stroke", color as string)
-          .attr("d", lineGen as any);
+        lineGroup
+          .append('path')
+          .datum(serie.puntos as any)
+          .attr('class', 'mapa-linea-trazo')
+          .attr('stroke', color as string)
+          .attr('d', lineGen as any);
 
-        serie.puntos.forEach(p => {
-          lineGroup.append("circle")
-            .attr("cx", x(p.tiempo) as any).attr("cy", y(p.cantidad) as any).attr("r", 4)
-            .attr("class", "mapa-linea-punto").attr("stroke", color as string);
-          lineGroup.append("circle")
-            .attr("cx", x(p.tiempo) as any).attr("cy", y(p.cantidad) as any).attr("r", 10)
-            .attr("class", "mapa-linea-punto-hit")
-            .on("mouseenter", () => { tooltipLineas.innerHTML = p.etiqueta.replace(/\n/g, "<br/>"); tooltipLineas.classList.add("tooltip-grafico--visible"); })
-            .on("mousemove", (event: MouseEvent) => {
-              const rect = contenedorLineas!.getBoundingClientRect();
-              tooltipLineas.style.left = (event.clientX - rect.left + 12) + "px";
-              tooltipLineas.style.top = (event.clientY - rect.top + 12) + "px";
+        serie.puntos.forEach((p) => {
+          lineGroup
+            .append('circle')
+            .attr('cx', x(p.tiempo) as any)
+            .attr('cy', y(p.cantidad) as any)
+            .attr('r', 4)
+            .attr('class', 'mapa-linea-punto')
+            .attr('stroke', color as string);
+          lineGroup
+            .append('circle')
+            .attr('cx', x(p.tiempo) as any)
+            .attr('cy', y(p.cantidad) as any)
+            .attr('r', 10)
+            .attr('class', 'mapa-linea-punto-hit')
+            .on('mouseenter', () => {
+              tooltipLineas.innerHTML = p.etiqueta.replace(/\n/g, '<br/>');
+              tooltipLineas.classList.add('tooltip-grafico--visible');
             })
-            .on("mouseleave", () => tooltipLineas.classList.remove("tooltip-grafico--visible"))
-            .on("click", (event: MouseEvent) => {
+            .on('mousemove', (event: MouseEvent) => {
+              const rect = contenedorLineas!.getBoundingClientRect();
+              tooltipLineas.style.left = event.clientX - rect.left + 12 + 'px';
+              tooltipLineas.style.top = event.clientY - rect.top + 12 + 'px';
+            })
+            .on('mouseleave', () => tooltipLineas.classList.remove('tooltip-grafico--visible'))
+            .on('click', (event: MouseEvent) => {
               event.stopPropagation();
               seleccionarPuntoLinea(serie, p.tiempo);
             });
         });
 
-        const ultimoPunto: NodoMutable = [...serie.puntos].reverse().find(p => p.cantidad > 0) || serie.puntos[serie.puntos.length - 1];
-        lineGroup.append("text")
-          .attr("x", x(ultimoPunto!.tiempo)! + 8 as any).attr("y", y(ultimoPunto!.cantidad) + 4 as any)
-          .attr("class", "mapa-linea-etiqueta-serie").style("fill", color as string)
-          .text(serie.nombre.length > 22 ? serie.nombre.slice(0, 20) + "…" : serie.nombre);
+        const ultimoPunto: NodoMutable =
+          [...serie.puntos].reverse().find((p) => p.cantidad > 0) ||
+          serie.puntos[serie.puntos.length - 1];
+        lineGroup
+          .append('text')
+          .attr('x', (x(ultimoPunto!.tiempo)! + 8) as any)
+          .attr('y', (y(ultimoPunto!.cantidad) + 4) as any)
+          .attr('class', 'mapa-linea-etiqueta-serie')
+          .style('fill', color as string)
+          .text(serie.nombre.length > 22 ? serie.nombre.slice(0, 20) + '…' : serie.nombre);
       }
 
       function revelarSecuencial(idx: number) {
         if (idx >= series.length) return;
         const color = colorScaleLine(series[idx].nombre);
-        const lineGroup = g.append("g");
-        const pathLine = lineGroup.append("path")
-          .datum(series[idx].puntos as any).attr("class", "mapa-linea-trazo").attr("stroke", color as string)
-          .attr("d", lineGen as any);
+        const lineGroup = g.append('g');
+        const pathLine = lineGroup
+          .append('path')
+          .datum(series[idx].puntos as any)
+          .attr('class', 'mapa-linea-trazo')
+          .attr('stroke', color as string)
+          .attr('d', lineGen as any);
         const totalLength = pathLine.node()!.getTotalLength();
-        pathLine.attr("stroke-dasharray", `${totalLength} ${totalLength}`).attr("stroke-dashoffset", totalLength)
-          .transition().duration(DURACION_LINEA).ease(d3.easeLinear).attr("stroke-dashoffset", 0)
-          .on("end", () => {
+        pathLine
+          .attr('stroke-dasharray', `${totalLength} ${totalLength}`)
+          .attr('stroke-dashoffset', totalLength)
+          .transition()
+          .duration(DURACION_LINEA)
+          .ease(d3.easeLinear)
+          .attr('stroke-dashoffset', 0)
+          .on('end', () => {
             lineGroup.remove();
             dibujarSerieInstante(idx);
             timerRef = d3.timeout(() => revelarSecuencial(idx + 1), PAUSA);
@@ -1254,44 +1478,59 @@ export async function inicializarDashboard() {
     }
   }
 
-  const estadoGrafo = { agente: "Todos", atributo: "Todos", genero: "Todos" };
+  const estadoGrafo = { agente: 'Todos', atributo: 'Todos', genero: 'Todos' };
 
-  const agentesLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Agente))].filter(Boolean).sort();
-  const atributosLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Atributo))].filter(Boolean).sort();
-  const generosLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Género))].filter(Boolean).sort();
+  const agentesLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Agente))]
+    .filter(Boolean)
+    .sort();
+  const atributosLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Atributo))]
+    .filter(Boolean)
+    .sort();
+  const generosLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Género))]
+    .filter(Boolean)
+    .sort();
 
   function crearSelectGrafo(etiqueta: string, opciones: any[], onChange: (v: any) => void) {
-    const wrap = document.createElement("div");
-    wrap.className = "mapa-wrap-select-grafo";
-    const label = document.createElement("label");
+    const wrap = document.createElement('div');
+    wrap.className = 'mapa-wrap-select-grafo';
+    const label = document.createElement('label');
     label.textContent = etiqueta as unknown as string;
-    label.className = "filtro-label filtro-label--chico";
-    const select = document.createElement("select");
-    select.className = "filtro-select filtro-select--compacto";
-    ["Todos", ...opciones].forEach(op => {
-      const opt = document.createElement("option");
+    label.className = 'filtro-label filtro-label--chico';
+    const select = document.createElement('select');
+    select.className = 'filtro-select filtro-select--compacto';
+    ['Todos', ...opciones].forEach((op) => {
+      const opt = document.createElement('option');
       opt.value = op as unknown as string;
       opt.textContent = op as unknown as string;
       select.appendChild(opt);
     });
-    select.value = "Todos";
-    select.addEventListener("change", () => onChange(select.value));
+    select.value = 'Todos';
+    select.addEventListener('change', () => onChange(select.value));
     wrap.append(label, select);
     return wrap;
   }
 
-  const filaFiltrosGrafo = document.createElement("div");
-  filaFiltrosGrafo.className = "mapa-fila-filtros-grafo";
+  const filaFiltrosGrafo = document.createElement('div');
+  filaFiltrosGrafo.className = 'mapa-fila-filtros-grafo';
   filaFiltrosGrafo.append(
-    crearSelectGrafo("Agente", agentesLista, (valor: any) => { estadoGrafo.agente = valor; dibujarGrafo(); }),
-    crearSelectGrafo("Atributo", atributosLista, (valor: any) => { estadoGrafo.atributo = valor; dibujarGrafo(); }),
-    crearSelectGrafo("Género", generosLista, (valor: any) => { estadoGrafo.genero = valor; dibujarGrafo(); })
+    crearSelectGrafo('Agente', agentesLista, (valor: any) => {
+      estadoGrafo.agente = valor;
+      dibujarGrafo();
+    }),
+    crearSelectGrafo('Atributo', atributosLista, (valor: any) => {
+      estadoGrafo.atributo = valor;
+      dibujarGrafo();
+    }),
+    crearSelectGrafo('Género', generosLista, (valor: any) => {
+      estadoGrafo.genero = valor;
+      dibujarGrafo();
+    }),
   );
 
   const botonVerCasosGrafo = crearBotonVerCasos();
 
-  const areaGrafo = document.createElement("div");
-  areaGrafo.className = "mapa-area-grafo";
+  const areaGrafo = document.createElement('div');
+  areaGrafo.className = 'mapa-area-grafo';
 
   contenedorGrafoEl.append(filaFiltrosGrafo, botonVerCasosGrafo.boton, areaGrafo);
 
@@ -1299,22 +1538,27 @@ export async function inicializarDashboard() {
   const GRAFO_HEIGHT = 380;
   const GRAFO_PADDING = 40;
 
-  const tooltipGrafo = document.createElement("div");
-  tooltipGrafo.className = "tooltip-grafico";
+  const tooltipGrafo = document.createElement('div');
+  tooltipGrafo.className = 'tooltip-grafico';
 
   let simulationGrafoRef: NodoMutable = null;
 
   function dragGrafo(simulation: NodoMutable) {
     function dragstarted(event: any, d: NodoMutable) {
       if (!event.active) simulation.alphaTarget(0.3).restart();
-      d.fx = d.x; d.fy = d.y;
+      d.fx = d.x;
+      d.fy = d.y;
     }
-    function dragged(event: any, d: NodoMutable) { d.fx = event.x; d.fy = event.y; }
+    function dragged(event: any, d: NodoMutable) {
+      d.fx = event.x;
+      d.fy = event.y;
+    }
     function dragended(event: any, d: NodoMutable) {
       if (!event.active) simulation.alphaTarget(0);
-      d.fx = null; d.fy = null;
+      d.fx = null;
+      d.fy = null;
     }
-    return d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended);
+    return d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
   }
 
   function dibujarGrafo() {
@@ -1323,11 +1567,12 @@ export async function inicializarDashboard() {
 
     const campo = campoTiempoActual();
     const valor = valorTiempoActual();
-    const filtrados = datosLimpios.filter(d =>
-      d[campo] === valor &&
-      (estadoGrafo.agente === "Todos" || d.Agente === estadoGrafo.agente) &&
-      (estadoGrafo.atributo === "Todos" || d.Atributo === estadoGrafo.atributo) &&
-      (estadoGrafo.genero === "Todos" || d.Género === estadoGrafo.genero)
+    const filtrados = datosLimpios.filter(
+      (d) =>
+        d[campo] === valor &&
+        (estadoGrafo.agente === 'Todos' || d.Agente === estadoGrafo.agente) &&
+        (estadoGrafo.atributo === 'Todos' || d.Atributo === estadoGrafo.atributo) &&
+        (estadoGrafo.genero === 'Todos' || d.Género === estadoGrafo.genero),
     );
 
     const agenteCrimenes = new Map();
@@ -1337,13 +1582,18 @@ export async function inicializarDashboard() {
       const codigo = d.Código;
       const nombre = d.Nombre_Codigo;
       if (!idAgente || !codigo) return;
-      if (!agenteCrimenes.has(idAgente)) agenteCrimenes.set(idAgente, { codigos: new Set(), idCaso: d.ID_Caso });
+      if (!agenteCrimenes.has(idAgente))
+        agenteCrimenes.set(idAgente, { codigos: new Set(), idCaso: d.ID_Caso });
       agenteCrimenes.get(idAgente).codigos.add(codigo);
       if (!crimenInfo.has(codigo)) crimenInfo.set(codigo, { nombre, count: 0 });
       crimenInfo.get(codigo).count += 1;
     });
 
-    const nodes = Array.from(crimenInfo, ([codigo, info]) => ({ id: codigo, nombre: info.nombre, count: info.count }));
+    const nodes = Array.from(crimenInfo, ([codigo, info]) => ({
+      id: codigo,
+      nombre: info.nombre,
+      count: info.count,
+    }));
 
     const edgeMap = new Map();
     const casosPorEdge = new Map();
@@ -1361,68 +1611,101 @@ export async function inicializarDashboard() {
       }
     });
     const links = Array.from(edgeMap, ([key, weight]) => {
-      const [source, target] = key.split("|");
+      const [source, target] = key.split('|');
       return { source, target, weight, casos: [...(casosPorEdge.get(key) || [])] };
     });
 
     const adyacencia = new Map();
-    nodes.forEach(n => adyacencia.set(n.id, new Set()));
-    links.forEach(l => { adyacencia.get(l.source)?.add(l.target); adyacencia.get(l.target)?.add(l.source); });
+    nodes.forEach((n) => adyacencia.set(n.id, new Set()));
+    links.forEach((l) => {
+      adyacencia.get(l.source)?.add(l.target);
+      adyacencia.get(l.target)?.add(l.source);
+    });
 
     const vinculadosPorCodigo = new Map();
-    nodes.forEach(n => vinculadosPorCodigo.set(n.id, new Set()));
+    nodes.forEach((n) => vinculadosPorCodigo.set(n.id, new Set()));
     agenteCrimenes.forEach(({ codigos: codigosSet }, idAgente) => {
       if (codigosSet.size < 2) return;
       codigosSet.forEach((codigo: string) => vinculadosPorCodigo.get(codigo)?.add(idAgente));
     });
 
-    areaGrafo.innerHTML = "";
+    areaGrafo.innerHTML = '';
     areaGrafo.appendChild(tooltipGrafo);
 
     if (nodes.length === 0) {
-      const aviso = document.createElement("div");
-      aviso.className = "mapa-aviso-vacio mapa-aviso-vacio--compacto";
-      aviso.textContent = "Sin casos con los filtros actuales";
+      const aviso = document.createElement('div');
+      aviso.className = 'mapa-aviso-vacio mapa-aviso-vacio--compacto';
+      aviso.textContent = 'Sin casos con los filtros actuales';
       areaGrafo.appendChild(aviso);
       return;
     }
 
-    const svg = d3.create("svg")
-      .attr("viewBox", `0 0 ${GRAFO_WIDTH} ${GRAFO_HEIGHT}`)
-      .attr("class", "mapa-grafo-svg");
+    const svg = d3
+      .create('svg')
+      .attr('viewBox', `0 0 ${GRAFO_WIDTH} ${GRAFO_HEIGHT}`)
+      .attr('class', 'mapa-grafo-svg');
 
-    const radiusScale = d3.scaleSqrt().domain([0, d3.max(nodes, (d: FilaCsv) => d.count) || 1]).range([7, 32]);
-    const linkScale = d3.scaleLinear().domain([1, d3.max(links, (d: FilaCsv) => d.weight) || 1]).range([1, 7]);
+    const radiusScale = d3
+      .scaleSqrt()
+      .domain([0, d3.max(nodes, (d: FilaCsv) => d.count) || 1])
+      .range([7, 32]);
+    const linkScale = d3
+      .scaleLinear()
+      .domain([1, d3.max(links, (d: FilaCsv) => d.weight) || 1])
+      .range([1, 7]);
     const color = d3.scaleOrdinal(COLORES_SERIE).domain(nodes.map((d: FilaCsv) => d.id));
 
-    const simulation = d3.forceSimulation(nodes as any)
-      .force("link", d3.forceLink(links).id((d: FilaCsv) => d.id)
-        .distance((d: FilaCsv) => 120 - linkScale(d.weight) * 4)
-        .strength((d: FilaCsv) => 0.1 + linkScale(d.weight) * 0.02))
-      .force("charge", d3.forceManyBody().strength(-260))
-      .force("center", d3.forceCenter(GRAFO_WIDTH / 2, GRAFO_HEIGHT / 2))
-      .force("collide", d3.forceCollide((d: FilaCsv) => radiusScale(d.count) + 5))
-      .force("x", d3.forceX(GRAFO_WIDTH / 2).strength(0.05))
-      .force("y", d3.forceY(GRAFO_HEIGHT / 2).strength(0.05));
+    const simulation = d3
+      .forceSimulation(nodes as any)
+      .force(
+        'link',
+        d3
+          .forceLink(links)
+          .id((d: FilaCsv) => d.id)
+          .distance((d: FilaCsv) => 120 - linkScale(d.weight) * 4)
+          .strength((d: FilaCsv) => 0.1 + linkScale(d.weight) * 0.02),
+      )
+      .force('charge', d3.forceManyBody().strength(-260))
+      .force('center', d3.forceCenter(GRAFO_WIDTH / 2, GRAFO_HEIGHT / 2))
+      .force(
+        'collide',
+        d3.forceCollide((d: FilaCsv) => radiusScale(d.count) + 5),
+      )
+      .force('x', d3.forceX(GRAFO_WIDTH / 2).strength(0.05))
+      .force('y', d3.forceY(GRAFO_HEIGHT / 2).strength(0.05));
 
     simulationGrafoRef = simulation;
 
-    const link = svg.append("g").selectAll("line").data(links).join("line")
-      .attr("class", "mapa-grafo-link")
-      .attr("stroke", PALETA.borde).attr("stroke-opacity", 0.35)
-      .attr("stroke-width", (d: FilaCsv) => linkScale(d.weight));
+    const link = svg
+      .append('g')
+      .selectAll('line')
+      .data(links)
+      .join('line')
+      .attr('class', 'mapa-grafo-link')
+      .attr('stroke', PALETA.borde)
+      .attr('stroke-opacity', 0.35)
+      .attr('stroke-width', (d: FilaCsv) => linkScale(d.weight));
 
-    const node = svg.append("g").selectAll("circle").data(nodes).join("circle")
-      .attr("class", "mapa-grafo-nodo")
-      .attr("r", (d: FilaCsv) => radiusScale(d.count))
-      .attr("fill", (d: FilaCsv) => color(d.id))
-      .attr("stroke", PALETA.fondoPergamino).attr("stroke-width", 1.5)
+    const node = svg
+      .append('g')
+      .selectAll('circle')
+      .data(nodes)
+      .join('circle')
+      .attr('class', 'mapa-grafo-nodo')
+      .attr('r', (d: FilaCsv) => radiusScale(d.count))
+      .attr('fill', (d: FilaCsv) => color(d.id))
+      .attr('stroke', PALETA.fondoPergamino)
+      .attr('stroke-width', 1.5)
       .call(dragGrafo(simulation) as any);
 
-    const label = svg.append("g").selectAll("text").data(nodes).join("text")
+    const label = svg
+      .append('g')
+      .selectAll('text')
+      .data(nodes)
+      .join('text')
       .text((d: FilaCsv) => d.nombre)
-      .attr("class", "mapa-grafo-etiqueta")
-      .attr("dy", (d: FilaCsv) => -radiusScale(d.count) - 6);
+      .attr('class', 'mapa-grafo-etiqueta')
+      .attr('dy', (d: FilaCsv) => -radiusScale(d.count) - 6);
 
     let seleccionNodo: NodoMutable = null;
     let seleccionLink: NodoMutable = null;
@@ -1436,9 +1719,12 @@ export async function inicializarDashboard() {
 
     function aplicarResaltado() {
       if (seleccionNodo === null && seleccionLink === null) {
-        node.attr("opacity", 1).attr("stroke", PALETA.fondoPergamino).attr("stroke-width", 1.5);
-        link.attr("stroke", PALETA.borde).attr("stroke-opacity", 0.35).attr("stroke-width", (d: FilaCsv) => linkScale(d.weight));
-        label.attr("opacity", 1);
+        node.attr('opacity', 1).attr('stroke', PALETA.fondoPergamino).attr('stroke-width', 1.5);
+        link
+          .attr('stroke', PALETA.borde)
+          .attr('stroke-opacity', 0.35)
+          .attr('stroke-width', (d: FilaCsv) => linkScale(d.weight));
+        label.attr('opacity', 1);
         return;
       }
 
@@ -1448,7 +1734,7 @@ export async function inicializarDashboard() {
       if (seleccionNodo !== null) {
         nodosActivos.add(seleccionNodo);
         (adyacencia.get(seleccionNodo) || new Set()).forEach((id: string) => nodosActivos.add(id));
-        links.forEach(l => {
+        links.forEach((l) => {
           if (l.source.id === seleccionNodo || l.target.id === seleccionNodo) linksActivos.add(l);
         });
       } else if (seleccionLink !== null) {
@@ -1457,71 +1743,93 @@ export async function inicializarDashboard() {
         linksActivos.add(seleccionLink);
       }
 
-      node.attr("opacity", (d: FilaCsv) => nodosActivos.has(d.id) ? 1 : 0.15)
-        .attr("stroke", (d: FilaCsv) => (seleccionNodo !== null && d.id === seleccionNodo) ? PALETA.tintaOscura : PALETA.fondoPergamino)
-        .attr("stroke-width", (d: FilaCsv) => (seleccionNodo !== null && d.id === seleccionNodo) ? 3 : 1.5);
-      label.attr("opacity", (d: FilaCsv) => nodosActivos.has(d.id) ? 1 : 0.15);
-      link.attr("stroke", (d: FilaCsv) => linksActivos.has(d) ? PALETA.acentoLinea : "#ccc")
-        .attr("stroke-opacity", (d: FilaCsv) => linksActivos.has(d) ? 0.9 : 0.1)
-        .attr("stroke-width", (d: FilaCsv) => linksActivos.has(d) ? linkScale(d.weight) + 2 : linkScale(d.weight));
+      node
+        .attr('opacity', (d: FilaCsv) => (nodosActivos.has(d.id) ? 1 : 0.15))
+        .attr('stroke', (d: FilaCsv) =>
+          seleccionNodo !== null && d.id === seleccionNodo
+            ? PALETA.tintaOscura
+            : PALETA.fondoPergamino,
+        )
+        .attr('stroke-width', (d: FilaCsv) =>
+          seleccionNodo !== null && d.id === seleccionNodo ? 3 : 1.5,
+        );
+      label.attr('opacity', (d: FilaCsv) => (nodosActivos.has(d.id) ? 1 : 0.15));
+      link
+        .attr('stroke', (d: FilaCsv) => (linksActivos.has(d) ? PALETA.acentoLinea : '#ccc'))
+        .attr('stroke-opacity', (d: FilaCsv) => (linksActivos.has(d) ? 0.9 : 0.1))
+        .attr('stroke-width', (d: FilaCsv) =>
+          linksActivos.has(d) ? linkScale(d.weight) + 2 : linkScale(d.weight),
+        );
     }
 
-    node.on("click", (event: MouseEvent, d: FilaCsv) => {
+    node.on('click', (event: MouseEvent, d: FilaCsv) => {
       event.stopPropagation();
-      if (seleccionNodo === d.id) { limpiarSeleccionGrafo(); return; }
+      if (seleccionNodo === d.id) {
+        limpiarSeleccionGrafo();
+        return;
+      }
       seleccionNodo = d.id;
       seleccionLink = null;
       aplicarResaltado();
       botonVerCasosGrafo.mostrar(d.nombre, () => irATablasFiltradas({ codigo: d.nombre }));
     });
 
-    link.on("click", (event: MouseEvent, d: FilaCsv) => {
+    link.on('click', (event: MouseEvent, d: FilaCsv) => {
       event.stopPropagation();
-      if (seleccionLink === d) { limpiarSeleccionGrafo(); return; }
+      if (seleccionLink === d) {
+        limpiarSeleccionGrafo();
+        return;
+      }
       seleccionLink = d;
       seleccionNodo = null;
       aplicarResaltado();
       const nombreOrigen = d.source.nombre || d.source;
       const nombreDestino = d.target.nombre || d.target;
-      botonVerCasosGrafo.mostrar(`${nombreOrigen} ↔ ${nombreDestino}`, () => irATablasFiltradas({ casos: d.casos }));
+      botonVerCasosGrafo.mostrar(`${nombreOrigen} ↔ ${nombreDestino}`, () =>
+        irATablasFiltradas({ casos: d.casos }),
+      );
     });
 
-    svg.on("click", () => limpiarSeleccionGrafo());
+    svg.on('click', () => limpiarSeleccionGrafo());
 
     node
-      .on("mouseenter", (event: MouseEvent, d: FilaCsv) => {
+      .on('mouseenter', (event: MouseEvent, d: FilaCsv) => {
         const vinculados = vinculadosPorCodigo.get(d.id)?.size || 0;
         tooltipGrafo.innerHTML = `<strong>${d.nombre}</strong><br/>Casos: ${d.count}<br/>Vínculos con otros crímenes: ${vinculados}`;
-        tooltipGrafo.classList.add("tooltip-grafico--visible");
+        tooltipGrafo.classList.add('tooltip-grafico--visible');
       })
-      .on("mousemove", (event: MouseEvent) => {
+      .on('mousemove', (event: MouseEvent) => {
         const rect = areaGrafo.getBoundingClientRect();
-        tooltipGrafo.style.left = (event.clientX - rect.left + 12) + "px";
-        tooltipGrafo.style.top = (event.clientY - rect.top + 12) + "px";
+        tooltipGrafo.style.left = event.clientX - rect.left + 12 + 'px';
+        tooltipGrafo.style.top = event.clientY - rect.top + 12 + 'px';
       })
-      .on("mouseleave", () => tooltipGrafo.classList.remove("tooltip-grafico--visible"));
+      .on('mouseleave', () => tooltipGrafo.classList.remove('tooltip-grafico--visible'));
 
     link
-      .on("mouseenter", (event: MouseEvent, d: FilaCsv) => {
+      .on('mouseenter', (event: MouseEvent, d: FilaCsv) => {
         tooltipGrafo.innerHTML = `${d.source.nombre || d.source} ↔ ${d.target.nombre || d.target}<br/>Agentes en común: <strong>${d.weight}</strong>`;
-        tooltipGrafo.classList.add("tooltip-grafico--visible");
+        tooltipGrafo.classList.add('tooltip-grafico--visible');
       })
-      .on("mousemove", (event: MouseEvent) => {
+      .on('mousemove', (event: MouseEvent) => {
         const rect = areaGrafo.getBoundingClientRect();
-        tooltipGrafo.style.left = (event.clientX - rect.left + 12) + "px";
-        tooltipGrafo.style.top = (event.clientY - rect.top + 12) + "px";
+        tooltipGrafo.style.left = event.clientX - rect.left + 12 + 'px';
+        tooltipGrafo.style.top = event.clientY - rect.top + 12 + 'px';
       })
-      .on("mouseleave", () => tooltipGrafo.classList.remove("tooltip-grafico--visible"));
+      .on('mouseleave', () => tooltipGrafo.classList.remove('tooltip-grafico--visible'));
 
-    simulation.on("tick", () => {
+    simulation.on('tick', () => {
       nodes.forEach((d: FilaCsv) => {
         const r = radiusScale(d.count);
         d.x = Math.max(r + GRAFO_PADDING, Math.min(GRAFO_WIDTH - r - GRAFO_PADDING, d.x));
         d.y = Math.max(r + GRAFO_PADDING, Math.min(GRAFO_HEIGHT - r - GRAFO_PADDING, d.y));
       });
-      link.attr("x1", (d: FilaCsv) => d.source.x).attr("y1", (d: FilaCsv) => d.source.y).attr("x2", (d: FilaCsv) => d.target.x).attr("y2", (d: FilaCsv) => d.target.y);
-      node.attr("cx", (d: FilaCsv) => d.x).attr("cy", (d: FilaCsv) => d.y);
-      label.attr("x", (d: FilaCsv) => d.x).attr("y", (d: FilaCsv) => d.y);
+      link
+        .attr('x1', (d: FilaCsv) => d.source.x)
+        .attr('y1', (d: FilaCsv) => d.source.y)
+        .attr('x2', (d: FilaCsv) => d.target.x)
+        .attr('y2', (d: FilaCsv) => d.target.y);
+      node.attr('cx', (d: FilaCsv) => d.x).attr('cy', (d: FilaCsv) => d.y);
+      label.attr('x', (d: FilaCsv) => d.x).attr('y', (d: FilaCsv) => d.y);
     });
 
     areaGrafo.appendChild(svg.node()!);

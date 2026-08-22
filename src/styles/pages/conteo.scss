@@ -37,7 +37,9 @@
   text-transform: uppercase;
   letter-spacing: 0.03em;
   box-shadow: 0 2px 6px rgba(26, 20, 16, 0.15);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .conteo-expandir-btn:hover {
@@ -105,7 +107,9 @@
   cursor: pointer;
   text-align: left;
   box-shadow: 0 2px 6px rgba(26, 20, 16, 0.12);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .conteo-stat-cuadro-flecha {
@@ -123,7 +127,9 @@
 }
 
 .conteo-stat-cuadro--activo {
-  box-shadow: 0 0 0 3px var(--ink), 0 6px 14px rgba(26, 20, 16, 0.22);
+  box-shadow:
+    0 0 0 3px var(--ink),
+    0 6px 14px rgba(26, 20, 16, 0.22);
 }
 
 .conteo-stat-cuadro-valor {

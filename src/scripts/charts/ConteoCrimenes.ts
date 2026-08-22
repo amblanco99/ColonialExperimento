@@ -1,8 +1,7 @@
-import * as d3 from "d3";
+import * as d3 from 'd3';
 
 export async function crearConteoCrimenes() {
-
-  const container = document.getElementById("conteoCrimenes");
+  const container = document.getElementById('conteoCrimenes');
   if (!container) return;
 
   const datos = await d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`);
@@ -11,16 +10,16 @@ export async function crearConteoCrimenes() {
   // el string crudo de d3.csv y convierte dentro. Ver MIGRATION.md.
   const getSiglo = (year: string) => {
     const y = +year;
-    if (y <= 1599) return "Siglo XVI";
-    if (y >= 1600 && y <= 1699) return "Siglo XVII";
-    if (y >= 1700 && y <= 1799) return "Siglo XVIII";
-    if (y >= 1800) return "Siglo XIX";
-    return "Siglo XVI";
+    if (y <= 1599) return 'Siglo XVI';
+    if (y >= 1600 && y <= 1699) return 'Siglo XVII';
+    if (y >= 1700 && y <= 1799) return 'Siglo XVIII';
+    if (y >= 1800) return 'Siglo XIX';
+    return 'Siglo XVI';
   };
 
   function contarCrimenesUnicos(filas: d3.DSVRowString<string>[]) {
     const set = new Set<string>();
-    filas.forEach(d => {
+    filas.forEach((d) => {
       if (d.ID_Documento && d.Código) {
         set.add(`${d.ID_Documento}|${d.Código}`);
       }
@@ -28,16 +27,11 @@ export async function crearConteoCrimenes() {
     return set.size;
   }
 
-  const siglosInteres = [
-    "Siglo XVI",
-    "Siglo XVII",
-    "Siglo XVIII",
-    "Siglo XIX"
-  ];
+  const siglosInteres = ['Siglo XVI', 'Siglo XVII', 'Siglo XVIII', 'Siglo XIX'];
 
   const estructuraCrimenes: Record<string, number> = {};
-  siglosInteres.forEach(siglo => {
-    const crimenesSiglo = datos.filter(d => getSiglo(d.Año) === siglo);
+  siglosInteres.forEach((siglo) => {
+    const crimenesSiglo = datos.filter((d) => getSiglo(d.Año) === siglo);
     estructuraCrimenes[siglo] = contarCrimenesUnicos(crimenesSiglo);
   });
 
@@ -57,12 +51,16 @@ export async function crearConteoCrimenes() {
           Crímenes
           <span style="float:right; font-size:1rem;">Total: ${totalCrimenes}</span>
         </div>
-        ${siglosInteres.map(s => `
+        ${siglosInteres
+          .map(
+            (s) => `
           <div class="row">
             <span>${s}</span>
             <span class="val-bold">${estructuraCrimenes[s]}</span>
           </div>
-        `).join("")}
+        `,
+          )
+          .join('')}
       </div>
     </div>
   `;

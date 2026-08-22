@@ -1,3 +1,20 @@
+# Salidas de build
 dist
+dist-astro
+.astro
 node_modules
+
+# Datos: 4,3 MB de CSV que no hay que reformatear
 public/data
+
+# Todo lo que borra la fase 7. Se excluye para no reformatear código que está a
+# punto de desaparecer: ensuciaría el diff de este commit y el de la fase 7.
+# CUANDO LA FASE 7 LOS BORRE, ESTAS LÍNEAS SOBRAN Y HAY QUE QUITARLAS.
+src/main
+src/style
+index.html
+about/*.html
+base-de-datos/*.html
+personas/*.html
+tiempo/*.html
+vite.config.js

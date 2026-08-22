@@ -16,24 +16,23 @@
 @use 'base/typography';
 
 .container {
-  width: 90%;            
-  max-width: 900px;      
-  margin: 0 auto;       
+  width: 90%;
+  max-width: 900px;
+  margin: 0 auto;
   padding: 3rem 1rem 5rem;
   padding-top: 100px; /* Espacio para el topnav sticky */
 
   display: flex;
   flex-direction: column;
-  align-items: center;   
-  text-align: center;    
+  align-items: center;
+  text-align: center;
 }
 
 section {
   width: 100%;
-  max-width: 750px;     
-  margin-bottom: 4rem; 
+  max-width: 750px;
+  margin-bottom: 4rem;
 }
-
 
 /* =====================================================
    NAVEGACIÓN (.topnav adaptada a .site-header)
@@ -66,7 +65,7 @@ section {
   gap: 30px;
 }
 
-.logo, 
+.logo,
 .nav-links a {
   color: var(--ink);
   text-decoration: none;
@@ -107,7 +106,7 @@ section {
   padding: 25px;
   border: 1px solid var(--rule);
   border-left: 4px solid var(--accent); /* Detalle elegante tomado de crime-card */
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: box-shadow 0.15s;
 }
 
@@ -171,8 +170,12 @@ a.card p {
 }
 
 /* Mantuve las clases de colores de tus gráficos */
-.azul { background: #003f5c; }
-.rosa { background: #bc5090; }
+.azul {
+  background: #003f5c;
+}
+.rosa {
+  background: #bc5090;
+}
 
 .filters {
   display: flex;
@@ -290,7 +293,6 @@ a.card p {
   border-color: var(--rule);
 }
 
-
 /* =====================================================
    TOGGLE DASHBOARD / HISTORIA
 ===================================================== */
@@ -312,7 +314,9 @@ a.card p {
   font-size: 0.95rem;
   letter-spacing: 0.02em;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .vista-toggle-btn:hover {
@@ -344,7 +348,8 @@ a.card p {
   .topnav {
     padding: 0 20px;
   }
-  .col-root, .cards-container {
+  .col-root,
+  .cards-container {
     flex-direction: column;
   }
   .card {
