@@ -431,7 +431,58 @@ No se pelean: se anota la cadena y se sigue.
 type SeleccionD3 = any;
 ```
 
-**Búsqueda para el trabajo posterior:** `grep -rn "NodoMutable\|SeleccionD3" src/scripts/`.
+
+**3. Filas de CSV.** `d3.csv` devuelve `DSVRowString<string>`, que no conoce los nombres de las
+columnas del proyecto (`Nombre_Sub_Codigo`, `ID_Documento`, `Atributo`…). Cada acceso da un
+`ts(2339)`. Se usa un alias **exportado desde `agentesComun.ts`**, para no volver a inventar uno
+por módulo:
+
+```ts
+// TODO: type — fila cruda de los CSV. Ver MIGRATION.md.
+export type FilaCsv = any;
+```
+
+**Por qué `any` y no `DSVRowString<string>`, que sería lo preciso:** el tipo exacto no añade
+seguridad aquí. Convertiría cada `ts(2339)` en un `ts(18048)` —«posiblemente undefined»— porque
+todas sus propiedades son opcionales: mismo número de errores, resueltos con `!`, y ninguna
+garantía nueva. Si alguien renombra una columna del CSV, las dos versiones fallan igual en
+runtime y ninguna lo detecta al compilar. El alias dice lo que de verdad sabemos: es una fila
+suelta de un CSV.
+
+**Excepción deliberada:** `tables/caso.ts` usa `d3.DSVRowString<string>` y funciona. **No se
+degrada a `FilaCsv`** solo por uniformidad: es más preciso que el alias y ya está escrito.
+
+**Pendiente:** cinco módulos inventaron su propio alias antes de que existiera este (`Fila` en
+`TablasConteo`, `FilaEvento` en los dos de participación, `EventoPersona` en `ButterflyGenero`,
+`EventoAgente` en `AgentesButterfly`). Unificarlos con `FilaCsv` es un commit aparte, después
+del mapa.
+
+**4. Estado mutable inicializado a `null`.** Muy común en los módulos con interacción:
+`let seleccionNodo = null` y compañía, que TypeScript infiere como `any` implícito
+(`ts(7034)`/`ts(7005)`). Se anota **en la declaración**:
+
+```ts
+let seleccionNodo: NodoMutable = null;
+```
+
+> **REGLA: anotar solo en la declaración, nunca con un buscar-y-reemplazar sobre `= null`.**
+> Un patrón como `s/(\w+) = null;/\1: T = null;/` también acierta en las **asignaciones**
+> (`seleccionNodo = null;` dentro de una función), y eso no es TypeScript válido: produce una
+> etiqueta suelta y un error de sintaxis. Pasó dos veces durante la fase 5c
+> (`ParticipacionTiempo` e `InstitucionesAtributo`), y las dos hubo que revertir el archivo y
+> rehacerlo. En `TiempoCrimenesMapa` hay ~39 sitios de este tipo: a mano, uno a uno.
+
+**5. Paletas indexadas por string.** `PALETA_GENERO`, `PALETA_TIPO` y `PALETA_ATRIBUTO` son
+objetos literales, así que indexarlos con una variable `string` da `ts(7053)`:
+
+```ts
+(PALETA_GENERO as Record<string, string>)[genero]
+```
+
+**Es el idiom más extendido del proyecto y no tenía nombre: 21 usos en 9 módulos.** Queda
+registrado aquí para que se busque como los demás.
+
+**Búsqueda para el trabajo posterior:** `grep -rn "NodoMutable\|SeleccionD3\|FilaCsv\|as Record<string, string>" src/scripts/`.
 
 La regla de fondo no cambia: el `any` es para donde los genéricos de d3 se ponen feos, no para
 ahorrarse una anotación evidente. En `Linaje`, 18 de 38 errores venían de la mutación de nodos
