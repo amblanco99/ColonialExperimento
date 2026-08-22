@@ -3,6 +3,11 @@ function leerVariableCss(nombre: string, fallback: string): string {
   return valor || fallback;
 }
 
+// TODO: type — fila cruda de los CSV que devuelve d3.csv. Es `any` a propósito:
+// DSVRowString<string> convertiría cada ts(2339) en un ts(18048) sin añadir
+// garantía ninguna. Ver MIGRATION.md.
+export type FilaCsv = any;
+
 export const TIPOS_AGENTE = ["Institución", "Población Completa", "Población Indígena Completa"];
 
 export const PALETA_TIPO = {

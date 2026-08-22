@@ -1,5 +1,21 @@
 import * as d3 from "d3";
 import rewind from "@turf/rewind";
+import type { FilaCsv } from "./agentesComun.js";
+
+// TODO: type — nodo/dato mutado por d3 (grafo de relación, jerarquías). Ver MIGRATION.md.
+type NodoMutable = any;
+
+// TODO: type — genéricos de selección/transición de d3. Ver MIGRATION.md.
+type SeleccionD3 = any; // se usa en las cadenas de transición de más abajo
+
+// El dashboard expone un callback global colgándolo de window. No es estándar,
+// así que se declara aquí. Mismo caso que _timerLineas en los módulos de
+// participación; ver MIGRATION.md.
+declare global {
+  interface Window {
+    __actualizarPanelSecundarioDashboard?: (conAnimacion?: boolean) => void;
+  }
+}
 
 const SERIE_FALLBACK = [
   "#bb4e99", "#4e9bbb", "#e8a838", "#56b87e",
@@ -7,7 +23,7 @@ const SERIE_FALLBACK = [
   "#6a8fce", "#a05080",
 ];
 
-function leerVariableCss(nombre, fallback) {
+function leerVariableCss(nombre: string, fallback: string): string {
   const valor = getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
   return valor || fallback;
 }
@@ -33,11 +49,13 @@ export async function inicializarDashboard() {
     d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`),
   ]);
 
-  const NuevaGranada = rewind(NuevaGranadaRaw, { reverse: true });
+  // rewind() devuelve un union de tipos GeoJSON; aquí siempre es una
+  // FeatureCollection, que es lo que trae NuevaGranada.json.
+  const NuevaGranada = rewind(NuevaGranadaRaw as any, { reverse: true }) as any;
 
   const SIGLOS = ["Siglo XVI", "Siglo XVII", "Siglo XVIII", "Siglo XIX"];
 
-  const getSiglo = y => {
+  const getSiglo = (y: number) => {
     if (y >= 1500 && y <= 1599) return "Siglo XVI";
     if (y >= 1600 && y <= 1699) return "Siglo XVII";
     if (y >= 1700 && y <= 1799) return "Siglo XVIII";
@@ -45,10 +63,10 @@ export async function inicializarDashboard() {
     return null;
   };
 
-  const getDecada = y => Math.floor(y / 10) * 10;
+  const getDecada = (y: number) => Math.floor(y / 10) * 10;
 
-  const coordPorLugar = {};
-  rawLugar.forEach(d => {
+  const coordPorLugar: Record<string, any> = {};
+  rawLugar.forEach((d: FilaCsv) => {
     const nombre = d.Lugar?.trim();
     const lon = +d.Longitud;
     const lat = +d.Latitud;
@@ -58,8 +76,8 @@ export async function inicializarDashboard() {
   });
 
   const datosLimpios = rawViz
-    .filter(d => d.Año && d.Nombre_Codigo && d.ID_Documento && d.Lugar && d.Nombre_Sub_Codigo)
-    .map(d => ({
+    .filter((d: FilaCsv) => d.Año && d.Nombre_Codigo && d.ID_Documento && d.Lugar && d.Nombre_Sub_Codigo)
+    .map((d: FilaCsv) => ({
       ...d,
       año: +d.Año,
       siglo: getSiglo(+d.Año),
@@ -67,45 +85,45 @@ export async function inicializarDashboard() {
       lugar: d.Lugar.trim(),
       coords: coordPorLugar[d.Lugar.trim()] || null,
     }))
-    .filter(d => d.siglo);
+    .filter((d: FilaCsv) => d.siglo);
 
-  const DECADAS = [...new Set(datosLimpios.map(d => d.decada))].sort((a, b) => a - b);
+  const DECADAS = [...new Set(datosLimpios.map((d: FilaCsv) => d.decada))].sort((a: NodoMutable, b: NodoMutable) => a - b);
 
-  const linajeFilas = rawLinaje.map(d => ({
+  const linajeFilas = rawLinaje.map((d: FilaCsv) => ({
     idCodigo: (d["ID_Código"] || "").trim(),
     nombre: (d.Nombre || "").trim(),
     nivel: (d.Nivel || "").trim(),
   }));
   const nombresGenerales = new Set(
-    linajeFilas.filter(f => f.nivel === "Nivel 0").map(f => f.nombre)
+    linajeFilas.filter((f: any) => f.nivel === "Nivel 0").map((f: any) => f.nombre)
   );
   const ordenPorCodigo = new Map(linajeFilas.map((f, i) => [f.idCodigo, i]));
 
   const codigoPorNombreSub = new Map();
-  datosLimpios.forEach(d => {
+  datosLimpios.forEach((d: FilaCsv) => {
     if (d.Nombre_Sub_Codigo && !codigoPorNombreSub.has(d.Nombre_Sub_Codigo)) {
       codigoPorNombreSub.set(d.Nombre_Sub_Codigo, (d["Sub_Código"] || "").trim());
     }
   });
 
-  function compararPorLinaje(a, b) {
+  function compararPorLinaje(a: NodoMutable, b: NodoMutable) {
     const oa = ordenPorCodigo.get(codigoPorNombreSub.get(a)) ?? Number.MAX_SAFE_INTEGER;
     const ob = ordenPorCodigo.get(codigoPorNombreSub.get(b)) ?? Number.MAX_SAFE_INTEGER;
     if (oa !== ob) return oa - ob;
     return a.localeCompare(b);
   }
 
-  function getProvincia(coords) {
+  function getProvincia(coords: [number, number]) {
     const features = NuevaGranada.features ? NuevaGranada.features : [NuevaGranada];
-    const feature = features.find(f => d3.geoContains(f, coords));
+    const feature = features.find((f: any) => d3.geoContains(f, coords));
     return feature ? (feature.properties?.Nombre || "Desconocida") : "Desconocida";
   }
 
-  const lugaresLista = [...new Set(datosLimpios.map(d => d.lugar))].sort();
+  const lugaresLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.lugar))].sort();
   const subcrimenesLista = [...new Set(
-    datosLimpios.filter(d => !nombresGenerales.has(d.Nombre_Sub_Codigo)).map(d => d.Nombre_Sub_Codigo)
+    datosLimpios.filter((d: FilaCsv) => !nombresGenerales.has(d.Nombre_Sub_Codigo)).map((d: FilaCsv) => d.Nombre_Sub_Codigo)
   )].sort(compararPorLinaje);
-  const crimenesLista = [...new Set(datosLimpios.map(d => d.Nombre_Codigo))].sort();
+  const crimenesLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Nombre_Codigo))].sort();
 
   const estado = {
     modoTiempo: "siglo",
@@ -126,7 +144,7 @@ export async function inicializarDashboard() {
     return estado.modoTiempo === "siglo" ? "siglo" : "decada";
   }
 
-  function irATablasFiltradas(overrides = {}) {
+  function irATablasFiltradas(overrides: Record<string, any> = {}) {
     if (overrides.casos) {
       const params = new URLSearchParams();
       params.set("casos", overrides.casos.join(","));
@@ -155,7 +173,7 @@ export async function inicializarDashboard() {
     const boton = document.createElement("button");
     boton.type = "button";
     boton.className = "btn-mapa-ver-casos";
-    let handlerActivo = null;
+    let handlerActivo: (() => void) | null = null;
     boton.addEventListener("click", () => {
       if (handlerActivo) handlerActivo();
     });
@@ -164,7 +182,7 @@ export async function inicializarDashboard() {
       boton.classList.remove("btn-mapa--visible");
       handlerActivo = null;
     }
-    function mostrar(texto, handler) {
+    function mostrar(texto: string, handler: () => void) {
       boton.textContent = `Ver casos: ${texto}`;
       boton.classList.add("btn-mapa--visible");
       handlerActivo = handler;
@@ -173,7 +191,7 @@ export async function inicializarDashboard() {
   }
 
   function datosFiltradosBase() {
-    return datosLimpios.filter(d => {
+    return datosLimpios.filter((d: FilaCsv) => {
       const okCrimen = estado.crimen === "Todos" || d.Nombre_Codigo === estado.crimen;
       const okSub = estado.subcrimen === "Todos" || d.Nombre_Sub_Codigo === estado.subcrimen;
       const okLugar = estado.lugar === "Todos" || d.lugar === estado.lugar;
@@ -181,13 +199,13 @@ export async function inicializarDashboard() {
     });
   }
 
-  function datosReferenciaLugar(lugar) {
+  function datosReferenciaLugar(lugar: string) {
     const campo = campoTiempoActual();
     const valor = valorTiempoActual();
-    const filas = datosFiltradosBase().filter(d => d.lugar === lugar && d[campo] === valor);
+    const filas = datosFiltradosBase().filter((d: FilaCsv) => d.lugar === lugar && d[campo] === valor);
 
-    const map = {};
-    filas.forEach(d => {
+    const map: Record<string, any> = {};
+    filas.forEach((d: FilaCsv) => {
       const key = estado.crimen === "Todos"
         ? d.Nombre_Codigo
         : (nombresGenerales.has(d.Nombre_Sub_Codigo) ? d.Nombre_Codigo : d.Nombre_Sub_Codigo);
@@ -197,18 +215,18 @@ export async function inicializarDashboard() {
 
     return Object.entries(map)
       .map(([nombre, set]) => ({ nombre, casos: set.size }))
-      .sort((a, b) => b.casos - a.casos);
+      .sort((a: NodoMutable, b: NodoMutable) => b.casos - a.casos);
   }
 
   function agruparMapaInstante() {
     const campo = campoTiempoActual();
     const valor = valorTiempoActual();
     const filas = datosFiltradosBase().filter(
-      d => d[campo] === valor && d.coords && !isNaN(d.coords[0]) && !isNaN(d.coords[1])
+      (d: FilaCsv) => d[campo] === valor && d.coords && !isNaN(d.coords[0]) && !isNaN(d.coords[1])
     );
 
-    const map = {};
-    filas.forEach(d => {
+    const map: Record<string, any> = {};
+    filas.forEach((d: FilaCsv) => {
       const key = d.lugar;
       if (!map[key]) {
         map[key] = {
@@ -239,18 +257,18 @@ export async function inicializarDashboard() {
     mainContenedor.classList.add("mapa-main-ancho");
   }
 
-  function envolverEnTarjeta(el, titulo, subtitulo) {
+  function envolverEnTarjeta(el: HTMLElement, titulo: string, subtitulo?: string) {
     const tarjeta = document.createElement("div");
     tarjeta.className = "mapa-tarjeta";
     const encabezado = document.createElement("div");
     encabezado.className = "mapa-tarjeta-encabezado";
     const h = document.createElement("div");
-    h.textContent = titulo;
+    h.textContent = titulo as unknown as string;
     h.className = "mapa-tarjeta-titulo";
     encabezado.appendChild(h);
     if (subtitulo) {
       const sub = document.createElement("div");
-      sub.textContent = subtitulo;
+      sub.textContent = subtitulo as unknown as string;
       sub.className = "mapa-tarjeta-subtitulo";
       encabezado.appendChild(sub);
     }
@@ -279,7 +297,7 @@ export async function inicializarDashboard() {
   columnaIzquierda.id = "columna-izquierda";
   columnaIzquierda.className = "mapa-columna-izquierda";
 
-  function paraColumnaVertical(tarjeta) {
+  function paraColumnaVertical(tarjeta: HTMLElement) {
     tarjeta.classList.add("mapa-tarjeta--vertical");
     return tarjeta;
   }
@@ -323,11 +341,11 @@ export async function inicializarDashboard() {
     { modo: "decada", etiqueta: "Década" },
     { modo: "siglo", etiqueta: "Siglo" },
   ];
-  const botonesModoTiempo = {};
+  const botonesModoTiempo: Record<string, any> = {};
   MODOS_TIEMPO.forEach(({ modo, etiqueta }) => {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.textContent = etiqueta;
+    btn.textContent = etiqueta as unknown as string;
     btn.className = "btn-mapa-modo";
     btn.addEventListener("click", () => cambiarModoTiempo(modo));
     botonesModoTiempo[modo] = btn;
@@ -343,24 +361,24 @@ export async function inicializarDashboard() {
     contenedorLineasEl.classList.add("mapa-panel-ancho-completo");
   }
 
-  panelFiltros.classList.add("panel-filtros-mapa");
+  panelFiltros!.classList.add("panel-filtros-mapa");
 
   const tituloPanel = document.createElement("div");
   tituloPanel.textContent = "Filtros";
   tituloPanel.className = "panel-filtros-titulo";
-  panelFiltros.appendChild(tituloPanel);
+  panelFiltros!.appendChild(tituloPanel);
 
-  function crearComboBuscable({ etiqueta, opciones, valorInicial, onChange, notaVacia }) {
+  function crearComboBuscable({ etiqueta, opciones, valorInicial, onChange, notaVacia }: { etiqueta: string; opciones: any[]; valorInicial?: any; onChange: (v: any) => void; notaVacia?: string }) {
     const wrap = document.createElement("div");
     wrap.className = "filtro-combo";
 
     const label = document.createElement("label");
-    label.textContent = etiqueta;
+    label.textContent = etiqueta as unknown as string;
     label.className = "filtro-label";
 
     const input = document.createElement("input");
     input.type = "text";
-    input.value = valorInicial;
+    input.value = valorInicial as unknown as string;
     input.readOnly = true;
     input.className = "filtro-combo-input";
 
@@ -372,7 +390,7 @@ export async function inicializarDashboard() {
 
     let opcionesCompletas = ["Todos", ...opciones];
 
-    function pintarLista(filtro) {
+    function pintarLista(filtro: any) {
       lista.innerHTML = "";
       const f = filtro.trim().toLowerCase();
       const filtradas = f
@@ -380,11 +398,11 @@ export async function inicializarDashboard() {
         : opcionesCompletas;
       filtradas.slice(0, 200).forEach(op => {
         const li = document.createElement("li");
-        li.textContent = op;
+        li.textContent = op as unknown as string;
         li.className = "filtro-combo-item";
         li.addEventListener("mousedown", e => e.preventDefault());
         li.addEventListener("click", () => {
-          input.value = op;
+          input.value = op as unknown as string;
           lista.classList.remove("filtro-combo-lista--abierta");
           input.blur();
           onChange(op);
@@ -396,7 +414,7 @@ export async function inicializarDashboard() {
     input.addEventListener("click", () => {
       input.readOnly = false;
       const valorActual = input.value;
-      input.value = "";
+      input.value = "" as unknown as string;
       pintarLista("");
       lista.classList.add("filtro-combo-lista--abierta");
       input.dataset.valorPrevio = valorActual;
@@ -409,17 +427,17 @@ export async function inicializarDashboard() {
         lista.classList.remove("filtro-combo-lista--abierta");
         input.readOnly = true;
         if (!opcionesCompletas.includes(input.value)) {
-          input.value = input.dataset.valorPrevio || valorInicial;
+          input.value = input.dataset.valorPrevio || valorInicial as unknown as string;
         }
       }, 100);
     });
 
     wrap.append(label, input, lista, nota);
-    panelFiltros.appendChild(wrap);
+    panelFiltros!.appendChild(wrap);
 
-    function actualizarOpciones(nuevasOpciones) {
+    function actualizarOpciones(nuevasOpciones: any[]) {
       opcionesCompletas = ["Todos", ...nuevasOpciones];
-      input.value = "Todos";
+      input.value = "Todos" as unknown as string;
       if (nuevasOpciones.length === 0) {
         input.classList.add("filtro-combo-input--oculto");
         nota.textContent = notaVacia || "Sin opciones disponibles para la selección actual.";
@@ -446,7 +464,7 @@ export async function inicializarDashboard() {
 
   const filaSiglos = document.createElement("div");
   filaSiglos.className = "mapa-fila-siglos";
-  const botonesSiglo = {};
+  const botonesSiglo: Record<string, any> = {};
   SIGLOS.forEach(siglo => {
     const btn = document.createElement("button");
     btn.type = "button";
@@ -468,10 +486,10 @@ export async function inicializarDashboard() {
   function sincronizarSlider() {
     const lista = tiempoListaActual();
     const esSiglo = estado.modoTiempo === "siglo";
-    slider.min = 0;
-    slider.max = lista.length - 1;
-    slider.step = 1;
-    slider.value = estado.tiempoIdx;
+    slider.min = 0 as unknown as string;
+    slider.max = lista.length - 1 as unknown as string;
+    slider.step = 1 as unknown as string;
+    slider.value = estado.tiempoIdx as unknown as string;
     slider.classList.toggle("mapa-slider--oculto", esSiglo);
     filaSiglos.classList.toggle("mapa-fila-siglos--oculta", !esSiglo);
     etiquetaTiempo.textContent = valorTiempoActual();
@@ -486,13 +504,13 @@ export async function inicializarDashboard() {
   function añoRepresentativoActual() {
     const valor = valorTiempoActual();
     if (estado.modoTiempo === "siglo") {
-      const base = { "Siglo XVI": 1550, "Siglo XVII": 1650, "Siglo XVIII": 1750, "Siglo XIX": 1850 };
+      const base: Record<string, number> = { "Siglo XVI": 1550, "Siglo XVII": 1650, "Siglo XVIII": 1750, "Siglo XIX": 1850 };
       return base[valor] ?? 1650;
     }
     return valor;
   }
 
-  function indiceMasCercano(lista, valor) {
+  function indiceMasCercano(lista: any[], valor: any) {
     let mejorIdx = 0;
     let mejorDist = Infinity;
     lista.forEach((v, i) => {
@@ -502,7 +520,7 @@ export async function inicializarDashboard() {
     return mejorIdx;
   }
 
-  function cambiarModoTiempo(modo) {
+  function cambiarModoTiempo(modo: string) {
     if (estado.modoTiempo === modo) return;
     const añoRef = añoRepresentativoActual();
     estado.modoTiempo = modo;
@@ -526,14 +544,14 @@ export async function inicializarDashboard() {
   });
 
   wrapTiempo.append(labelTiempo, slider, filaSiglos, etiquetaTiempo);
-  panelFiltros.appendChild(wrapTiempo);
+  panelFiltros!.appendChild(wrapTiempo);
 
-  function subcrimenesParaCrimen(crimen) {
+  function subcrimenesParaCrimen(crimen: string) {
     if (crimen === "Todos") return subcrimenesLista;
     return [...new Set(
       datosLimpios
-        .filter(d => d.Nombre_Codigo === crimen && !nombresGenerales.has(d.Nombre_Sub_Codigo))
-        .map(d => d.Nombre_Sub_Codigo)
+        .filter((d: FilaCsv) => d.Nombre_Codigo === crimen && !nombresGenerales.has(d.Nombre_Sub_Codigo))
+        .map((d: FilaCsv) => d.Nombre_Sub_Codigo)
     )].sort(compararPorLinaje);
   }
 
@@ -546,27 +564,27 @@ export async function inicializarDashboard() {
   selectCrimen.className = "filtro-select";
   ["Todos", ...crimenesLista].forEach(c => {
     const opt = document.createElement("option");
-    opt.value = c;
-    opt.textContent = c;
+    opt.value = c as unknown as string;
+    opt.textContent = c as unknown as string;
     selectCrimen.appendChild(opt);
   });
-  selectCrimen.value = estado.crimen;
+  selectCrimen.value = estado.crimen as unknown as string;
   selectCrimen.addEventListener("change", e => {
-    estado.crimen = e.target.value;
+    estado.crimen = (e.target as HTMLInputElement).value;
     estado.subcrimen = "Todos";
     comboSubcrimen.actualizarOpciones(subcrimenesParaCrimen(estado.crimen));
     actualizarMapa();
     actualizarPanelSecundario(true);
   });
   wrapCrimen.append(labelCrimen, selectCrimen);
-  panelFiltros.appendChild(wrapCrimen);
+  panelFiltros!.appendChild(wrapCrimen);
 
   const comboSubcrimen = crearComboBuscable({
     etiqueta: "Subcrimen",
     opciones: subcrimenesParaCrimen(estado.crimen),
     valorInicial: estado.subcrimen,
     notaVacia: "Este crimen no tiene subcrímenes registrados.",
-    onChange: valor => {
+    onChange: (valor: any) => {
       estado.subcrimen = valor;
       actualizarMapa();
       actualizarPanelSecundario(true);
@@ -577,8 +595,8 @@ export async function inicializarDashboard() {
     etiqueta: "Lugar",
     opciones: lugaresLista,
     valorInicial: estado.lugar,
-    onChange: valor => {
-      estado.lugar = valor;
+    onChange: (valor: number) => {
+      estado.lugar = valor as unknown as string;
       actualizarMapa();
     },
   });
@@ -593,11 +611,11 @@ export async function inicializarDashboard() {
     actualizarMapa();
     actualizarPanelSecundario(true);
   });
-  panelFiltros.appendChild(btnLimpiarPines);
+  panelFiltros!.appendChild(btnLimpiarPines);
 
   const avisoSinDatos = document.createElement("div");
   avisoSinDatos.className = "filtro-aviso-sin-datos";
-  panelFiltros.appendChild(avisoSinDatos);
+  panelFiltros!.appendChild(avisoSinDatos);
 
   function actualizarAvisoLugar() {
     if (estado.lugar === "Todos") {
@@ -606,7 +624,7 @@ export async function inicializarDashboard() {
     }
     const campo = campoTiempoActual();
     const valor = valorTiempoActual();
-    const hayDatos = datosFiltradosBase().some(d => d.lugar === estado.lugar && d[campo] === valor);
+    const hayDatos = datosFiltradosBase().some((d: FilaCsv) => d.lugar === estado.lugar && d[campo] === valor);
     if (hayDatos) {
       avisoSinDatos.classList.remove("filtro-aviso-sin-datos--visible");
     } else {
@@ -659,7 +677,7 @@ export async function inicializarDashboard() {
     geometry: { type: "MultiPoint", coordinates: [[-83, -5], [-60, 12]] },
   };
 
-  const projection = d3.geoMercator().fitExtent([[0, 0], [width, height]], domainFeature);
+  const projection = d3.geoMercator().fitExtent([[0, 0], [width, height]], domainFeature as any);
   const path = d3.geoPath(projection);
   const gZoom = svgMapa.append("g").attr("class", "capa-zoom");
   const gMapaBase = gZoom.append("g").attr("class", "capa-mapa");
@@ -667,7 +685,7 @@ export async function inicializarDashboard() {
   gMapaBase.selectAll("path")
     .data(NuevaGranada.features ? NuevaGranada.features : [NuevaGranada])
     .join("path")
-    .attr("d", path)
+    .attr("d", path as any)
     .attr("fill", PALETA.tierra)
     .attr("stroke", PALETA.borde)
     .attr("stroke-opacity", 0.7);
@@ -675,11 +693,11 @@ export async function inicializarDashboard() {
   const gPuntos = gZoom.append("g").attr("class", "capa-puntos");
   const gCapsulas = gZoom.append("g").attr("class", "capa-capsulas");
 
-  let lugarHoverActivo = null;
+  let lugarHoverActivo: NodoMutable = null;
 
   const zoom = d3.zoom()
     .scaleExtent([1, 12])
-    .on("zoom", event => {
+    .on("zoom", (event: any) => {
       gZoom.attr("transform", event.transform);
       const k = event.transform.k;
       gMapaBase.selectAll("path").attr("stroke-width", 0.5 / k);
@@ -692,9 +710,9 @@ export async function inicializarDashboard() {
       }
     });
 
-  svgMapa.call(zoom);
+  svgMapa.call(zoom as any);
 
-  let seleccionFilaMapa = null;
+  let seleccionFilaMapa: NodoMutable = null;
 
   function redibujarCapsulasVisibles() {
     dibujarCapsulasFijadas();
@@ -710,7 +728,7 @@ export async function inicializarDashboard() {
     redibujarCapsulasVisibles();
   }
 
-  function seleccionarFilaCapsula(lugar, nombreFila) {
+  function seleccionarFilaCapsula(lugar: string, nombreFila: string) {
     if (seleccionFilaMapa && seleccionFilaMapa.lugar === lugar && seleccionFilaMapa.nombre === nombreFila) {
       limpiarSeleccionFilaMapa();
       return;
@@ -728,7 +746,7 @@ export async function inicializarDashboard() {
     });
   }
 
-  function medirCapsula(lugar) {
+  function medirCapsula(lugar: string) {
     const referencia = datosReferenciaLugar(lugar);
     const filasVisibles = referencia.slice(0, 5);
     const totalCasos = referencia.reduce((a, r) => a + r.casos, 0);
@@ -737,13 +755,13 @@ export async function inicializarDashboard() {
     return { referencia, filasVisibles, totalCasos, anchoC, altoC };
   }
 
-  function construirCapsula(g, lugar, coords, posOverride) {
+  function construirCapsula(g: SeleccionD3, lugar: string, coords: [number, number], posOverride?: any) {
     const { filasVisibles, totalCasos, anchoC, altoC } = medirCapsula(lugar);
     const provincia = getProvincia(coords);
 
-    const k = d3.zoomTransform(svgMapa.node()).k;
-    const px = projection(coords)[0];
-    const py = projection(coords)[1];
+    const k = d3.zoomTransform(svgMapa.node()!).k;
+    const px = projection(coords)![0];
+    const py = projection(coords)![1];
     const destino = posOverride || { x: px - (anchoC / 2) / k, y: py - (altoC + 16) / k };
     g.attr("transform", `translate(${destino.x}, ${destino.y}) scale(${1 / k})`);
     g.selectAll("*").remove();
@@ -785,7 +803,7 @@ export async function inicializarDashboard() {
         .attr("class", "mapa-capsula-sin-casos")
         .text("Sin casos");
     } else {
-      const maxCasos = d3.max(filasVisibles, d => d.casos) || 1;
+      const maxCasos = d3.max(filasVisibles, (d: FilaCsv) => d.casos) || 1;
       const xBarra = d3.scaleLinear().domain([0, maxCasos]).range([0, 60]);
       filasVisibles.forEach((r, i) => {
         const yRow = 38 + i * 20;
@@ -811,9 +829,9 @@ export async function inicializarDashboard() {
           .attr("width", anchoC).attr("height", 20)
           .attr("class", "mapa-capsula-fila-clic")
           .attr("fill", filaSeleccionada ? "rgba(255,255,255,0.16)" : "transparent")
-          .on("mouseenter", function () { if (!filaSeleccionada) d3.select(this).attr("fill", "rgba(255,255,255,0.08)"); })
-          .on("mouseleave", function () { if (!filaSeleccionada) d3.select(this).attr("fill", "transparent"); })
-          .on("click", event => {
+          .on("mouseenter", function (this: any) { if (!filaSeleccionada) d3.select(this).attr("fill", "rgba(255,255,255,0.08)"); })
+          .on("mouseleave", function (this: any) { if (!filaSeleccionada) d3.select(this).attr("fill", "transparent"); })
+          .on("click", (event: MouseEvent) => {
             event.stopPropagation();
             seleccionarFilaCapsula(lugar, r.nombre);
           });
@@ -827,32 +845,32 @@ export async function inicializarDashboard() {
 
   function actualizarMapa() {
     const datos = agruparMapaInstante();
-    const minCasos = d3.min(datos, d => d.count) || 1;
-    const maxCasosCrudo = d3.max(datos, d => d.count) || 1;
+    const minCasos = d3.min(datos, (d: FilaCsv) => d.count) || 1;
+    const maxCasosCrudo = d3.max(datos, (d: FilaCsv) => d.count) || 1;
     const maxCasos = maxCasosCrudo > minCasos ? maxCasosCrudo : minCasos + 1;
     rScale.domain([minCasos, maxCasos]);
     colorScaleMap.domain([minCasos, maxCasos]);
-    const radioDe = d => (escalarPorCantidad ? rScale(d.count) : RADIO_PUNTO);
-    const colorDe = d => (escalarPorCantidad ? colorScaleMap(d.count) : PUNTO_COLOR);
+    const radioDe = (d: FilaCsv) => (escalarPorCantidad ? rScale(d.count) : RADIO_PUNTO);
+    const colorDe = (d: FilaCsv) => (escalarPorCantidad ? colorScaleMap(d.count) : PUNTO_COLOR);
 
     const puntos = gPuntos.selectAll("circle")
-      .data(datos, d => d.lugar);
+      .data(datos, (d: FilaCsv) => d.lugar);
 
     puntos.join(
       enter => enter.append("circle")
         .attr("class", "mapa-punto")
-        .attr("cx", d => projection(d.coords)[0])
-        .attr("cy", d => projection(d.coords)[1])
+        .attr("cx", (d: FilaCsv) => projection(d.coords)![0] as any)
+        .attr("cy", (d: FilaCsv) => projection(d.coords)![1] as any)
         .attr("r", 0)
         .attr("fill", colorDe)
         .call(enter => enter.transition().duration(220).attr("r", radioDe))
-        .on("mouseenter", (event, d) => manejarHoverPunto(event, d, true))
-        .on("mouseleave", (event, d) => manejarHoverPunto(event, d, false))
-        .on("click", (event, d) => alternarPin(d.lugar)),
+        .on("mouseenter", (event: MouseEvent, d: FilaCsv) => manejarHoverPunto(event, d, true))
+        .on("mouseleave", (event: MouseEvent, d: FilaCsv) => manejarHoverPunto(event, d, false))
+        .on("click", (event: MouseEvent, d: FilaCsv) => alternarPin(d.lugar)),
       update => update
         .call(update => update.transition().duration(180)
-          .attr("cx", d => projection(d.coords)[0])
-          .attr("cy", d => projection(d.coords)[1])
+          .attr("cx", (d: FilaCsv) => projection(d.coords)![0] as any)
+          .attr("cy", (d: FilaCsv) => projection(d.coords)![1] as any)
           .attr("r", radioDe)
           .attr("fill", colorDe)),
       exit => exit.transition().duration(150).attr("r", 0).remove()
@@ -862,7 +880,7 @@ export async function inicializarDashboard() {
     actualizarAvisoLugar();
   }
 
-  function manejarHoverPunto(event, d, entrando) {
+  function manejarHoverPunto(event: any, d: FilaCsv, entrando: boolean) {
     if (entrando) {
       cancelarOcultarCapsulaHover();
       if (!estado.lugaresFijados.has(d.lugar)) {
@@ -878,7 +896,7 @@ export async function inicializarDashboard() {
     }
   }
 
-  let hideCapsulaHoverTimer = null;
+  let hideCapsulaHoverTimer: ReturnType<typeof setTimeout> | null = null;
 
   function cancelarOcultarCapsulaHover() {
     if (hideCapsulaHoverTimer) {
@@ -895,7 +913,7 @@ export async function inicializarDashboard() {
     }, 220);
   }
 
-  function alternarPin(lugar) {
+  function alternarPin(lugar: string) {
     if (estado.lugaresFijados.has(lugar)) {
       estado.lugaresFijados.delete(lugar);
     } else {
@@ -906,7 +924,7 @@ export async function inicializarDashboard() {
     actualizarPanelSecundario(true);
   }
 
-  function seSuperponen(a, b, margen = 4) {
+  function seSuperponen(a: NodoMutable, b: NodoMutable, margen = 4) {
     return !(
       a.x + a.w + margen < b.x ||
       b.x + b.w + margen < a.x ||
@@ -919,19 +937,19 @@ export async function inicializarDashboard() {
     gCapsulas.selectAll("g.capsula-fija").remove();
     const datosActuales = agruparMapaInstante();
     const GAP = 10;
-    const cajasOcupadas = [];
+    const cajasOcupadas: any[] = [];
 
-    const t = d3.zoomTransform(svgMapa.node());
+    const t = d3.zoomTransform(svgMapa.node()!);
     const k = t.k;
 
-    estado.lugaresFijados.forEach(lugar => {
-      const punto = datosActuales.find(d => d.lugar === lugar);
+    estado.lugaresFijados.forEach((lugar: any) => {
+      const punto = datosActuales.find((d: FilaCsv) => d.lugar === lugar);
       const coords = punto ? punto.coords : coordPorLugar[lugar];
       if (!coords) return;
 
       const { anchoC, altoC } = medirCapsula(lugar);
-      const px = projection(coords)[0];
-      const py = projection(coords)[1];
+      const px = projection(coords)![0];
+      const py = projection(coords)![1];
       const [sx, sy] = t.apply([px, py]);
 
       let caja = { x: sx - anchoC / 2, y: sy - altoC - 16, w: anchoC, h: altoC };
@@ -957,16 +975,16 @@ export async function inicializarDashboard() {
   }
 
   const contenedorLineas = document.getElementById("crimenesChart");
-  let timerRef = null;
+  let timerRef: NodoMutable = null;
 
   if (contenedorLineas) {
-    contenedorLineas.classList.add("mapa-contenedor-lineas");
+    contenedorLineas!.classList.add("mapa-contenedor-lineas");
 
     const botonVerCasosLinea = crearBotonVerCasos();
-    if (contenedorLineas.parentElement) {
-      contenedorLineas.parentElement.insertBefore(botonVerCasosLinea.boton, contenedorLineas);
+    if (contenedorLineas!.parentElement) {
+      contenedorLineas!.parentElement.insertBefore(botonVerCasosLinea.boton, contenedorLineas);
     }
-    let seleccionPuntoLinea = null;
+    let seleccionPuntoLinea: NodoMutable = null;
     let lineGroupsPorSerie = new Map();
 
     const tooltipLineas = document.createElement("div");
@@ -984,7 +1002,7 @@ export async function inicializarDashboard() {
       const campo = campoTiempoActual();
       const filtrados = datosFiltradosBase();
       const puntos = lista.map(t => {
-        const set = new Set(filtrados.filter(d => d[campo] === t).map(d => `${d.ID_Documento}|${d.Sub_Código}`));
+        const set = new Set(filtrados.filter((d: FilaCsv) => d[campo] === t).map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`));
         const cantidad = set.size;
         return { tiempo: t, cantidad, etiqueta: `Todos los crímenes\n${t}: ${cantidad} casos` };
       });
@@ -996,12 +1014,12 @@ export async function inicializarDashboard() {
       const lista = tiempoListaActual();
       const campo = campoTiempoActual();
       const filtrados = datosFiltradosBase();
-      const filtradosConSubcrimen = filtrados.filter(d => !nombresGenerales.has(d.Nombre_Sub_Codigo));
-      const subNombres = [...new Set(filtradosConSubcrimen.map(d => d.Nombre_Sub_Codigo))].sort(compararPorLinaje);
+      const filtradosConSubcrimen = filtrados.filter((d: FilaCsv) => !nombresGenerales.has(d.Nombre_Sub_Codigo));
+      const subNombres = [...new Set(filtradosConSubcrimen.map((d: FilaCsv) => d.Nombre_Sub_Codigo))].sort(compararPorLinaje);
 
       if (subNombres.length === 0) {
         const puntos = lista.map(t => {
-          const set = new Set(filtrados.filter(d => d[campo] === t).map(d => `${d.ID_Documento}|${d.Sub_Código}`));
+          const set = new Set(filtrados.filter((d: FilaCsv) => d[campo] === t).map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`));
           const cantidad = set.size;
           return { tiempo: t, cantidad, etiqueta: `${estado.crimen}\n${t}: ${cantidad} casos` };
         });
@@ -1010,9 +1028,9 @@ export async function inicializarDashboard() {
       }
 
       return subNombres.map(sub => {
-        const filas = filtradosConSubcrimen.filter(d => d.Nombre_Sub_Codigo === sub);
+        const filas = filtradosConSubcrimen.filter((d: FilaCsv) => d.Nombre_Sub_Codigo === sub);
         const puntos = lista.map(t => {
-          const set = new Set(filas.filter(d => d[campo] === t).map(d => `${d.ID_Documento}|${d.Sub_Código}`));
+          const set = new Set(filas.filter((d: FilaCsv) => d[campo] === t).map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`));
           const cantidad = set.size;
           return { tiempo: t, cantidad, etiqueta: `${sub}\n${t}: ${cantidad} casos` };
         });
@@ -1026,10 +1044,10 @@ export async function inicializarDashboard() {
       const campo = campoTiempoActual();
       const filtrados = datosFiltradosBase();
 
-      return [...estado.lugaresFijados].map(lugar => {
-        const filas = filtrados.filter(d => d.lugar === lugar);
+      return [...estado.lugaresFijados].map((lugar: any) => {
+        const filas = filtrados.filter((d: FilaCsv) => d.lugar === lugar);
         const puntos = lista.map(t => {
-          const set = new Set(filas.filter(d => d[campo] === t).map(d => `${d.ID_Documento}|${d.Sub_Código}`));
+          const set = new Set(filas.filter((d: FilaCsv) => d[campo] === t).map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`));
           const cantidad = set.size;
           return { tiempo: t, cantidad, etiqueta: `${lugar}\n${t}: ${cantidad} casos` };
         });
@@ -1038,10 +1056,10 @@ export async function inicializarDashboard() {
       });
     }
 
-    function renderPanelSecundario(conAnimacion) {
+    function renderPanelSecundario(conAnimacion: boolean) {
       if (timerRef) { timerRef.stop(); timerRef = null; }
-      contenedorLineas.innerHTML = "";
-      contenedorLineas.appendChild(tooltipLineas);
+      contenedorLineas!.innerHTML = "";
+      contenedorLineas!.appendChild(tooltipLineas);
 
       seleccionPuntoLinea = null;
       lineGroupsPorSerie = new Map();
@@ -1056,7 +1074,7 @@ export async function inicializarDashboard() {
       const lista = tiempoListaActual();
       const totalGeneral = series.reduce((a, s) => a + s.total, 0);
 
-      function irDesdeLineaSerie(serie, tiempo) {
+      function irDesdeLineaSerie(serie: NodoMutable, tiempo: number) {
         if (enModoComparacion) {
           irATablasFiltradas({ lugar: serie.nombre, fecha: tiempo, escala: campoTiempoActual() });
         } else if (estado.crimen === "Todos") {
@@ -1085,7 +1103,7 @@ export async function inicializarDashboard() {
         aplicarResaltadoLinea();
       }
 
-      function seleccionarPuntoLinea(serie, tiempo) {
+      function seleccionarPuntoLinea(serie: NodoMutable, tiempo: number) {
         const clave = `${serie.nombre}||${tiempo}`;
         if (seleccionPuntoLinea === clave) { limpiarSeleccionLinea(); return; }
         seleccionPuntoLinea = clave;
@@ -1097,7 +1115,7 @@ export async function inicializarDashboard() {
         const aviso = document.createElement("div");
         aviso.className = "mapa-aviso-vacio";
         aviso.textContent = "Sin casos con los filtros actuales";
-        contenedorLineas.appendChild(aviso);
+        contenedorLineas!.appendChild(aviso);
         return;
       }
 
@@ -1116,7 +1134,7 @@ export async function inicializarDashboard() {
       const y = d3.scaleLinear().domain([0, yTope]).range([IH, 0]);
 
       g.append("g")
-        .call(d3.axisLeft(y).ticks(5).tickSize(-IW).tickFormat(""))
+        .call(d3.axisLeft(y).ticks(5).tickSize(-IW).tickFormat("" as any))
         .call(gg => { gg.select(".domain").remove(); gg.selectAll("line").attr("class", "mapa-linea-grid-linea"); });
 
       const ejeXTiempo = d3.axisBottom(x).tickSize(0);
@@ -1124,7 +1142,7 @@ export async function inicializarDashboard() {
         ejeXTiempo.tickValues([lista[0], lista[lista.length - 1]]);
       }
       const haySigloXIXTruncado = estado.modoTiempo === "siglo" && lista.includes("Siglo XIX");
-      ejeXTiempo.tickFormat(d => (d === "Siglo XIX" ? `${d} *` : d));
+      ejeXTiempo.tickFormat((d: FilaCsv) => (d === "Siglo XIX" ? `${d} *` : d));
       g.append("g")
         .attr("transform", `translate(0,${IH})`)
         .call(ejeXTiempo)
@@ -1158,9 +1176,9 @@ export async function inicializarDashboard() {
           .text("* Siglo XIX: solo hasta 1824");
       }
 
-      const lineGen = d3.line().x(d => x(d.tiempo)).y(d => y(d.cantidad)).curve(d3.curveLinear);
+      const lineGen = (d3.line() as any).x((d: FilaCsv) => x(d.tiempo)).y((d: FilaCsv) => y(d.cantidad)).curve(d3.curveLinear);
 
-      function dibujarSerieInstante(idx) {
+      function dibujarSerieInstante(idx: number) {
         const serie = series[idx];
         const color = colorScaleLine(serie.nombre);
         const lineGroup = g.append("g");
@@ -1171,44 +1189,44 @@ export async function inicializarDashboard() {
         }
 
         lineGroup.append("path")
-          .datum(serie.puntos).attr("class", "mapa-linea-trazo").attr("stroke", color)
-          .attr("d", lineGen);
+          .datum(serie.puntos as any).attr("class", "mapa-linea-trazo").attr("stroke", color as string)
+          .attr("d", lineGen as any);
 
         serie.puntos.forEach(p => {
           lineGroup.append("circle")
-            .attr("cx", x(p.tiempo)).attr("cy", y(p.cantidad)).attr("r", 4)
-            .attr("class", "mapa-linea-punto").attr("stroke", color);
+            .attr("cx", x(p.tiempo) as any).attr("cy", y(p.cantidad) as any).attr("r", 4)
+            .attr("class", "mapa-linea-punto").attr("stroke", color as string);
           lineGroup.append("circle")
-            .attr("cx", x(p.tiempo)).attr("cy", y(p.cantidad)).attr("r", 10)
+            .attr("cx", x(p.tiempo) as any).attr("cy", y(p.cantidad) as any).attr("r", 10)
             .attr("class", "mapa-linea-punto-hit")
             .on("mouseenter", () => { tooltipLineas.innerHTML = p.etiqueta.replace(/\n/g, "<br/>"); tooltipLineas.classList.add("tooltip-grafico--visible"); })
-            .on("mousemove", event => {
-              const rect = contenedorLineas.getBoundingClientRect();
+            .on("mousemove", (event: MouseEvent) => {
+              const rect = contenedorLineas!.getBoundingClientRect();
               tooltipLineas.style.left = (event.clientX - rect.left + 12) + "px";
               tooltipLineas.style.top = (event.clientY - rect.top + 12) + "px";
             })
             .on("mouseleave", () => tooltipLineas.classList.remove("tooltip-grafico--visible"))
-            .on("click", event => {
+            .on("click", (event: MouseEvent) => {
               event.stopPropagation();
               seleccionarPuntoLinea(serie, p.tiempo);
             });
         });
 
-        const ultimoPunto = [...serie.puntos].reverse().find(p => p.cantidad > 0) || serie.puntos[serie.puntos.length - 1];
+        const ultimoPunto: NodoMutable = [...serie.puntos].reverse().find(p => p.cantidad > 0) || serie.puntos[serie.puntos.length - 1];
         lineGroup.append("text")
-          .attr("x", x(ultimoPunto.tiempo) + 8).attr("y", y(ultimoPunto.cantidad) + 4)
-          .attr("class", "mapa-linea-etiqueta-serie").style("fill", color)
+          .attr("x", x(ultimoPunto!.tiempo)! + 8 as any).attr("y", y(ultimoPunto!.cantidad) + 4 as any)
+          .attr("class", "mapa-linea-etiqueta-serie").style("fill", color as string)
           .text(serie.nombre.length > 22 ? serie.nombre.slice(0, 20) + "…" : serie.nombre);
       }
 
-      function revelarSecuencial(idx) {
+      function revelarSecuencial(idx: number) {
         if (idx >= series.length) return;
         const color = colorScaleLine(series[idx].nombre);
         const lineGroup = g.append("g");
         const pathLine = lineGroup.append("path")
-          .datum(series[idx].puntos).attr("class", "mapa-linea-trazo").attr("stroke", color)
-          .attr("d", lineGen);
-        const totalLength = pathLine.node().getTotalLength();
+          .datum(series[idx].puntos as any).attr("class", "mapa-linea-trazo").attr("stroke", color as string)
+          .attr("d", lineGen as any);
+        const totalLength = pathLine.node()!.getTotalLength();
         pathLine.attr("stroke-dasharray", `${totalLength} ${totalLength}`).attr("stroke-dashoffset", totalLength)
           .transition().duration(DURACION_LINEA).ease(d3.easeLinear).attr("stroke-dashoffset", 0)
           .on("end", () => {
@@ -1224,13 +1242,13 @@ export async function inicializarDashboard() {
         series.forEach((_, idx) => dibujarSerieInstante(idx));
       }
 
-      contenedorLineas.append(svgLine.node());
+      contenedorLineas!.append(svgLine.node()!);
     }
 
-    window.__actualizarPanelSecundarioDashboard = renderPanelSecundario;
+    window.__actualizarPanelSecundarioDashboard = renderPanelSecundario as (c?: boolean) => void;
   }
 
-  function actualizarPanelSecundario(conAnimacion) {
+  function actualizarPanelSecundario(conAnimacion: boolean) {
     if (window.__actualizarPanelSecundarioDashboard) {
       window.__actualizarPanelSecundarioDashboard(conAnimacion);
     }
@@ -1238,22 +1256,22 @@ export async function inicializarDashboard() {
 
   const estadoGrafo = { agente: "Todos", atributo: "Todos", genero: "Todos" };
 
-  const agentesLista = [...new Set(datosLimpios.map(d => d.Agente))].filter(Boolean).sort();
-  const atributosLista = [...new Set(datosLimpios.map(d => d.Atributo))].filter(Boolean).sort();
-  const generosLista = [...new Set(datosLimpios.map(d => d.Género))].filter(Boolean).sort();
+  const agentesLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Agente))].filter(Boolean).sort();
+  const atributosLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Atributo))].filter(Boolean).sort();
+  const generosLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Género))].filter(Boolean).sort();
 
-  function crearSelectGrafo(etiqueta, opciones, onChange) {
+  function crearSelectGrafo(etiqueta: string, opciones: any[], onChange: (v: any) => void) {
     const wrap = document.createElement("div");
     wrap.className = "mapa-wrap-select-grafo";
     const label = document.createElement("label");
-    label.textContent = etiqueta;
+    label.textContent = etiqueta as unknown as string;
     label.className = "filtro-label filtro-label--chico";
     const select = document.createElement("select");
     select.className = "filtro-select filtro-select--compacto";
     ["Todos", ...opciones].forEach(op => {
       const opt = document.createElement("option");
-      opt.value = op;
-      opt.textContent = op;
+      opt.value = op as unknown as string;
+      opt.textContent = op as unknown as string;
       select.appendChild(opt);
     });
     select.value = "Todos";
@@ -1265,9 +1283,9 @@ export async function inicializarDashboard() {
   const filaFiltrosGrafo = document.createElement("div");
   filaFiltrosGrafo.className = "mapa-fila-filtros-grafo";
   filaFiltrosGrafo.append(
-    crearSelectGrafo("Agente", agentesLista, valor => { estadoGrafo.agente = valor; dibujarGrafo(); }),
-    crearSelectGrafo("Atributo", atributosLista, valor => { estadoGrafo.atributo = valor; dibujarGrafo(); }),
-    crearSelectGrafo("Género", generosLista, valor => { estadoGrafo.genero = valor; dibujarGrafo(); })
+    crearSelectGrafo("Agente", agentesLista, (valor: any) => { estadoGrafo.agente = valor; dibujarGrafo(); }),
+    crearSelectGrafo("Atributo", atributosLista, (valor: any) => { estadoGrafo.atributo = valor; dibujarGrafo(); }),
+    crearSelectGrafo("Género", generosLista, (valor: any) => { estadoGrafo.genero = valor; dibujarGrafo(); })
   );
 
   const botonVerCasosGrafo = crearBotonVerCasos();
@@ -1284,15 +1302,15 @@ export async function inicializarDashboard() {
   const tooltipGrafo = document.createElement("div");
   tooltipGrafo.className = "tooltip-grafico";
 
-  let simulationGrafoRef = null;
+  let simulationGrafoRef: NodoMutable = null;
 
-  function dragGrafo(simulation) {
-    function dragstarted(event, d) {
+  function dragGrafo(simulation: NodoMutable) {
+    function dragstarted(event: any, d: NodoMutable) {
       if (!event.active) simulation.alphaTarget(0.3).restart();
       d.fx = d.x; d.fy = d.y;
     }
-    function dragged(event, d) { d.fx = event.x; d.fy = event.y; }
-    function dragended(event, d) {
+    function dragged(event: any, d: NodoMutable) { d.fx = event.x; d.fy = event.y; }
+    function dragended(event: any, d: NodoMutable) {
       if (!event.active) simulation.alphaTarget(0);
       d.fx = null; d.fy = null;
     }
@@ -1314,7 +1332,7 @@ export async function inicializarDashboard() {
 
     const agenteCrimenes = new Map();
     const crimenInfo = new Map();
-    filtrados.forEach(d => {
+    filtrados.forEach((d: FilaCsv) => {
       const idAgente = d.ID_Agente;
       const codigo = d.Código;
       const nombre = d.Nombre_Codigo;
@@ -1355,7 +1373,7 @@ export async function inicializarDashboard() {
     nodes.forEach(n => vinculadosPorCodigo.set(n.id, new Set()));
     agenteCrimenes.forEach(({ codigos: codigosSet }, idAgente) => {
       if (codigosSet.size < 2) return;
-      codigosSet.forEach(codigo => vinculadosPorCodigo.get(codigo)?.add(idAgente));
+      codigosSet.forEach((codigo: string) => vinculadosPorCodigo.get(codigo)?.add(idAgente));
     });
 
     areaGrafo.innerHTML = "";
@@ -1373,17 +1391,17 @@ export async function inicializarDashboard() {
       .attr("viewBox", `0 0 ${GRAFO_WIDTH} ${GRAFO_HEIGHT}`)
       .attr("class", "mapa-grafo-svg");
 
-    const radiusScale = d3.scaleSqrt().domain([0, d3.max(nodes, d => d.count) || 1]).range([7, 32]);
-    const linkScale = d3.scaleLinear().domain([1, d3.max(links, d => d.weight) || 1]).range([1, 7]);
-    const color = d3.scaleOrdinal(COLORES_SERIE).domain(nodes.map(d => d.id));
+    const radiusScale = d3.scaleSqrt().domain([0, d3.max(nodes, (d: FilaCsv) => d.count) || 1]).range([7, 32]);
+    const linkScale = d3.scaleLinear().domain([1, d3.max(links, (d: FilaCsv) => d.weight) || 1]).range([1, 7]);
+    const color = d3.scaleOrdinal(COLORES_SERIE).domain(nodes.map((d: FilaCsv) => d.id));
 
-    const simulation = d3.forceSimulation(nodes)
-      .force("link", d3.forceLink(links).id(d => d.id)
-        .distance(d => 120 - linkScale(d.weight) * 4)
-        .strength(d => 0.1 + linkScale(d.weight) * 0.02))
+    const simulation = d3.forceSimulation(nodes as any)
+      .force("link", d3.forceLink(links).id((d: FilaCsv) => d.id)
+        .distance((d: FilaCsv) => 120 - linkScale(d.weight) * 4)
+        .strength((d: FilaCsv) => 0.1 + linkScale(d.weight) * 0.02))
       .force("charge", d3.forceManyBody().strength(-260))
       .force("center", d3.forceCenter(GRAFO_WIDTH / 2, GRAFO_HEIGHT / 2))
-      .force("collide", d3.forceCollide(d => radiusScale(d.count) + 5))
+      .force("collide", d3.forceCollide((d: FilaCsv) => radiusScale(d.count) + 5))
       .force("x", d3.forceX(GRAFO_WIDTH / 2).strength(0.05))
       .force("y", d3.forceY(GRAFO_HEIGHT / 2).strength(0.05));
 
@@ -1392,22 +1410,22 @@ export async function inicializarDashboard() {
     const link = svg.append("g").selectAll("line").data(links).join("line")
       .attr("class", "mapa-grafo-link")
       .attr("stroke", PALETA.borde).attr("stroke-opacity", 0.35)
-      .attr("stroke-width", d => linkScale(d.weight));
+      .attr("stroke-width", (d: FilaCsv) => linkScale(d.weight));
 
     const node = svg.append("g").selectAll("circle").data(nodes).join("circle")
       .attr("class", "mapa-grafo-nodo")
-      .attr("r", d => radiusScale(d.count))
-      .attr("fill", d => color(d.id))
+      .attr("r", (d: FilaCsv) => radiusScale(d.count))
+      .attr("fill", (d: FilaCsv) => color(d.id))
       .attr("stroke", PALETA.fondoPergamino).attr("stroke-width", 1.5)
-      .call(dragGrafo(simulation));
+      .call(dragGrafo(simulation) as any);
 
     const label = svg.append("g").selectAll("text").data(nodes).join("text")
-      .text(d => d.nombre)
+      .text((d: FilaCsv) => d.nombre)
       .attr("class", "mapa-grafo-etiqueta")
-      .attr("dy", d => -radiusScale(d.count) - 6);
+      .attr("dy", (d: FilaCsv) => -radiusScale(d.count) - 6);
 
-    let seleccionNodo = null;
-    let seleccionLink = null;
+    let seleccionNodo: NodoMutable = null;
+    let seleccionLink: NodoMutable = null;
 
     function limpiarSeleccionGrafo() {
       seleccionNodo = null;
@@ -1419,7 +1437,7 @@ export async function inicializarDashboard() {
     function aplicarResaltado() {
       if (seleccionNodo === null && seleccionLink === null) {
         node.attr("opacity", 1).attr("stroke", PALETA.fondoPergamino).attr("stroke-width", 1.5);
-        link.attr("stroke", PALETA.borde).attr("stroke-opacity", 0.35).attr("stroke-width", d => linkScale(d.weight));
+        link.attr("stroke", PALETA.borde).attr("stroke-opacity", 0.35).attr("stroke-width", (d: FilaCsv) => linkScale(d.weight));
         label.attr("opacity", 1);
         return;
       }
@@ -1429,7 +1447,7 @@ export async function inicializarDashboard() {
 
       if (seleccionNodo !== null) {
         nodosActivos.add(seleccionNodo);
-        (adyacencia.get(seleccionNodo) || new Set()).forEach(id => nodosActivos.add(id));
+        (adyacencia.get(seleccionNodo) || new Set()).forEach((id: string) => nodosActivos.add(id));
         links.forEach(l => {
           if (l.source.id === seleccionNodo || l.target.id === seleccionNodo) linksActivos.add(l);
         });
@@ -1439,16 +1457,16 @@ export async function inicializarDashboard() {
         linksActivos.add(seleccionLink);
       }
 
-      node.attr("opacity", d => nodosActivos.has(d.id) ? 1 : 0.15)
-        .attr("stroke", d => (seleccionNodo !== null && d.id === seleccionNodo) ? PALETA.tintaOscura : PALETA.fondoPergamino)
-        .attr("stroke-width", d => (seleccionNodo !== null && d.id === seleccionNodo) ? 3 : 1.5);
-      label.attr("opacity", d => nodosActivos.has(d.id) ? 1 : 0.15);
-      link.attr("stroke", d => linksActivos.has(d) ? PALETA.acentoLinea : "#ccc")
-        .attr("stroke-opacity", d => linksActivos.has(d) ? 0.9 : 0.1)
-        .attr("stroke-width", d => linksActivos.has(d) ? linkScale(d.weight) + 2 : linkScale(d.weight));
+      node.attr("opacity", (d: FilaCsv) => nodosActivos.has(d.id) ? 1 : 0.15)
+        .attr("stroke", (d: FilaCsv) => (seleccionNodo !== null && d.id === seleccionNodo) ? PALETA.tintaOscura : PALETA.fondoPergamino)
+        .attr("stroke-width", (d: FilaCsv) => (seleccionNodo !== null && d.id === seleccionNodo) ? 3 : 1.5);
+      label.attr("opacity", (d: FilaCsv) => nodosActivos.has(d.id) ? 1 : 0.15);
+      link.attr("stroke", (d: FilaCsv) => linksActivos.has(d) ? PALETA.acentoLinea : "#ccc")
+        .attr("stroke-opacity", (d: FilaCsv) => linksActivos.has(d) ? 0.9 : 0.1)
+        .attr("stroke-width", (d: FilaCsv) => linksActivos.has(d) ? linkScale(d.weight) + 2 : linkScale(d.weight));
     }
 
-    node.on("click", (event, d) => {
+    node.on("click", (event: MouseEvent, d: FilaCsv) => {
       event.stopPropagation();
       if (seleccionNodo === d.id) { limpiarSeleccionGrafo(); return; }
       seleccionNodo = d.id;
@@ -1457,7 +1475,7 @@ export async function inicializarDashboard() {
       botonVerCasosGrafo.mostrar(d.nombre, () => irATablasFiltradas({ codigo: d.nombre }));
     });
 
-    link.on("click", (event, d) => {
+    link.on("click", (event: MouseEvent, d: FilaCsv) => {
       event.stopPropagation();
       if (seleccionLink === d) { limpiarSeleccionGrafo(); return; }
       seleccionLink = d;
@@ -1471,12 +1489,12 @@ export async function inicializarDashboard() {
     svg.on("click", () => limpiarSeleccionGrafo());
 
     node
-      .on("mouseenter", (event, d) => {
+      .on("mouseenter", (event: MouseEvent, d: FilaCsv) => {
         const vinculados = vinculadosPorCodigo.get(d.id)?.size || 0;
         tooltipGrafo.innerHTML = `<strong>${d.nombre}</strong><br/>Casos: ${d.count}<br/>Vínculos con otros crímenes: ${vinculados}`;
         tooltipGrafo.classList.add("tooltip-grafico--visible");
       })
-      .on("mousemove", event => {
+      .on("mousemove", (event: MouseEvent) => {
         const rect = areaGrafo.getBoundingClientRect();
         tooltipGrafo.style.left = (event.clientX - rect.left + 12) + "px";
         tooltipGrafo.style.top = (event.clientY - rect.top + 12) + "px";
@@ -1484,11 +1502,11 @@ export async function inicializarDashboard() {
       .on("mouseleave", () => tooltipGrafo.classList.remove("tooltip-grafico--visible"));
 
     link
-      .on("mouseenter", (event, d) => {
+      .on("mouseenter", (event: MouseEvent, d: FilaCsv) => {
         tooltipGrafo.innerHTML = `${d.source.nombre || d.source} ↔ ${d.target.nombre || d.target}<br/>Agentes en común: <strong>${d.weight}</strong>`;
         tooltipGrafo.classList.add("tooltip-grafico--visible");
       })
-      .on("mousemove", event => {
+      .on("mousemove", (event: MouseEvent) => {
         const rect = areaGrafo.getBoundingClientRect();
         tooltipGrafo.style.left = (event.clientX - rect.left + 12) + "px";
         tooltipGrafo.style.top = (event.clientY - rect.top + 12) + "px";
@@ -1496,17 +1514,17 @@ export async function inicializarDashboard() {
       .on("mouseleave", () => tooltipGrafo.classList.remove("tooltip-grafico--visible"));
 
     simulation.on("tick", () => {
-      nodes.forEach(d => {
+      nodes.forEach((d: FilaCsv) => {
         const r = radiusScale(d.count);
         d.x = Math.max(r + GRAFO_PADDING, Math.min(GRAFO_WIDTH - r - GRAFO_PADDING, d.x));
         d.y = Math.max(r + GRAFO_PADDING, Math.min(GRAFO_HEIGHT - r - GRAFO_PADDING, d.y));
       });
-      link.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
-      node.attr("cx", d => d.x).attr("cy", d => d.y);
-      label.attr("x", d => d.x).attr("y", d => d.y);
+      link.attr("x1", (d: FilaCsv) => d.source.x).attr("y1", (d: FilaCsv) => d.source.y).attr("x2", (d: FilaCsv) => d.target.x).attr("y2", (d: FilaCsv) => d.target.y);
+      node.attr("cx", (d: FilaCsv) => d.x).attr("cy", (d: FilaCsv) => d.y);
+      label.attr("x", (d: FilaCsv) => d.x).attr("y", (d: FilaCsv) => d.y);
     });
 
-    areaGrafo.appendChild(svg.node());
+    areaGrafo.appendChild(svg.node()!);
   }
 
   function actualizarGrafoRelacion() {

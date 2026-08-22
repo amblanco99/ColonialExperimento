@@ -8,15 +8,6 @@
 
     // Entradas viejas de Vite. Se borran en la fase 7; hasta entonces alimentan
     // la build que despliega deploy.yml.
-    "src/main",
-
-    // Módulos pendientes de tipar en la fase 5c, de más simple a más complejo.
-    // El número es la cuenta de errores en modo strict al empezar.
-    // Cada commit de 5c quita una línea de aquí.
-    //
-    // Mientras quede alguna, un `npm run check -> exit 0` NO cubre esos
-    // archivos. Cuando la lista esté vacía, el chequeo vuelve a significar lo
-    // que significaba en la fase 4.
-    "src/scripts/charts/TiempoCrimenesMapa.ts" // 253
+    "src/main"
   ]
 }
