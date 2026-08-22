@@ -14,10 +14,8 @@ export default defineConfig({
     format: 'preserve',
   },
 
-  // Temporal. Vite también compila a dist/ y se pisarían, lo que impediría comparar
-  // ambas versiones lado a lado. Vuelve a 'dist' en la fase 7, cuando se borre Vite
-  // (deploy.yml sube `path: dist`).
-  outDir: './dist-astro',
+  // deploy.yml sube `path: dist`, así que aquí se queda.
+  outDir: './dist',
 
   vite: {
     css: {

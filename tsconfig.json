@@ -1,13 +1,5 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": [
-    "dist",
-    "dist-astro",
-    "node_modules",
-
-    // Entradas viejas de Vite. Se borran en la fase 7; hasta entonces alimentan
-    // la build que despliega deploy.yml.
-    "src/main"
-  ]
+  "exclude": ["dist", "node_modules"]
 }

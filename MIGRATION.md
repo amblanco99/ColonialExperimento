@@ -386,15 +386,15 @@ D3 corre solo en el navegador, importado desde un `<script>` a nivel de página,
 | 1 | Scaffold: Astro, sass, TS, Prettier | **hecho** |
 | 2 | `BaseLayout` + `Nav` + `Footer` | **hecho** |
 | — | Fusionar `origin/main` (`87aa6a7`) | **hecho** (2026-08-13) |
-| 3 | Páginas, una a una, de la más simple a la más compleja | **en curso: 7 de 11** |
-| 3.5 | Revisión en móvil de las 9 páginas (ya no es un commit) | pendiente |
-| 4a | Tokens, base, `global.scss` | pendiente |
-| 4b | Las otras **14** hojas → `src/styles/pages/` | pendiente |
-| 5a | Mover D3 a `src/scripts/*.ts` sin tocar contenido (**18 módulos**) | pendiente |
-| 5b | Corregir las **16** rutas de datos y los **7** saltos de página | pendiente |
-| 5c | Tipar | pendiente |
-| 6 | Prettier sobre todo el repo | pendiente |
-| 7 | Cambiar `build` a Astro, `outDir` a `dist`, borrar lo viejo | pendiente |
+| 3 | Páginas, una a una, de la más simple a la más compleja | **hecha**, 11 de 11 |
+| 3.5 | Revisión en móvil de las 9 páginas (ya no es un commit) | **hecha**, sin incidencias |
+| 4a | Tokens, base, `global.scss` | **hecha** |
+| 4b | Las otras **14** hojas → `src/styles/pages/` | **hecha** |
+| 5a | Mover D3 a `src/scripts/*.ts` sin tocar contenido (**18 módulos**) | **hecha** |
+| 5b | Corregir las **16** rutas de datos y los **7** saltos de página | **hecha** |
+| 5c | Tipar | **hecha**, 845 errores a 0 |
+| 6 | Prettier sobre todo el repo | **hecha** |
+| 7 | Cambiar `build` a Astro, `outDir` a `dist`, borrar lo viejo | **hecha** |
 
 **Páginas portadas (7):** `index`, `about/index`, `about/fuentes`, `about/delitos`,
 `about/documentacion-tecnica`, `base-de-datos/index`, `personas/index`.
@@ -564,7 +564,10 @@ sea: el 640 de la lista antigua y el de la nueva no son el mismo breakpoint. Con
 hace cada uno antes de darles nombre, porque un `$bp-movil` único no describe bien cinco valores
 que responden a cosas distintas.
 
-### Lista de la fase 7
+### Lista de la fase 7 — completada
+
+Todo lo de abajo está hecho. Se deja como registro de lo que incluyó el cambio.
+
 
 - `dev`, `build` y `preview` pasan a Astro; se quitan los alias `:astro`.
 - `outDir` vuelve a `dist`, porque `deploy.yml` sube `path: dist`.
