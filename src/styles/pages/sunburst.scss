@@ -1,0 +1,43 @@
+// Portado de src/style/sunburst.css sin cambios de reglas.
+// Los tokens llegan por la inyección de astro.config.mjs; el bloque :root
+// lo emite solo abstracts/_root.scss desde global.scss.
+@use 'abstracts/variables' as v;
+
+/* =====================================================
+   SUNBURST "INSTITUCIONES/POBLACIONES POR ATRIBUTO" (SVG)
+===================================================== */
+.sunburst-svg {
+  font-family: v.$font-sans;
+}
+
+.sunburst-arco--clicable {
+  cursor: pointer;
+}
+
+.sunburst-etiquetas {
+  pointer-events: none;
+  text-anchor: middle;
+  user-select: none;
+}
+
+.sunburst-etiqueta {
+  font-size: 12px;
+  fill: #222;
+}
+
+.sunburst-etiqueta-pct {
+  font-size: 10px;
+  fill: #555;
+}
+
+.sunburst-centro {
+  fill: none;
+  pointer-events: all;
+  cursor: pointer;
+}
+
+.sunburst-texto-central {
+  font-size: 13px;
+  fill: #555;
+  pointer-events: none;
+}

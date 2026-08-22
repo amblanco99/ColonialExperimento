@@ -1,0 +1,78 @@
+---
+import Nav, { type SeccionActiva } from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+// Hoja global, ya en SCSS. Emite las custom properties del contrato en :root.
+import '../styles/global.scss';
+
+// Notas sobre el <head> de abajo (van aquí y no como comentarios HTML, que se
+// publicarían en las 11 páginas):
+//
+// - viewport: solo lo tenían index.html y caso.html. Dárselo a las 11 hace que
+//   los breakpoints móviles empiecen a aplicarse en 9 páginas que nunca los
+//   habían visto; por eso va en su propio commit (fase 3.5).
+// - preconnect a gstatic: faltaba. Las fuentes se descargan de gstatic, no de
+//   googleapis, así que el preconnect existente solo servía a medias. Es una
+//   pista de red, no cambia el renderizado.
+// - el <link> a /src/style/style.css de index.html no se reproduce: ahora es el
+//   import de arriba, que Astro empaqueta y versiona.
+//
+// El <main> lo pone cada página: caso.html usa main.page y el resto
+// main.container.
+
+interface Props {
+  title: string;
+  active?: SeccionActiva;
+  // base-de-datos/caso.html es la única página sin nav: en su lugar lleva un
+  // <header class="site-header"> con un enlace de vuelta a la tabla. Ponerle el
+  // nav sería añadir algo que hoy no está, o sea un cambio visual, así que la
+  // página pide que se omita y pone su propia cabecera.
+  conNav?: boolean;
+}
+
+const { title, active, conNav = true } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Source+Sans+3:wght@300;400;600&family=Source+Code+Pro:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    {
+      /*
+      Solo en desarrollo: comprueba que las 27 custom properties del contrato
+      resuelvan en :root.
+
+      Va aquí arriba, antes de <slot />, a propósito: los módulos se ejecutan en
+      orden de documento, y agentesComun.js lee su paleta al importarse (no al
+      dibujar). Si este chequeo fuera después, correría cuando el gráfico ya ha
+      leído sus colores.
+
+      La guarda está DENTRO del script, no en el marcado: Astro empaqueta las
+      etiquetas <script> aunque el marcado que las envuelve sea condicional.
+      Vite sustituye import.meta.env.DEV por false al compilar para producción,
+      así que el import dinámico se elimina del bundle publicado.
+    */
+    }
+    <script>
+      if (import.meta.env.DEV) {
+        const { verificarVariablesCss } = await import('../scripts/dev/verificarVariablesCss');
+        verificarVariablesCss();
+      }
+    </script>
+
+    {conNav && <Nav active={active} />}
+    <slot />
+    <Footer />
+  </body>
+</html>

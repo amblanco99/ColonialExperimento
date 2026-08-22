@@ -4,7 +4,6 @@ Visualización de datos sobre juicios criminales del periodo colonial en el
 Nuevo Reino de Granada. Sitio estático (Vite + JS vanilla + D3.js), sin
 framework.
 
-
 ## Estructura del proyecto
 
 Cada sección del sitio vive en su propia carpeta, con `index.html` como
@@ -14,7 +13,7 @@ portada de esa sección:
 index.html                  portada del sitio
 
 base-de-datos/index.html    Tablas y filtros de la base de datos (Crímenes)
-base-de-datos/caso.html      └─ Detalle de un caso 
+base-de-datos/caso.html      └─ Detalle de un caso
 about/index.html            Sobre el proyecto (portada)
 about/fuentes.html           └─ Fuentes
 about/delitos.html           └─ Delitos
@@ -61,13 +60,13 @@ Cada página HTML sigue (o debería seguir) el mismo esqueleto:
 Y `src/main/miPaginaMain.js`:
 
 ```js
-import '/src/style/style.css'
-import '/src/style/tooltips.css'
+import '/src/style/style.css';
+import '/src/style/tooltips.css';
 // ...cualquier otro CSS que use esta página
 
-import { crearMiGrafico } from '../charts/MiGrafico.js'
+import { crearMiGrafico } from '../charts/MiGrafico.js';
 
-crearMiGrafico('idDelContenedor')
+crearMiGrafico('idDelContenedor');
 ```
 
 Los estilos se importan **desde el JS de entrada**, no con `<link>` extra en

@@ -1,0 +1,358 @@
+// =====================================================
+//   HOJA GLOBAL
+// =====================================================
+//
+// Portada de src/style/style.css. Los tokens salieron a abstracts/_variables,
+// el reset y la tipografía a base/. Aquí queda el resto: contenedores,
+// navegación, tarjetas, leyendas, filtros, tablas, descargas y el conmutador
+// de vistas.
+//
+// Se carga en BaseLayout, así que la reciben las 11 páginas.
+
+@use 'abstracts/variables' as v;
+// El único sitio donde se emite el bloque :root. Ver abstracts/_root.scss.
+@use 'abstracts/root';
+@use 'base/reset';
+@use 'base/typography';
+
+.container {
+  width: 90%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 1rem 5rem;
+  padding-top: 100px; /* Espacio para el topnav sticky */
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+section {
+  width: 100%;
+  max-width: 750px;
+  margin-bottom: 4rem;
+}
+
+/* =====================================================
+   NAVEGACIÓN (.topnav adaptada a .site-header)
+===================================================== */
+.topnav {
+  width: 100%;
+  height: 65px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  box-sizing: border-box;
+  background: var(--parchment-dark);
+  border-bottom: 2px solid var(--rule);
+
+  position: sticky;
+  top: 0;
+  z-index: v.$z-topnav;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-style: italic;
+  font-weight: normal;
+}
+
+.nav-links {
+  display: flex;
+  gap: 30px;
+}
+
+.logo,
+.nav-links a {
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: color 0.15s;
+}
+
+.logo:hover,
+.nav-links a:hover {
+  color: var(--accent);
+}
+
+/* =====================================================
+   VISUALIZACIONES Y TARJETAS
+===================================================== */
+.col-root {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1400px;
+}
+
+.cards-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.card {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 2px; /* Bordes más rectos para look manuscrito/antiguo */
+  padding: 25px;
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent); /* Detalle elegante tomado de crime-card */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.15s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+a.card {
+  display: block;
+  text-align: left;
+  color: inherit;
+  text-decoration: none;
+}
+
+a.card h3 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+a.card p {
+  margin: 0;
+  max-width: none;
+}
+
+#chartLinaje,
+#tablaContainer,
+#tablaMetadatos {
+  overflow-x: auto;
+  width: 100%;
+}
+
+#mapa-contenedor {
+  font-family: var(--font-display);
+}
+
+/* =====================================================
+   LEYENDAS Y FILTROS
+==================================================== */
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--ink-light);
+}
+
+.color-box {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+}
+
+/* Mantuve las clases de colores de tus gráficos */
+.azul {
+  background: #003f5c;
+}
+.rosa {
+  background: #bc5090;
+}
+
+.filters {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.filters select,
+.filters input {
+  padding: 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: #ffffff;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  outline: none;
+}
+
+.filters select:focus,
+.filters input:focus {
+  border-color: var(--accent);
+}
+
+/* =====================================================
+   TABLAS ARCHIVÍSTICAS
+===================================================== */
+.tabla-datos,
+.tabla-metadatos {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border: 1px solid var(--rule);
+  margin-top: 1rem;
+}
+
+.tabla-datos th,
+.tabla-metadatos th {
+  background: var(--parchment-dark);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--rule);
+}
+
+.tabla-datos td,
+.tabla-metadatos td {
+  padding: 0.8rem;
+  font-size: 0.9rem;
+  color: var(--ink-light);
+  border-bottom: 1px solid var(--rule);
+}
+
+.tabla-datos tr:hover,
+.tabla-metadatos tr:hover {
+  background: var(--parchment);
+}
+
+.fila-clickeable {
+  cursor: pointer;
+}
+
+.cargando {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--ink-light);
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.fila-clickeable:hover {
+  background-color: var(--badge-bg) !important;
+}
+
+/* =====================================================
+   BOTONES DE DESCARGA
+===================================================== */
+.descargas {
+  width: 100%;
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.botones-descarga {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.btn-descarga {
+  background: var(--accent);
+  color: var(--parchment);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.9rem 1.5rem;
+  text-decoration: none;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.btn-descarga:hover {
+  background: var(--parchment-dark);
+  color: var(--accent);
+  border-color: var(--rule);
+}
+
+/* =====================================================
+   TOGGLE DASHBOARD / HISTORIA
+===================================================== */
+.vista-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0 0 2rem;
+}
+
+.vista-toggle-btn {
+  padding: 0.55rem 1.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: #ffffff;
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.vista-toggle-btn:hover {
+  background: rgba(122, 59, 30, 0.08);
+}
+
+.vista-toggle-btn--activo,
+.vista-toggle-btn--activo:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.vista-historia {
+  max-width: 750px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.vista-historia-placeholder {
+  color: var(--accent-dim);
+  font-style: italic;
+  padding: 3rem 0;
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+@media (max-width: v.$bp-movil) {
+  .topnav {
+    padding: 0 20px;
+  }
+  .col-root,
+  .cards-container {
+    flex-direction: column;
+  }
+  .card {
+    width: 100%;
+  }
+}

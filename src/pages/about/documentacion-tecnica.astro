@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Esta página cargaba /src/main/aboutmain.js, que llama a crearConteoCrimenes,
+// crearTiposCasos y crearLinaje. Pero aquí no existe ninguno de los tres
+// contenedores (#conteoCrimenes, #tipoCaso, #chartLinaje): es una página de solo
+// texto que arrastraba el bundle entero de gráficos para no dibujar nada.
+// Por eso no lleva script. Es la guarda acordada (ver MIGRATION.md).
+---
+
+<BaseLayout title="Documentación técnica" active="about">
+  <main class="container">
+    <h1 class="section-mainTitle">Documentación técnica</h1>
+
+    <p>
+      La metodología empleada para la construcción de las bases de datos se basa en la revisión y
+      codificación manual de los expedientes judiciales. Se establecieron categorías analíticas para
+      clasificar los delitos, las personas involucradas y otros aspectos relevantes. La información
+      fue ingresada en una base de datos relacional, permitiendo su análisis cuantitativo y
+      cualitativo.
+    </p>
+  </main>
+</BaseLayout>

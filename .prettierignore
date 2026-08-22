@@ -1,3 +1,7 @@
+# Salidas de build
 dist
+.astro
 node_modules
+
+# Datos: 4,3 MB de CSV que no hay que reformatear
 public/data

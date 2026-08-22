@@ -1,0 +1,96 @@
+// =====================================================
+//   TOKENS
+// =====================================================
+//
+// Las variables SCSS de abajo son la fuente de verdad. El bloque :root del
+// final las emite como custom properties reales.
+//
+// ESO NO ES OPCIONAL: 27 de esas propiedades las lee el JS en tiempo de
+// ejecución con getComputedStyle (ver MIGRATION.md, sección 3). Si alguna
+// dejara de emitirse, la lectura devolvería vacío y el gráfico caería a su
+// color hardcodeado **sin lanzar ningún error**. Es el único fallo invisible
+// del port, y por eso existe verificarVariablesCss.ts.
+//
+// caso.css repetía literalmente los once primeros tokens; aquí están una sola
+// vez.
+
+// ── Paleta general ───────────────────────────────────────
+$ink: #1a1410;
+$ink-light: #4a3f35;
+$parchment: #f7f2e8;
+$parchment-dark: #ede5d0;
+$rule: #c8b89a;
+$accent: #7a3b1e;
+$accent-dim: #a0622f;
+$badge-bg: #f0e6d0;
+
+// ── Tipografías ──────────────────────────────────────────
+$font-display: 'IM Fell English', Georgia, serif;
+$font-body: 'Source Sans 3', system-ui, sans-serif;
+$font-mono: 'Source Code Pro', monospace;
+$font-mapa: Georgia, serif;
+
+// Las declaraciones que estaban sin tokenizar. Son DOS valores distintos, no
+// uno: cuatro usaban `system-ui, sans-serif` y la de sunburst solo `sans-serif`.
+// Se mantienen separados a propósito: unificarlas metería `system-ui` delante en
+// el sunburst y ahí cambia la fuente que se acaba dibujando, que es un cambio
+// visual y no un port.
+$font-sistema: system-ui, sans-serif;
+$font-sans: sans-serif;
+
+// ── Paleta del dashboard "Tiempo y Crímenes" ─────────────
+// Identidad propia (pergamino más cálido, acentos magenta/azul), distinta de
+// los tokens generales de arriba.
+$mapa-fondo-pergamino: #f4ecd8;
+$mapa-panel: #efe4c8;
+$mapa-tierra: #e8dcc0;
+$mapa-borde: #6b4f2a;
+$mapa-tinta-oscura: #3a2d1a;
+$mapa-acento-linea: #bb4e99;
+$mapa-acento-secundario: #4e9bbb;
+$mapa-tarjeta-fondo: #fdf8ec;
+$mapa-punto-color: #7b5ea7;
+
+// Las diez series del mapa. TiempoCrimenesMapa.js:27 las pide por nombre
+// construido en runtime (`--mapa-serie-${i + 1}`), así que los diez nombres
+// tienen que existir y estar numerados del 1 al 10 sin huecos.
+$mapa-series: (
+  1: #bb4e99,
+  2: #4e9bbb,
+  3: #e8a838,
+  4: #56b87e,
+  5: #e05a5a,
+  6: #7b5ea7,
+  7: #3ab8b0,
+  8: #d4784e,
+  9: #6a8fce,
+  10: #a05080,
+);
+
+// ── Paleta de género ─────────────────────────────────────
+$genero-mujer: #ffa600;
+$genero-hombre: #bb4e99;
+$genero-sin-info: #003f5c;
+
+// ── Paleta de tipo de agente ─────────────────────────────
+$tipo-institucion: #2f6f76;
+$tipo-poblacion-completa: #c98a3b;
+$tipo-poblacion-indigena: #7a3b1e;
+
+// ── Breakpoints ──────────────────────────────────────────
+// Sin lector en JS: son variables SCSS de tiempo de compilación y no se emiten
+// como custom properties. Los cinco valores que usa el proyecto, con lo que
+// hace cada uno (ver MIGRATION.md).
+$bp-caso: 600px; // padding de .page
+$bp-conteo: 640px; // dos bloques del conteo
+$bp-filtros: 720px; // apila las filas de filtros
+$bp-movil: 768px; // topnav, tarjetas y columnas a una sola
+$bp-dashboard: 900px; // .personas-grid a una columna
+
+// ── Escala de z-index ────────────────────────────────────
+// Tampoco tienen lector en JS. Son los valores que ya estaban en uso.
+$z-beeswarm-controles: 5;
+$z-tooltip: 10;
+$z-panel-filtros: 40;
+$z-panel-flotante: 50;
+$z-topnav: 1000;

@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// baseDeDatosMain.js importaba style.css Y caso.css, así que esta página
+// recibía las dos aunque caso.css sea sobre todo para el detalle del caso.
+// Se conserva igual: las cadenas por página no cambian en este port.
+import '../../styles/pages/caso.scss';
+
+// Esta página no tiene <h1>: empieza con <section> y un <h2>. Es la única así,
+// y se deja tal cual.
+---
+
+<BaseLayout title="Tablas y Filtros" active="base-de-datos">
+  <main class="container">
+    <section>
+      <h2>Base de datos Crímenes Coloniales</h2>
+
+      <div id="filtros-activos"></div>
+
+      <div class="filtros-tabla">
+        <select id="filtroLugar">
+          <option value="">Todos los lugares</option>
+        </select>
+
+        <select id="filtroCrimen">
+          <option value="">Todos los crimenes</option>
+        </select>
+
+        <input type="text" id="busqueda" placeholder="Buscar..." />
+      </div>
+
+      <div id="tablaContainer"></div>
+    </section>
+
+    <script>
+      import { crearTabla } from '../../scripts/tables/tablageneral.js';
+
+      crearTabla();
+    </script>
+  </main>
+</BaseLayout>

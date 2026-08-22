@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Los otros dos gráficos de aboutmain.js: aquí están #conteoCrimenes y
+// #chartLinaje, pero no #tipoCaso, así que no se llama a crearTiposCasos.
+// Entre esta página y fuentes.html quedan cubiertos los tres.
+---
+
+<BaseLayout title="Delitos" active="about">
+  <main class="container">
+    <h1 class="section-mainTitle">Delitos</h1>
+
+    <p>
+      Cada expediente fue clasificado según una tipología delictiva construida a partir de la
+      lectura de los procesos judiciales, distinguiendo el crimen principal, sus subcategorías y el
+      linaje al que pertenecen dentro del sistema penal colonial. Esta clasificación permite
+      comparar y agregar los casos en las visualizaciones del proyecto.
+    </p>
+
+    <section>
+      <h2>Conteo de crímenes</h2>
+      <p>
+        Aquí puedes encontrar las sumas totales de crímenes registrados en la base de datos,
+        desglosadas por siglo.
+      </p>
+      <div id="conteoCrimenes"></div>
+    </section>
+
+    <section>
+      <h2>Linajes</h2>
+      <p>Esta gráfica muestra la clasificación metodológica de los crímenes</p>
+      <div id="chartLinaje"></div>
+    </section>
+
+    <script>
+      import { crearConteoCrimenes } from '../../scripts/charts/ConteoCrimenes.js';
+      import { crearLinaje } from '../../scripts/charts/Linaje.js';
+
+      crearConteoCrimenes();
+      crearLinaje();
+    </script>
+  </main>
+</BaseLayout>

@@ -1,0 +1,66 @@
+// =====================================================
+//   SALIDA: custom properties en :root
+// =====================================================
+//
+// Este archivo es el ÚNICO que emite el bloque :root, y lo carga solo
+// global.scss. No lo importa ninguna hoja de página.
+//
+// POR QUÉ ESTÁ SEPARADO DE _variables.scss
+//
+// La configuración de Astro inyecta `@use "abstracts/variables"` en cada .scss
+// que no esté bajo abstracts/. Mientras _variables.scss emitía el :root, esa
+// inyección hacía que **cada hoja de página publicara su propia copia de las 27
+// propiedades**. Comprobado: una página con dos hojas propias acababa con dos
+// bloques :root idénticos, el de global.scss y el suyo.
+//
+// El problema no es el peso, es que con varias fuentes declarando lo mismo
+// **decide el orden de la cascada**, y eso no se ve hasta que alguien edita una
+// de ellas y el resultado depende de en qué bundle acabó.
+//
+// Con el :root aquí, la inyección automática solo lleva variables SCSS, que no
+// producen CSS. Una sola declaración, un solo sitio donde mirar.
+//
+// Vive en abstracts/ porque la configuración salta esa carpeta al inyectar, así
+// que aquí el @use va explícito.
+
+@use 'abstracts/variables' as v;
+
+:root {
+  --ink: #{v.$ink};
+  --ink-light: #{v.$ink-light};
+  --parchment: #{v.$parchment};
+  --parchment-dark: #{v.$parchment-dark};
+  --rule: #{v.$rule};
+  --accent: #{v.$accent};
+  --accent-dim: #{v.$accent-dim};
+  --badge-bg: #{v.$badge-bg};
+
+  --font-display: #{v.$font-display};
+  --font-body: #{v.$font-body};
+  --font-mono: #{v.$font-mono};
+  --mapa-font: #{v.$font-mapa};
+
+  --mapa-fondo-pergamino: #{v.$mapa-fondo-pergamino};
+  --mapa-panel: #{v.$mapa-panel};
+  --mapa-tierra: #{v.$mapa-tierra};
+  --mapa-borde: #{v.$mapa-borde};
+  --mapa-tinta-oscura: #{v.$mapa-tinta-oscura};
+  --mapa-acento-linea: #{v.$mapa-acento-linea};
+  --mapa-acento-secundario: #{v.$mapa-acento-secundario};
+  --mapa-tarjeta-fondo: #{v.$mapa-tarjeta-fondo};
+  --mapa-punto-color: #{v.$mapa-punto-color};
+
+  // Genera --mapa-serie-1 … --mapa-serie-10 desde el mapa de arriba, en el
+  // mismo orden en que TiempoCrimenesMapa.js las pide.
+  @each $n, $color in v.$mapa-series {
+    --mapa-serie-#{$n}: #{$color};
+  }
+
+  --genero-mujer: #{v.$genero-mujer};
+  --genero-hombre: #{v.$genero-hombre};
+  --genero-sin-info: #{v.$genero-sin-info};
+
+  --tipo-institucion: #{v.$tipo-institucion};
+  --tipo-poblacion-completa: #{v.$tipo-poblacion-completa};
+  --tipo-poblacion-indigena: #{v.$tipo-poblacion-indigena};
+}

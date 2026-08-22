@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// personasmain.js pasó a importar también conteo.css, así que la cadena de esta
+// página son dos hojas: la global (en BaseLayout) y esta.
+import '../../styles/pages/conteo.scss';
+
+// Las dos tarjetas (.cards-container) que llevaban a personas.html y a
+// otrosAgentes.html se eliminaron en origin/main. Ahora el acceso a esas dos
+// páginas lo genera TablasConteo.js con un botón "Expandir".
+---
+
+<BaseLayout title="Composición social de los procesos (personas e instituciones)" active="personas">
+  <main class="container">
+    <h1 class="section-mainTitle">Composición social de los procesos (personas e instituciones)</h1>
+
+    <section>
+      <h2>Conteo de Personas y agentes</h2>
+      <p>
+        Un vistazo general antes de entrar en detalle: cuántas personas hay registradas por género,
+        en cuántos casos participan, qué proporción aparece como acusada o como víctima, y su delito
+        más frecuente. Haz clic en cualquier cifra para ver esos registros en la tabla filtrada, o
+        en una fila para desplegar su desglose por siglo.
+      </p>
+      <div id="conteoInteractivo"></div>
+    </section>
+
+    <script>
+      import { crearConteoInteractivo } from '../../scripts/charts/TablasConteo.js';
+
+      crearConteoInteractivo();
+    </script>
+  </main>
+</BaseLayout>

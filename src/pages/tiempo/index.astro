@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Cadena de tiempomain.js, en el mismo orden. La global la pone BaseLayout.
+import '../../styles/pages/tooltips.scss';
+import '../../styles/pages/botones.scss';
+import '../../styles/pages/paneles-filtro.scss';
+import '../../styles/pages/mapa.scss';
+
+// Tres cosas que este módulo hace y ninguna otra página necesita:
+//
+// 1. TiempoCrimenesMapa.js:237 hace document.querySelector("main.container") y
+//    le añade la clase mapa-main-ancho en tiempo de ejecución. Por eso el <main>
+//    tiene que llevar class="container": si no, el selector no encuentra nada,
+//    no hay error y la página se queda estrecha.
+// 2. #panel-filtros y #columna-visualizaciones siguen un patrón buscar-o-crear
+//    (líneas 265-275). #panel-filtros va en el marcado, así que se encuentra;
+//    #columna-visualizaciones no, así que lo crea el módulo.
+// 3. #mapa-contenedor es obligatorio: la línea 230 hace return si falta.
+//
+// Los estilos en línea del contenedor de visualizaciones se copian literales:
+// los min-width de 350 y 450 son los que fuerzan el salto de línea, y mapa.css
+// no los duplica.
+//
+// El original cerraba </main> dos veces (líneas 15 y 17). Se elimina el
+// duplicado, que era una etiqueta desbalanceada.
+---
+
+<BaseLayout title="Tiempo" active="tiempo">
+  <main class="container">
+    <h1 class="section-mainTitle">Tiempo</h1>
+
+    <div id="panel-filtros" class="controles"></div>
+
+    <div class="dashboard-visualizaciones" style="display: flex; gap: 20px; flex-wrap: wrap;">
+      <div id="mapa-contenedor" style="flex: 1; min-width: 350px;"></div>
+      <div id="crimenesChart" style="flex: 1; min-width: 450px;"></div>
+    </div>
+
+    <script>
+      import { inicializarDashboard } from '../../scripts/charts/TiempoCrimenesMapa.js';
+
+      inicializarDashboard();
+    </script>
+  </main>
+</BaseLayout>

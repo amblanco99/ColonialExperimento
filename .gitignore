@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Astro (dist-astro es temporal: en la fase 7 el outDir vuelve a dist)
+dist-astro
+.astro
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

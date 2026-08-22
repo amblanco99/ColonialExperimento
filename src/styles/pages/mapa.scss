@@ -1,0 +1,367 @@
+// Portado de src/style/mapa.css sin cambios de reglas.
+// Los tokens llegan por la inyección de astro.config.mjs; el bloque :root
+// lo emite solo abstracts/_root.scss desde global.scss.
+@use 'abstracts/variables' as v;
+
+/* =====================================================
+   DASHBOARD "TIEMPO Y CRÍMENES" — layout específico
+===================================================== */
+.mapa-dashboard-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: 18px;
+  width: 100%;
+}
+
+.mapa-main-ancho {
+  max-width: 1700px;
+  width: 96%;
+  align-items: stretch;
+}
+
+.mapa-columna-viz {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 18px;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.mapa-columna-izquierda {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1 1 460px;
+  min-width: 400px;
+}
+
+.mapa-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--mapa-tarjeta-fondo);
+  border: 1px solid var(--mapa-borde);
+  border-radius: 10px;
+  padding: 16px 18px;
+  box-shadow: 0 2px 6px rgba(58, 45, 26, 0.1);
+  flex: 1 1 460px;
+  min-width: 400px;
+  box-sizing: border-box;
+}
+
+.mapa-tarjeta--vertical {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.mapa-tarjeta-encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mapa-tarjeta-titulo {
+  font-family: var(--mapa-font);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--mapa-tinta-oscura);
+  letter-spacing: 0.01em;
+}
+
+.mapa-tarjeta-subtitulo {
+  font-family: var(--mapa-font);
+  font-size: 11.5px;
+  color: var(--mapa-borde);
+  opacity: 0.85;
+}
+
+.mapa-tarjeta-divisor {
+  height: 1px;
+  background: var(--mapa-borde);
+  opacity: 0.25;
+}
+
+.mapa-panel-ancho-completo {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.mapa-barra-modo-tiempo {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 14px;
+  font-family: var(--mapa-font);
+}
+
+.mapa-wrap-tiempo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 240px;
+  width: auto;
+  max-width: 300px;
+}
+
+.mapa-slider {
+  width: 100%;
+  accent-color: var(--mapa-acento-linea);
+}
+
+.mapa-slider--oculto {
+  display: none;
+}
+
+.mapa-fila-siglos {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+}
+
+.mapa-fila-siglos--oculta {
+  display: none;
+}
+
+.mapa-etiqueta-tiempo {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mapa-tinta-oscura);
+}
+
+.mapa-wrap-crimen {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 190px;
+  width: auto;
+  max-width: 240px;
+}
+
+.mapa-fila-filtros-grafo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-bottom: 4px;
+}
+
+.mapa-wrap-select-grafo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1 1 130px;
+  min-width: 110px;
+}
+
+.mapa-area-grafo {
+  position: relative;
+  width: 100%;
+}
+
+.mapa-contenedor-lineas {
+  position: relative;
+}
+
+.mapa-svg {
+  max-width: 100%;
+  height: auto;
+  background-color: var(--mapa-fondo-pergamino);
+  border-radius: 6px;
+}
+
+.mapa-punto {
+  fill-opacity: 0.9;
+  stroke: var(--mapa-fondo-pergamino);
+  stroke-width: 0.5;
+  cursor: pointer;
+}
+
+/* Grupos SVG de la cápsula de información: no deben capturar el mouse por
+   sí mismos (solo su rect de fondo, ver .mapa-capsula-fondo--interactivo),
+   para no bloquear el hover de los puntos que hay debajo. */
+.capsula-hover,
+.capsula-fija {
+  pointer-events: none;
+}
+
+.mapa-aviso-vacio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--mapa-borde);
+  font-family: var(--mapa-font);
+  font-style: italic;
+  font-size: 15px;
+  border: 1px dashed var(--mapa-borde);
+  border-radius: 6px;
+  background: var(--mapa-fondo-pergamino);
+}
+
+.mapa-aviso-vacio--compacto {
+  height: 220px;
+  font-size: 14px;
+}
+
+/* Cápsula de información del mapa (dibujada en SVG) */
+.mapa-capsula-titulo {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--mapa-font);
+  fill: var(--mapa-fondo-pergamino);
+}
+
+.mapa-capsula-subtitulo {
+  font-size: 10px;
+  font-family: var(--mapa-font);
+  fill: var(--mapa-acento-secundario);
+}
+
+.mapa-capsula-sin-casos {
+  font-size: 13px;
+  font-style: italic;
+  font-family: var(--mapa-font);
+  fill: var(--mapa-fondo-pergamino);
+}
+
+.mapa-capsula-fila-texto {
+  font-size: 11px;
+  font-family: var(--mapa-font);
+  fill: var(--mapa-fondo-pergamino);
+  font-weight: 400;
+}
+
+.mapa-capsula-fila-texto--activa {
+  font-weight: 700;
+}
+
+.mapa-capsula-fila-conteo {
+  font-size: 10px;
+  font-family: var(--mapa-font);
+  fill: var(--mapa-fondo-pergamino);
+}
+
+.mapa-capsula-fondo {
+  fill: var(--mapa-tinta-oscura);
+  fill-opacity: 0.94;
+}
+
+/* Solo el rectángulo de fondo necesita capturar el mouse (para que la
+   cápsula no se cierre al mover el cursor desde el punto hasta ella);
+   el triángulo indicador no lo necesitaba en el diseño original. */
+.mapa-capsula-fondo--interactivo {
+  pointer-events: all;
+}
+
+.mapa-capsula-linea-guia {
+  stroke: var(--mapa-acento-linea);
+  stroke-width: 1.2;
+  stroke-dasharray: 3, 2;
+}
+
+.mapa-capsula-punto-guia {
+  fill: var(--mapa-acento-linea);
+}
+
+.mapa-capsula-barra {
+  fill: var(--mapa-acento-linea);
+}
+
+.mapa-capsula-fila-clic {
+  pointer-events: all;
+  cursor: pointer;
+}
+
+/* Gráfico de líneas "Evolución en el tiempo" (SVG) */
+.mapa-linea-titulo {
+  font-size: 14px;
+  font-weight: 700;
+  fill: #222;
+}
+
+.mapa-linea-subtitulo {
+  font-size: 11px;
+  fill: #999;
+}
+
+.mapa-linea-nota {
+  font-size: 10px;
+  font-style: italic;
+  fill: #999;
+}
+
+.mapa-linea-eje-x-texto {
+  fill: #555;
+}
+
+.mapa-linea-eje-y-texto {
+  font-size: 11px;
+  fill: #666;
+}
+
+.mapa-linea-eje-dominio {
+  stroke: #ccc;
+}
+
+.mapa-linea-grid-linea {
+  stroke: #e8e8e8;
+}
+
+.mapa-linea-etiqueta-serie {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mapa-linea-svg {
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+  display: block;
+  font-family: v.$font-sistema;
+}
+
+.mapa-linea-trazo {
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.mapa-linea-punto {
+  fill: #fff;
+  stroke-width: 2;
+}
+
+.mapa-linea-punto-hit {
+  fill: transparent;
+  pointer-events: all;
+  cursor: pointer;
+}
+
+/* Grafo "Relación entre crímenes" (SVG) */
+.mapa-grafo-etiqueta {
+  font-size: 10px;
+  text-anchor: middle;
+  pointer-events: none;
+  fill: var(--mapa-tinta-oscura);
+}
+
+.mapa-grafo-svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  font-family: var(--mapa-font);
+}
+
+.mapa-grafo-link {
+  pointer-events: stroke;
+}
+
+.mapa-grafo-nodo {
+  cursor: pointer;
+}
