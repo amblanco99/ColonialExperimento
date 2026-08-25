@@ -54,9 +54,11 @@ section {
 }
 
 .logo {
-  font-family: var(--font-display);
+  /* WATCH OUT: both of these are overridden by the shared rule below, which
+     comes later at the same specificity (font-size: 0.9rem, font-weight: 600).
+     That was already true before the hamburger; it is left alone because fixing
+     it would change the title's size, which is a separate decision. */
   font-size: 1.2rem;
-  font-style: italic;
   font-weight: normal;
 }
 
@@ -144,8 +146,13 @@ section {
   display: flex;
 }
 
+/* The title and the panel links share a typeface: the display face in italic.
+   font-family and font-style live here rather than on .logo so there is no way
+   for the two to drift apart. */
 .logo,
 .nav-links a {
+  font-family: var(--font-display);
+  font-style: italic;
   color: var(--vinotinto);
   text-decoration: none;
   font-size: 0.9rem;
