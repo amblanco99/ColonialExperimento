@@ -1,0 +1,38 @@
+// The home page is the only one with a background of its own.
+//
+// The background goes on <body>: .container is 900px centred, so painting it
+// there would leave the sides in parchment. The hook is a class rather than a
+// bare `body` selector because a bare one would tie the result to the load order
+// between this sheet and global.scss -- the exact failure abstracts/_root.scss
+// documents. A class wins on specificity and does not care about order.
+//
+// The content rules hang off `body.home main`, which is not decoration either:
+// `body.home a` has the same specificity as `.nav-links a` (0,1,1) and would
+// leak into the nav. Anchoring them to main makes that impossible, because the
+// nav is not a descendant of main.
+//
+// Contrast against --vinotinto (#5f233d): --crema 9.83:1, --dorado 5.26:1.
+// Both pass AA. --rosado on the h1's rule is 3.89:1, which is fine for a
+// decorative 1px border but would not be for text.
+body.home {
+  background: var(--vinotinto);
+  color: var(--crema);
+}
+
+body.home main {
+  .section-mainTitle {
+    color: var(--crema);
+    border-bottom-color: var(--rosado);
+  }
+
+  p {
+    color: var(--crema);
+  }
+
+  // <a> has no colour rule anywhere in the repo, so without this the link
+  // renders in the browser's default blue: 1.25:1 on vinotinto, unreadable.
+  a {
+    color: var(--dorado);
+    text-decoration: underline;
+  }
+}
