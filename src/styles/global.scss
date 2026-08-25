@@ -45,8 +45,8 @@ section {
   align-items: center;
   padding: 0 40px;
   box-sizing: border-box;
-  background: var(--parchment-dark);
-  border-bottom: 2px solid var(--rule);
+  background: var(--crema);
+  border-bottom: 2px solid var(--vinotinto);
 
   position: sticky;
   top: 0;
@@ -60,14 +60,93 @@ section {
   font-weight: normal;
 }
 
-.nav-links {
+/* The hamburger button. It is shown at every width: there is no breakpoint and
+   no horizontal-links layout to fall back to. */
+.nav-toggle {
   display: flex;
-  gap: 30px;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--vinotinto);
+  cursor: pointer;
+}
+
+/* Three bars drawn in CSS: the span is the middle one and its two
+   pseudo-elements are the outer ones. They paint with currentColor, so they
+   follow the button's colour without repeating the token. */
+.nav-toggle-icono {
+  position: relative;
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: currentColor;
+  transition: background 0.15s;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: currentColor;
+    transition: transform 0.15s;
+  }
+
+  &::before {
+    top: -7px;
+  }
+
+  &::after {
+    top: 7px;
+  }
+}
+
+/* Open: the middle bar goes transparent and the outer two cross into an X. */
+.topnav--abierto .nav-toggle-icono {
+  background: transparent;
+
+  &::before {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  &::after {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+}
+
+/* The panel hangs off .topnav, which is already position: sticky and therefore
+   a positioned element, so it is the containing block. It sits inside the nav's
+   stacking context too, so it overlays the page without a z-index of its own. */
+.nav-links {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  display: none;
+  flex-direction: column;
+  background: var(--crema);
+  border-bottom: 2px solid var(--vinotinto);
+
+  /* Keeps the panel inside the viewport on short screens. */
+  max-height: calc(100vh - 65px);
+  overflow-y: auto;
+}
+
+/* display: none is what keeps the links out of the tab order and out of the
+   accessibility tree while the menu is closed. Hiding by opacity or height
+   would leave them reachable by Tab and still read out. */
+.topnav--abierto .nav-links {
+  display: flex;
 }
 
 .logo,
 .nav-links a {
-  color: var(--ink);
+  color: var(--vinotinto);
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 600;
@@ -76,9 +155,24 @@ section {
   transition: color 0.15s;
 }
 
+/* Same horizontal padding as the bar, so the panel's text lines up under the
+   title. The mobile block below keeps the two in step. */
+.nav-links a {
+  padding: 0.9rem 40px;
+}
+
 .logo:hover,
 .nav-links a:hover {
-  color: var(--accent);
+  color: var(--cafe);
+}
+
+/* The repo had no focus styles on the nav at all. With the links behind a
+   button, keyboard users need to see where they are. */
+.logo:focus-visible,
+.nav-toggle:focus-visible,
+.nav-links a:focus-visible {
+  outline: 2px solid var(--vinotinto);
+  outline-offset: 2px;
 }
 
 /* =====================================================
@@ -432,6 +526,9 @@ a.card p {
 @media (max-width: v.$bp-movil) {
   .topnav {
     padding: 0 20px;
+  }
+  .nav-links a {
+    padding: 0.9rem 20px;
   }
   .col-root,
   .cards-container {

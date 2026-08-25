@@ -6,8 +6,15 @@
 // index.html lo tenía en tercer lugar; al haber un solo componente hay que elegir
 // uno, y eso reordena visiblemente el menú de la portada (ver MIGRATION.md).
 //
-// El texto de los enlaces se copia literal, incluido "Composicion social" sin
-// tilde. Esto es un port, no una corrección de contenido.
+// The link text is copied verbatim, including "Composicion social" without its
+// accent. This is a port, not a content fix.
+//
+// The links live behind a hamburger at every width -- no breakpoint, one nav
+// layout everywhere. The button is a real <button>: role, focus and
+// Enter/Space activation come with it, and none of that is true of a <div>.
+// The icon is decorative, so it is aria-hidden; the accessible name comes from
+// the button's aria-label, which navMenu.ts keeps in sync with the open state.
+// The aria-label and the link text are UI copy, so they stay in Spanish.
 
 export type SeccionActiva = 'inicio' | 'base-de-datos' | 'tiempo' | 'personas' | 'about';
 
@@ -33,7 +40,17 @@ const enlaces = [
 <nav class="topnav">
   <a href={`${base}index.html`} class="logo">Crímenes Coloniales</a>
 
-  <div class="nav-links">
+  <button
+    type="button"
+    class="nav-toggle"
+    aria-controls="nav-menu"
+    aria-expanded="false"
+    aria-label="Abrir menú"
+  >
+    <span class="nav-toggle-icono" aria-hidden="true"></span>
+  </button>
+
+  <div class="nav-links" id="nav-menu">
     {
       enlaces.map((enlace) => (
         <a href={enlace.href} aria-current={active === enlace.id ? 'page' : undefined}>
@@ -43,3 +60,9 @@ const enlaces = [
     }
   </div>
 </nav>
+
+<script>
+  import { initNavMenu } from '../scripts/ui/navMenu.js';
+
+  initNavMenu();
+</script>
