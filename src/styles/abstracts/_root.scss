@@ -35,6 +35,15 @@
   --accent-dim: #{v.$accent-dim};
   --badge-bg: #{v.$badge-bg};
 
+  // Paleta de identidad. No forma parte del contrato de runtime: ningún gráfico
+  // la lee, se emite para poder usarla como var(--…) desde el CSS.
+  --vinotinto: #{v.$vinotinto};
+  --crema: #{v.$crema};
+  --rosado: #{v.$rosado};
+  --dorado: #{v.$dorado};
+  --cafe: #{v.$cafe};
+  --verde: #{v.$verde};
+
   --font-display: #{v.$font-display};
   --font-body: #{v.$font-body};
   --font-mono: #{v.$font-mono};

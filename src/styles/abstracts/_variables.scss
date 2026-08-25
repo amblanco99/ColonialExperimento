@@ -24,6 +24,21 @@ $accent: #7a3b1e;
 $accent-dim: #a0622f;
 $badge-bg: #f0e6d0;
 
+// ── Paleta de identidad ──────────────────────────────────
+// La paleta visual del proyecto. Convive con la general de arriba, no la
+// sustituye: aquellos ocho tokens son parte del contrato que lee el JS (ver la
+// cabecera de este archivo), así que reapuntarlos cambiaría los colores de los
+// gráficos. Esta es la capa de diseño, y de momento la usan la portada y el nav.
+//
+// $cafe va sin tilde a propósito. Un nombre de variable SCSS no-ASCII compila,
+// pero se vuelve frágil en cuanto pasa por herramientas que normalizan distinto.
+$vinotinto: #5f233d;
+$crema: #f3ebd4;
+$rosado: #ac8c9b;
+$dorado: #d1a677;
+$cafe: #543b27;
+$verde: #535844;
+
 // ── Tipografías ──────────────────────────────────────────
 $font-display: 'IM Fell English', Georgia, serif;
 $font-body: 'Source Sans 3', system-ui, sans-serif;
