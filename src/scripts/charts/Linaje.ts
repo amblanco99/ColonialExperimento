@@ -1,15 +1,43 @@
 import * as d3 from 'd3';
+import { irATablasFiltradas } from './verCasos.js';
+import { esLinajeCriminal } from './linajeComun.js';
 
-// TODO: type — nodo de jerarquía de d3 mutado por el patrón del árbol
-// colapsable: se le cuelgan _children, x0 e y0 y se le reasigna id, que no
-// están en HierarchyNode. Ver MIGRATION.md.
+// TODO: type — nodo de jerarquía de d3 (d3.HierarchyPointNode). Ver MIGRATION.md.
 type NodoMutable = any;
 
-// TODO: type — genéricos de selección/transición de d3. Ver MIGRATION.md.
+// TODO: type — genéricos de selección de d3. Ver MIGRATION.md.
 type SeleccionD3 = any;
 
-export async function crearLinaje() {
-  const datos = await d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`);
+// Sinónimos usa "/" como separador cuando hay más de uno (mismo carácter que
+// Path, pero en un campo de texto libre), y "null" literal cuando no hay
+// ninguno.
+function formatearSinonimos(crudo: string | undefined): string {
+  if (!crudo || crudo.trim() === '' || crudo.trim().toLowerCase() === 'null') {
+    return 'Sin sinónimos.';
+  }
+
+  return crudo
+    .split('/')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .join(', ');
+}
+
+// Código/Sub_Código en crimenes.csv apuntan a ID_Código de Linaje.csv: el
+// linaje (crimen, nivel 1) va en `codigo`, el subcrimen (nivel 2) en
+// `subcodigo`. Ver irATablasFiltradas en verCasos.ts.
+function overridesDeNodo(d: NodoMutable) {
+  if (d.depth === 1) return { codigo: d.data.Nombre };
+
+  return { codigo: d.parent.data.Nombre, subcodigo: d.data.Nombre };
+}
+
+export async function crearLinaje(containerId: string, esCriminal: boolean) {
+  const datos = (await d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`)).filter((d: any) => {
+    if (d.Path === '0') return true;
+
+    return esLinajeCriminal(d.Path.split('/')[1]) === esCriminal;
+  });
 
   const width = 928;
   const marginTop = 10;
@@ -36,6 +64,19 @@ export async function crearLinaje() {
 
   const tree = d3.tree().nodeSize([dx, dy]);
 
+  tree(root);
+
+  let x0 = Infinity;
+  let x1 = -Infinity;
+
+  root.each((d: NodoMutable) => {
+    if (d.x > x1) x1 = d.x;
+
+    if (d.x < x0) x0 = d.x;
+  });
+
+  const height = x1 - x0 + marginTop + marginBottom;
+
   const diagonal = (d3.linkHorizontal() as SeleccionD3)
     .x((d: NodoMutable) => d.y)
     .y((d: NodoMutable) => d.x);
@@ -43,138 +84,110 @@ export async function crearLinaje() {
   const svg = d3
     .create('svg')
     .attr('width', width)
-    .attr('viewBox', [-marginLeft, -marginTop, width, dx])
+    .attr('height', height)
+    .attr(
+      // d3 convierte el array a "a,b,c,d" al asignarlo, que es un viewBox
+      // válido. El cast lo deja igual; construir la cadena a mano sería
+      // cambiar el runtime.
+      'viewBox',
+      [-marginLeft, x0 - marginTop, width, height] as unknown as string,
+    )
     .style('max-width', '100%')
     .style('height', 'auto')
     .style('font', '12px sans-serif');
 
-  const gLink = svg
+  svg
     .append('g')
     .attr('fill', 'none')
     .attr('stroke', '#bb4e99')
     .attr('stroke-opacity', 0.4)
-    .attr('stroke-width', 1.5);
+    .attr('stroke-width', 1.5)
+    .selectAll('path')
+    .data(root.links())
+    .join('path')
+    .attr('d', diagonal);
 
-  const gNode = svg.append('g').attr('cursor', 'pointer').attr('pointer-events', 'all');
+  const node: SeleccionD3 = svg
+    .append('g')
+    .attr('stroke-linejoin', 'round')
+    .attr('stroke-width', 3)
+    .selectAll('g')
+    .data(root.descendants())
+    .join('g')
+    .attr('transform', (d: NodoMutable) => `translate(${d.y},${d.x})`);
 
-  function update(event: MouseEvent | null, source: NodoMutable) {
-    const duration = event?.altKey ? 2500 : 250;
+  node
+    .append('circle')
+    .attr('fill', (d: NodoMutable) => (d.children ? '#003f5c' : '#ebf0fa'))
+    .attr('stroke', '#fff')
+    .attr('r', 3.5);
 
-    const nodes = root.descendants().reverse();
+  const etiquetas = node
+    .append('text')
+    .attr('dy', '0.31em')
+    .attr('x', (d: NodoMutable) => (d.children ? -8 : 8))
+    .attr('text-anchor', (d: NodoMutable) => (d.children ? 'end' : 'start'))
+    .text((d: NodoMutable) => d.data.Nombre)
+    .attr('stroke', 'white')
+    .attr('paint-order', 'stroke');
 
-    const links = root.links();
+  const wrapper = document.createElement('div');
+  wrapper.className = 'linaje-wrapper';
+  wrapper.append(svg.node()!);
 
-    tree(root);
-
-    let left: NodoMutable = root;
-    let right: NodoMutable = root;
-
-    root.eachBefore((node: NodoMutable) => {
-      if (node.x < left.x) left = node;
-
-      if (node.x > right.x) right = node;
-    });
-
-    const height = right.x - left.x + marginTop + marginBottom;
-
-    const transition = svg
-      .transition()
-      .duration(duration)
-      .attr('height', height)
-      .attr(
-        // d3 convierte el array a "a,b,c,d" al asignarlo, que es un viewBox
-        // válido. El cast lo deja igual; construir la cadena a mano sería
-        // cambiar el runtime.
-        'viewBox',
-        [-marginLeft, left.x - marginTop, width, height] as unknown as string,
-      );
-
-    const node: SeleccionD3 = gNode.selectAll('g').data(nodes, (d: NodoMutable) => d.id);
-
-    const nodeEnter: SeleccionD3 = node
-      .enter()
-      .append('g')
-      .attr('transform', `translate(${source.y0},${source.x0})`)
-      .attr('fill-opacity', 0)
-      .attr('stroke-opacity', 0)
+  // Las definiciones y sinónimos solo tienen contenido útil en el árbol de
+  // delitos criminales; en el de no-criminales casi todos los campos de
+  // Explicación/Sinónimos están vacíos.
+  if (esCriminal) {
+    etiquetas
+      .filter((d: NodoMutable) => d.depth > 0)
+      .classed('linaje-etiqueta-clicable', true)
       .on('click', (event: MouseEvent, d: NodoMutable) => {
-        d.children = d.children ? null : d._children;
-
-        update(event, d);
+        event.stopPropagation();
+        mostrarPopup(d);
       });
 
-    nodeEnter
-      .append('circle')
-      .attr('r', 3.5)
-      .attr('fill', (d: NodoMutable) => (d._children ? '#003f5c' : '#ebf0fa'))
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 1.5);
+    const backdrop = document.createElement('div');
+    backdrop.className = 'linaje-popup-backdrop';
+    wrapper.append(backdrop);
 
-    nodeEnter
-      .append('text')
-      .attr('dy', '0.31em')
-      .attr('x', (d: NodoMutable) => (d._children ? -8 : 8))
-      .attr('text-anchor', (d: NodoMutable) => (d._children ? 'end' : 'start'))
-      .text((d: NodoMutable) => d.data.Nombre)
-      .attr('stroke-linejoin', 'round')
-      .attr('stroke-width', 3)
-      .attr('stroke', 'white')
-      .attr('paint-order', 'stroke');
+    const popup = document.createElement('div');
+    popup.className = 'linaje-popup';
+    popup.innerHTML = `
+      <button type="button" class="linaje-popup__cerrar" aria-label="Cerrar">×</button>
+      <h3 class="linaje-popup__titulo"></h3>
+      <p class="linaje-popup__definicion"></p>
+      <p class="linaje-popup__sinonimos"></p>
+      <button type="button" class="linaje-popup__boton">Ver casos</button>
+    `;
+    wrapper.append(popup);
 
-    node
-      .merge(nodeEnter)
-      .transition(transition)
-      .attr('transform', (d: NodoMutable) => `translate(${d.y},${d.x})`)
-      .attr('fill-opacity', 1)
-      .attr('stroke-opacity', 1);
+    const titulo = popup.querySelector<HTMLElement>('.linaje-popup__titulo')!;
+    const definicion = popup.querySelector<HTMLElement>('.linaje-popup__definicion')!;
+    const sinonimos = popup.querySelector<HTMLElement>('.linaje-popup__sinonimos')!;
+    const botonVerCasos = popup.querySelector<HTMLButtonElement>('.linaje-popup__boton')!;
 
-    node
-      .exit()
-      .transition(transition)
-      .remove()
-      .attr('transform', `translate(${source.y},${source.x})`)
-      .attr('fill-opacity', 0)
-      .attr('stroke-opacity', 0);
+    function ocultarPopup() {
+      popup.classList.remove('linaje-popup--visible');
+      backdrop.classList.remove('linaje-popup-backdrop--visible');
+    }
 
-    const link: SeleccionD3 = gLink.selectAll('path').data(links, (d: NodoMutable) => d.target.id);
+    function mostrarPopup(d: NodoMutable) {
+      titulo.textContent = d.data.Nombre;
+      definicion.textContent = d.data['Explicación']?.trim() || 'Sin definición disponible.';
+      sinonimos.textContent = `Sinónimos: ${formatearSinonimos(d.data['Sinónimos'])}`;
+      botonVerCasos.onclick = () => irATablasFiltradas(overridesDeNodo(d));
 
-    const linkEnter: SeleccionD3 = link
-      .enter()
-      .append('path')
-      .attr('d', () => {
-        const o = {
-          x: source.x0,
-          y: source.y0,
-        };
+      popup.classList.add('linaje-popup--visible');
+      backdrop.classList.add('linaje-popup-backdrop--visible');
+    }
 
-        return diagonal({
-          source: o,
-          target: o,
-        });
-      });
-
-    link.merge(linkEnter).transition(transition).attr('d', diagonal);
-
-    link.exit().transition(transition).remove();
-
-    root.eachBefore((d: NodoMutable) => {
-      d.x0 = d.x;
-      d.y0 = d.y;
+    popup.querySelector('.linaje-popup__cerrar')!.addEventListener('click', ocultarPopup);
+    backdrop.addEventListener('click', ocultarPopup);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') ocultarPopup();
     });
   }
 
-  root.x0 = dy / 2;
-  root.y0 = 0;
-
-  root.descendants().forEach((d: NodoMutable, i: number) => {
-    d.id = i;
-
-    d._children = d.children;
-
-    if (d.depth > 0) d.children = null;
-  });
-
-  update(null, root);
-
-  document.getElementById('chartLinaje')!.append(svg.node()!);
+  document.getElementById(containerId)!.append(wrapper);
 }

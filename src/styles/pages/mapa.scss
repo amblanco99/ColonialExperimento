@@ -6,6 +6,26 @@
 /* =====================================================
    DASHBOARD "TIEMPO Y CRÍMENES" — layout específico
 ===================================================== */
+.mapa-selector-vista {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 14px;
+  font-family: var(--mapa-font);
+}
+
+.mapa-vista-crimenes {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.mapa-vista--oculta {
+  display: none;
+}
+
 .mapa-dashboard-wrap {
   display: flex;
   flex-direction: column;
@@ -58,6 +78,11 @@
   min-width: 0;
 }
 
+.mapa-tarjeta--compacta {
+  flex: 1 1 380px;
+  min-width: 320px;
+}
+
 .mapa-tarjeta-encabezado {
   display: flex;
   flex-direction: column;
@@ -91,14 +116,6 @@
   min-width: 0;
 }
 
-.mapa-barra-modo-tiempo {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-bottom: 14px;
-  font-family: var(--mapa-font);
-}
-
 .mapa-wrap-tiempo {
   display: flex;
   flex-direction: column;
@@ -108,23 +125,86 @@
   max-width: 300px;
 }
 
-.mapa-slider {
-  width: 100%;
-  accent-color: var(--mapa-acento-linea);
-}
-
-.mapa-slider--oculto {
-  display: none;
-}
-
-.mapa-fila-siglos {
+.mapa-slider-rango {
+  position: relative;
+  height: 26px;
   display: flex;
-  gap: 4px;
-  width: 100%;
+  align-items: center;
 }
 
-.mapa-fila-siglos--oculta {
-  display: none;
+.mapa-slider-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--mapa-borde);
+  opacity: 0.25;
+}
+
+.mapa-slider-progreso {
+  position: absolute;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--mapa-acento-linea);
+}
+
+.mapa-slider {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  background: transparent;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.mapa-slider::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 4px;
+}
+
+.mapa-slider::-moz-range-track {
+  background: transparent;
+  height: 4px;
+}
+
+.mapa-slider::-webkit-slider-thumb {
+  pointer-events: auto;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--mapa-acento-linea);
+  border: 2px solid var(--mapa-tarjeta-fondo);
+  box-shadow: 0 1px 2px rgba(58, 45, 26, 0.35);
+  cursor: pointer;
+}
+
+.mapa-slider::-moz-range-thumb {
+  pointer-events: auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--mapa-acento-linea);
+  border: 2px solid var(--mapa-tarjeta-fondo);
+  box-shadow: 0 1px 2px rgba(58, 45, 26, 0.35);
+  cursor: pointer;
+}
+
+.mapa-slider--min {
+  z-index: 2;
+}
+
+.mapa-slider--max {
+  z-index: 3;
+}
+
+.mapa-slider--encima {
+  z-index: 4;
 }
 
 .mapa-etiqueta-tiempo {

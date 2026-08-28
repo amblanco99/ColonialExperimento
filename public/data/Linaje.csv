@@ -1,131 +1,134 @@
-ID_Código,Path,Nombre,Sinónimos,Explicación,Nivel
-0,0,Delitos,,,Nivel 0
-1,0/1,Homicidio,Homicidio/complicidad de homicidio,,Nivel 1
-1.1,0/1/1.1,Homicidio,Homicidio/dar muerte,,Nivel 2
-1.2,0/1/1.2,Uxoricidio,Uxoricidio,,Nivel 2
-1.3,0/1/1.3,Infanticidio,Infanticidio,,Nivel 2
-2,0/2,Sin codificar,Sin codificar,,Nivel 1
-3,0/3,Intento de homicidio,Intento de homicidio,,Nivel 1
-4,0/4,Violencia,Violencia/riña/heridas/sevicia/agresión de obra,,Nivel 1
-4.1,0/4/4.1,Heridas,Heridas/agresión de obra/ultrajes de obra/estoquear/agresión física/malos tratamientos,,Nivel 2
-4.2,0/4/4.2,Riña,Riña/duelo/pendencia,,Nivel 2
-4.3,0/4/4.3,Sevicia,Sevicia/mutilación/atormentar,,Nivel 2
-4.4,0/4/4.4,Dirigir una pandilla de malhechores,Dirigir una pandilla de malhechores,,Nivel 2
-5,0/5,Violencia conyugal,Violencia conyugal/abandono matrimonial,,Nivel 1
-5.1,0/5/5.1,Violencia conyugal,Violencia conyugal,,Nivel 2
-5.2,0/5/5.2,Abandono,Abandono,,Nivel 2
-6,0/6,Amenazas,Amenazas,,Nivel 1
-7,0/7,Secuestros,Secuestros/extorsión,,Nivel 1
-7.1,0/7/7.1,Secuestro,Secuestro,,Nivel 2
-7.2,0/7/7.2,Extorsión,Extorsión,,Nivel 2
-7.3,0/7/7.3,Coerción,Coerción,,Nivel 2
-8,0/8,Aborto,Aborto,,Nivel 1
-9,0/9,Estupro,Estupro/violación/desfloramiento/incesto/seducción,,Nivel 1
-9.1,0/9/9.1,Estrupo,Estrupo/estupro/deshonrar,,Nivel 2
-9.2,0/9/9.2,Desfloramiento,Desfloramiento/seducción,,Nivel 2
-9.3,0/9/9.3,Incesto,Incesto,,Nivel 2
-9.4,0/9/9.4,Violación,Violación/forzamiento,,Nivel 2
-9.5,0/9/9.5,Inquietar casadas,Inquietar casadas/matrimonios/doncellas,,Nivel 2
-9.6,0/9/9.6,Romper palabra de materimonio,Romper palabra de materimonio,,Nivel 2
-10,0/10,Concubinato,Concubinato/adulterio/amancebamiento/bigamía/unión ilícita/alcahuete,,Nivel 1
-10.1,0/10/10.1,Concubinato,Concubinato/amancebamiento/unión ilícita,,Nivel 2
-10.2,0/10/10.2,Adulterio,Adulterio,,Nivel 2
-10.3,0/10/10.3,Bigamía,Bigamía,,Nivel 2
-10.4,0/10/10.4,Alcahuete,Alcahuete,,Nivel 2
-11,0/11,Envenenamiento,Envenenamiento,,Nivel 1
-12,0/12,Prostitución,Prostitución/“mujer pública”/mujer de vida alegra/libertinaje/lenocinio/vida licensiosa/mujeriego,,Nivel 2
-13,0/13,Bestialidad,Bestialidad/pecado nefando/transvestirse/relaciones unisexuales/sodomía,,Nivel 1
-13.1,0/13/13.1,Bestialidad,Bestialidad,,Nivel 2
-13.2,0/13/13.2,Transvestirse,Transvestirse,,Nivel 2
-13.3,0/13/13.3,Sodomía,Sodomía/pecado nefando,,Nivel 2
-13.4,0/13/13.4,Relaciones unisexuales,Relaciones unisexuales,,Nivel 1
-14,0/14,Rapto ,Rapto ,,Nivel 1
-15,0/15,Juicio de residencia,Juicio de residencia/naturaleza política/queja sobre alcalde/abuso de autoridad(general)/pleito por jurisdicción/persecución/omisión de deberes del cargo,,Nivel 1
-15.1,0/15/15.1,Juicio de residencia ,Juicio de residencia ,,Nivel 2
-15.2,0/15/15.2,Abuso de autoridad (en general),Abuso de autoridad (en general)/arbitraridades,,Nivel 2
-15.3,0/15/15.3,Pleito por jurisdicción,Pleito por jurisdicción/extralimitación de jurisdicción,,Nivel 2
-15.4,0/15/15.4,Persecución,Persecución,,Nivel 2
-15.5,0/15/15.5,Omisión de deberes del cargo ,Omisión de deberes del cargo /violación de correspondencia/perder documentos,,Nivel 2
-16,0/16,Injuria,Injuria/insulto/ofensa/irrespeto/ultraje/ultraje de palabra/agravios/blasfemia/atropellos,,Nivel 1
-16.1,0/16/16.1,Injuria,Injuria/insulto/ofensa/irrespeto/ultraje/ultraje de palabra/calumnias/vejaciones/burla/agresión verbal,,Nivel 2
-16.2,0/16/16.2,Agravios,Agravios/persecución/hostilidades,,Nivel 2
-16.3,0/16/16.3,Blasfemia,Blasfemia,,Nivel 2
-16.4,0/16/16.4,Atropellos,Atropellos,,Nivel 2
-17,0/17,Crimen militar,Crimen militar/deserción,,Nivel 1
-18,0/18,Financiero,Financiero/fiscal/fraude/contrabando/disputa de tierra/negocios o juegos ilegales/ negocios incumplidos/embargos/porte ilegal de armas/despojo/destierro/falsificación o suplantación,,Nivel 2
-18.2,0/18/18.2,Contrabando,Contrabando,,Nivel 2
-18.3,0/18/18.3,Evación fiscal,Evación fiscal/fraude (alcance de rentas)/usura/deuda/exacción/logrerismo,,Nivel 2
-18.4,0/18/18.4,Negocios y juegos ilegales,Negocios y juegos ilegales/tahures/estafas/jugar de mala fe,,Nivel 2
-18.5,0/18/18.5,Disputa de por animales (matar ganado ajeno),Disputa de por animales (matar ganado ajeno)/mal uso de recursos,,Nivel 2
-18.6,0/18/18.6,Negocios incumplidos,Negocios incumplidos/salarios,,Nivel 2
-18.7,0/18/18.7,Embargo,Embargo/despojo de bienes/expropiación,,Nivel 2
-18.8,0/18/18.8,Porte de armas ilegales,Porte de armas ilegales/armas ilegales,,Nivel 2
-18.9,0/18/18.9,Destierro,Destierro,,Nivel 2
-18.11,0/18/18.11,Falsificación o suplantación,Falsificación o suplantación/plagio,,Nivel 2
-18.12,0/18/18.12,Aceptar sobornos,Aceptar sobornos/sobornar,,Nivel 2
-18.13,0/18/18.13,Abandono de persona,Abandono de persona,,Nivel 2
-18.14,0/18/18.14,Trabajo forzado,Trabajo forzado/Explotación,,Nivel 2
-18.15,0/18/18.15,Monedas ilegales,Monedas ilegales/productos adulterados,,Nivel 2
-19,0/19,Desacato,Desacato/Inobediencia-desobediencia-resistencia a la autoridad/insubordinación,,Nivel 1
-20,0/20,Robo,Robo/cuatreros/abigeato/daños-manipulación a territorio y negocio(incluye incendios)/traspaso(escalamiento),,Nivel 1
-20.1,0/20/20.1,Robo,Robo/cuatreros/abigeato/hurtos/latrocinio/demandas por suma de.../saltear/asaltar,,Nivel 2
-20.2,0/20/20.2,Daños-manipulación a territorio y negocio(incluye incendios),Daños-manipulación a territorio y negocio(incluye incendios)/Delitos contra la propiedad,,Nivel 2
-20.3,0/20/20.3,Traspaso,Traspaso/escalamiento,,Nivel 2
-21,0/21,"Fuga (e intento) (incluye carcel, exilio o juicio) ","Fuga (e intento) (incluye carcel, exilio o juicio) /ayudar a fugarse (complice) ",,Nivel 1
-21.1,0/21/21.1,"Fuga o intento de fuga (de cárcel, de exilio, etc)","Fuga o intento de fuga (de cárcel, de exilio, etc)",,Nivel 2
-21.2,0/21/21.2,Ayudar a alguien a fugarse,Ayudar a alguien a fugarse/evadir captura,,Nivel 2
-22,0/22,Vagancia,Vagancia/excesos/escándalo/desmanes/desafuero,,Nivel 1
-22.1,0/22/22.1,Vagancia,Vagancia/mal entretenido/crápula,,Nivel 2
-22.2,0/22/22.2,Excesos,Excesos,,Nivel 2
-22.3,0/22/22.3,Escándalo,Escándalo,,Nivel 2
-22.4,0/22/22.4,Desmanes,Desmanes,,Nivel 2
-22.5,0/22/22.5,Desafuero,Desafuero/conducta disociadora,,Nivel 2
-22.6,0/22/22.6,Embriaguez,Embriaguez,,Nivel 2
-22.7,0/22/22.7,Pernicioso,Pernicioso/mal vecino,,Nivel 2
-22.8,0/22/22.8,Caviloso,Caviloso,,Nivel 2
-22.9,0/22/22.9,Contra la moralidad,Contra la moralidad/contra las buenas costumbres,,Nivel 2
-23,0/23,Crimen eclesiástico,Crimen eclesiástico,,Nivel 1
-24,0/24,Mala praxis de abogados,Mala praxis de abogados/falsas declaraciones judiciales (perjurio)/jueces cuestionables/debido proceso/injusticia de sentencia/abuso de autoridad(en sentencias),,Nivel 1
-24.1,0/24/24.1,Jueces cuestionables,Jueces cuestionables/debido proceso/injusticia de sentencia/abuso de autoridad(en sentencias),,Nivel 2
-24.2,0/24/24.2,Malapraxis de abogados ,Malapraxis de abogados /rábula/tinterillo,,Nivel 2
-24.3,0/24/24.3,Perjurio,Perjurio/falsas declaraciones/falso denuncio,,Nivel 2
-24.4,0/24/24.4,Demora en trámites judiciales,Demora en trámites judiciales,,Nivel 2
-25,0/25,Sublevación,Sublevación/motín/traición/militar con enemigo/agitador/asonada,,Nivel 1
-25.1,0/25/25.1,Sublevación,Sublevación/motín/asonada/incursión/movimientos revolucionarios/tumulto/insurrección/sedición/rebeldía,,Nivel 2
-25.2,0/25/25.2,Agitación,Agitación/disturbios/alboroto/revoltoso/incendiario/inquieto,,Nivel 2
-25.3,0/25/25.3,Militar con un enemigo,Militar con un enemigo,,Nivel 2
-25.4,0/25/25.4,Traición,Traición/conspiración,,Nivel 2
-26,0/26,Suicidio o intento,Suicidio o intento,,Nivel 1
-27,0/27,Migración ilegal,Migración ilegal,,Nivel 1
-28,0/28,Tipo de documento diferente a sumario ,Tipo de documento diferente a sumario ,,Nivel 1
-28.1,0/28/28.1,Peticiones y solicitudes,Peticiones y solicitudes,,Nivel 2
-28.2,0/28/28.2,Justficación,Justficación,,Nivel 2
-28.3,0/28/28.3,Apelación,Apelación,,Nivel 2
-28.4,0/28/28.4,Notas,Notas,,Nivel 2
-28.5,0/28/28.5,Informe,Informe/circular,,Nivel 2
-28.6,0/28/28.6,Reclamo,Reclamo,,Nivel 2
-28.7,0/28/28.7,Memorial,Memorial,,Nivel 2
-28.8,0/28/28.8,Consulta,Consulta,,Nivel 2
-28.9,0/28/28.9,Perdon (no oficial),Perdon (no oficial)/retiro de demanda,,Nivel 2
-28.11,0/28/28.11,Carta,Carta,,Nivel 2
-28.12,0/28/28.12,Requisitoria,Requisitoria,,Nivel 2
-28.13,0/28/28.13,Multa,Multa,,Nivel 2
-28.14,0/28/28.14,Poder,Poder,,Nivel 2
-29,0/29,Separación,Separación/Divorcio,,Nivel 1
-29.1,0/29/29.1,Separación,Separación,,Nivel 2
-29.2,0/29/29.2,Divorcio,Divorcio,,Nivel 2
-29.3,0/29/29.3,Disenso matrimonial,Disenso matrimonial/anulación,,Nivel 2
-30,0/30,Sucesión,Sucesión/linaje,,Nivel 2
-31,0/31,Actos oficiales,Actos oficiales,,Nivel 1
-32,0/32,No-Casos,No-Casos,,Nivel 1
-33,0/33,Ambiguos,Ambiguos,,Nivel 1
-34,0/34,Traslados y petición de traslado,Traslados y petición de traslado,,Nivel 1
-35,0/35,Petición de indulto,Petición de indulto/excarcelación,,Nivel 1
-35.1,0/35/35.1,Indulto,Indulto,,Nivel 2
-35.2,0/35/35.2,Excarcelación,Excarcelación/libertad/fianza,,Nivel 2
-36,0/36,Juicios civiles,Juicios civiles,,Nivel 1
-36.1,0/36/36.1,Por costos de un juicio,Por costos de un juicio,,Nivel 2
-36.2,0/36/36.2,Propiedad y bienes,Propiedad y bienes,,Nivel 2
-36.3,0/36/36.3,Contratos,Contratos,,Nivel 2
-36.4,0/36/36.4,Daños e indemnizaciones,Daños e indemnizaciones,,Nivel 2
-36.5,0/36/36.5,Deudas,Deudas,,Nivel 2
+ID_Código,Path,Nombre,Sinónimos,Tipo_delito,Explicación,Nivel
+0,0,Delitos,null,No aplica,,Nivel 0
+1,0/1,Homicidio,Complicidad de homicidio,No criminal,,Nivel 1
+1.1,0/1/1.1,Homicidio,Dar muerte,Criminal,"Según la Septima Partida, homicidium en latín, que en romance significa sacar la vida a un hombre, es el origen de la palabra omezillo. Se distinguen tres tipos de homicidio: el que se comete injustamente (de manera intencional), el que se hace justificadamente en defensa propia, y el que ocurre por accidente o infortunio. (Título VIII, Leyes I y IV). ",Nivel 2
+1.2,0/1/1.2,Uxoricidio,null,Criminal,"La Partida no utiliza el término técnico ""uxoricidio"", pero lo define coherentemente como el acto en que un marido mata a su mujer. Este delito se clasifica dentro de la muerte de parientes y se considera una forma de homicidio agravado por el vínculo. Si el marido mata a su mujer injustamente, ya sea por armas o drogas, la pena tradicional consiste en ser azotado públicamente y luego arrojado al agua dentro de un saco de cuero junto con un perro, un gallo, una serpiente y un simio. (Título VIII, Leyes XII y XIII).",Nivel 2
+1.3,0/1/1.3,Infanticidio,null,Criminal,"El texto no define textualmente el ""infanticidio"" bajo ese nombre, sino que lo regula como el acto en que un padre mata a su hijo. Al igual que en el uxoricidio, si la muerte es intencional e injusta, el culpable debe sufrir la pena del saco (ser azotado y lanzado al río o mar con animales). Adicionalmente, las Partidas incluyen en esta categoría de delitos contra la vida de los descendientes el aborto provocado, definiéndolo como el caso en que una mujer embarazada toma drogas o se golpea el vientre para perder a su hijo, estableciendo pena de muerte si el feto ya estaba vivo. (Título VIII, Leyes VIII, XII y XIII).",Nivel 2
+2,0/2,Sin codificar,null,No aplica,,Nivel 1
+3,0/3,Intento de homicidio,null,Criminal,,Nivel 1
+3.1,0/3/3.1,Intento de homicidio,null,Criminal,"Las Partidas no lo definen con este nombre técnico, pero lo describen como el acto en que una persona comienza a poner ""en obra el pensamiento flaco"" de matar a otro (como preparar veneno o acechar armado con la intención de quitar la vida). Se establece que el culpable merece castigo aunque no logre consumar el hecho, pues erró en lo que pudo haber evitado. (Título XXXI, Ley II).",Nivel 1
+3.2,0/3/3.2,Intento de uxoricidio,Tentativa de uxoricidio,Criminal,,Nivel 2
+4,0/4,Violencia,Riña/Heridas/Sevicia/Agresión de obra,Criminal,,Nivel 1
+4.1,0/4/4.1,Heridas,Agresión de obra/Ultrajes de obra/Estoquear/Egresión física/Malos tratamientos,Criminal,"Se define textualmente como el acto de ""ferir, ó dar golpes"" a otro con la mano, el pie, piedras, palos o armas. Incluye también actos que causen deshonra física sin llegar a herir, como escupir al rostro, rasgar vestiduras o levantar la mano para golpear aunque no se descargue el golpe. Estos actos se clasifican legalmente como una forma de deshonra o injuria. (Título IX, Leyes I, VI y XX).",Nivel 2
+4.2,0/4/4.2,Riña,Duelo/Pendencia,Criminal,"Se describe en las Partidas como el acto de hombres que están ""lidiando"" o peleando juntos. Se define como la agresión física en la que una persona acomete a otra dándole ""golpes con la mano, el pie, piedras, palos o armas"", lo cual se considera una forma de deshonra física (injuria de obra) o un acto de violencia según la gravedad y el uso de armas. También incluye los tumultos, ruidos o escándalos provocados por hombres que se juntan para pelear en ciudades, castillos o lugares públicos, perturbando la paz. (Título IX, Ley VI; Título X, Leyes I y II; Título XV, Ley VI).",Nivel 2
+4.3,0/4/4.3,Sevicia,Mutilación/Atormentar,Criminal,"Se describen como actos de crueldad extrema y daño físico. El tormento se define textualmente como una ""especie de prueba"" inventada para inquirir la verdad de los crímenes que los hombres hacen secretamente, mediante azotes o colgamientos. La mutilación, específicamente la castración, se considera una maldad tan grande que se castiga como si se hubiera dado muerte al hombre. (Título VIII, Leyes IX y XIII; Título XXX, Ley I).",Nivel 2
+4.4,0/4/4.4,Dirigir una pandilla de malhechores,null,Criminal,"Se define coherentemente como el acto de ""ajuntar gente"" o reunir grupos de hombres armados (caballeros o peones) con el fin de cometer robos, ejercer violencia o provocar escándalos y tumultos en ciudades o castillos. El que los encabeza comete un delito de violencia incluso si la pandilla no llega a causar un daño efectivo, por la peligrosidad que representa el grupo reunido. (Título X, Leyes I y II).",Nivel 2
+5,0/5,Violencia conyugal,Abandono matrimonial,Criminal,,Nivel 1
+5.1,0/5/5.1,Violencia conyugal,null,Criminal,"No existe una definición textual bajo este nombre, pero se regula como una forma de ""injuria de obra"" (deshonra física) o crueldad. Se define coherentemente como el acto de ""ferir, ó dar golpes"" a la cónyuge, o castigarla sin la debida moderación. Las Partidas prohíben expresamente que los miembros de una familia sean tratados con crueldad; por ejemplo, si un marido hiere a su mujer (especialmente si está embarazada y pierde al hijo), comete un delito sancionable con el destierro a una isla por cinco años. (Título VIII, Leyes VIII y IX; Título IX, Ley VI; Título XXXI, Ley VIII).",Nivel 2
+5.2,0/5/5.2,Abandono,null,Criminal,"La Séptima Partida (que es el código criminal) no define este acto textualmente como un delito, ya que las obligaciones de cohabitación y sustento pertenecen a la ley matrimonial (Cuarta Partida). Sin embargo, basándose en el espíritu de las leyes penales, se define coherentemente como el acto de un marido que desampara su hogar y falta a la ""lealtad y concordia"" debidas, dejando de responder por su esposa y de proveerle ""lo que es necesario para su existencia"" (comida, bebida, vestido, calzado y salud). Este abandono se considera una forma de injuria (deshonra) por desprecio, al someter a la mujer a la penuria y al escarnio público sin causa justa. (Título IX, Ley I; Título XII, Ley I; Título XXXIII, Ley V).",Nivel 2
+6,0/6,Amenazas,null,Criminal,"No se definen como un delito independiente bajo ese nombre, sino que se regulan como parte de la violencia o la injuria. Se describen como el acto de proferir ""amenazas privadamente"" o usar ""palabras arrogantes"" (por ejemplo, ante jueces o testigos) con la intención de hacer que otros pierdan sus derechos o para intimidarlos. (Título IX, Ley I; Título X, Ley VI).",Nivel 1
+7,0/7,Secuestros,Extorsión,Criminal,,Nivel 1
+7.1,0/7/7.1,Secuestro,null,Criminal,"En las Partidas, el término ""secuestro"" se refiere habitualmente al depósito judicial de bienes en litigio. Sin embargo, el secuestro de personas se define textualmente como el acto de ""furtar o saltear los fijos o los siervos de los otros"" con la intención de venderlos en tierra de enemigos o para usarlos como esclavos. Este delito es calificado como de gran maldad y se asocia al término latino plagium. (Título XIV, Ley XXII).",Nivel 2
+7.2,0/7/7.2,Extorsión,null,Criminal,"No aparece con este nombre técnico, pero se define coherentemente como una forma de violencia realizada con armas o por abuso de autoridad. Incluye el acto de ""apoderarse por fuerza"" de los bienes ajenos o el caso de los oficiales del rey (como recaudadores) que, valiéndose de su cargo, cobran a los hombres ""más de lo que deben"", lo cual se considera un delito tan grave como si se robara por la fuerza de las armas. (Título X, Leyes I y V; Título XIII, Ley I).",Nivel 2
+7.3,0/7/7.3,Coerción,null,Criminal,"Se define a través del concepto de ""miedo"" (metus), que es el temor de muerte, de tormento corporal, de pérdida de un miembro o de la libertad. Se describe como el acto de ""compeler a alguien a facer alguna postura (acuerdo) contra su voluntad"". Las Partidas establecen que cualquier contrato o acuerdo realizado bajo este tipo de fuerza o miedo no es válido. (Título XXXIII, Ley VII; Título X, Ley I).",Nivel 2
+8,0/8,Aborto,null,Criminal,"Se define textualmente como el acto en que una mujer embarazada toma ""hierbas o medicinas"" o se da ""golpes en el vientre con el puño o con otra cosa"" a sabiendas para ""perder el hijo"". También se considera aborto cuando un tercero golpea a la mujer provocando que se pierda el feto. Si el feto ya estaba vivo, el castigo es la pena de muerte; si no, se castiga con el destierro a una isla por cinco años. (Título VIII, Ley VIII).",Nivel 1
+9,0/9,Estupro,Violación/Desfloramiento/Incesto/Seducción,Criminal,,Nivel 1
+9.1,0/9/9.1,Estrupo,Estupro/Deshonrar,Criminal,"No se define con ese nombre técnico general, pero se describe como el acto de ""seducir a mujeres que son vírgenes o viudas, que son de buena reputación... por engaño o lisonja"" para que cometan maldad con sus cuerpos. Las Partidas consideran que engañar a estas mujeres con ""falsas promesas"" es una forma de violencia moral más grave que el uso de la fuerza física. (Título XIX, Ley I).",Nivel 2
+9.2,0/9/9.2,Desfloramiento,Desfloramiento/Seducción,Criminal,"Se define como el acto de ""allanar y tentar a las mujeres"" honradas (vírgenes o viudas) mediante ""falsas promesas"", induciéndolas a tener relaciones carnales. Este acto se considera una forma de corrupción que priva a la mujer de su castidad y honra. (Título XIX, Ley I).",Nivel 2
+9.3,0/9/9.3,Incesto,null,Criminal,"Se define textualmente como el ""pecado que un hombre comete yaciendo con su parienta... o con su cuñada"", entendiéndose por tal el acceso carnal con parientes dentro del cuarto grado, o con mujeres vinculadas por afinidad que sean esposas de sus parientes en el mismo grado. (Título XVIII, Ley I).",Nivel 2
+9.4,0/9/9.4,Violación,Violación/Forzamiento,Criminal,"Se define como el acto de ""forzar o llevarse a una mujer"" (virgen, casada, viuda o religiosa) para tener acceso carnal con ella contra su voluntad, ya sea mediante el uso de armas o sin ellas. (Título XX, Leyes I y III)",Nivel 2
+9.5,0/9/9.5,Inquietar casadas,Inquietar matrimonios o doncellas,Criminal,"Se describe como el acto de causar ""molestia, deshonra y pesar"" a mujeres honradas de diversas formas: siguiéndolas en las calles o iglesias, visitándolas con insistencia, o ""enviándoles joyas o alcahuetas para corromperlas"". Este comportamiento se considera un agravio para la mujer y su familia. (Título IX, Ley V).",Nivel 2
+9.6,0/9/9.6,Romper palabra de matrimonio,null,Criminal," Se describe como el acto de ""allanar y tentar"" a mujeres vírgenes o viudas de buena fama mediante ""promesas vacías"" (empty promises) de casamiento para inducirlas a tener acceso carnal. Las Partidas definen este engaño como algo ""en la naturaleza de la violencia"", estableciendo que quien seduce así es más culpable que si hubiera usado la fuerza física. (Título XIX, Ley I).",Nivel 2
+10,0/10,Concubinato,Adulterio/Amancebamiento/Bigamía/Unión ilícita/Alcahuete,Criminal,,Nivel 1
+10.1,0/10/10.1,Concubinato,Amancebamiento/Unión ilícita,Criminal,"Se define coherentemente a través de la figura de la ""barragana"", que es una ""manceba que es tenida abiertamente"" por un hombre. Se considera una unión ilícita fuera del matrimonio que, aunque tolerada en ciertos casos para la nobleza en términos de filiación, se regula para evitar sospechas de pecado y deshonra. (Título XI, Ley I e Índice).",Nivel 2
+10.2,0/10/10.2,Adulterio,null,Criminal,"Se define textualmente como el ""yerro que un hombre comete a sabiendas yaciendo con mujer casada, o desposada con otro"". El nombre deriva del latín alterius et torus, que significa el hombre que accede al lecho de otro. (Título XVII, Ley I).",Nivel 2
+10.3,0/10/10.3,Bigamía,null,Criminal,"Definida textualmente como el acto de hombres o mujeres que ""a sabiendas se casan por segunda vez viviendo sus primeras mujeres o maridos"". También incluye el acto de desposarse con una segunda persona estando ya comprometido por palabras de presente con otra. (Título XVII, Ley XVI).",Nivel 2
+10.4,0/10/10.4,Alcahuete,null,Criminal,"Se define textualmente bajo el término ""leno"", que es el ""alcahuete que engaña a las mujeres atrayéndolas y haciéndolas cometer maldad con sus cuerpos"". Incluye cinco categorías: desde quienes mantienen burdeles públicos hasta el marido que actúa como alcahuete para su propia mujer. (Título XXII, Ley I)",Nivel 2
+11,0/11,Envenenamiento,null,Criminal,"Se define como el acto de dar ""hierbas ó venenos"" a una persona con la intención de matarla. Incluye tanto al que vende las sustancias conociendo su propósito como al que explica cómo administrarlas. También se considera bajo esta categoría a los médicos o boticarios que, por negligencia o malicia, dan ""medicinas demasiado fuertes"" o sin orden facultativa, provocando la muerte. (Título VIII, Leyes VII, IX y Título VIII en general)",Nivel 1
+12,0/12,Prostitución,Prostitución/Mujer pública/Mujer de vida alegre/Libertinaje/Lenocinio/Vida licensiosa/Mujeriego,Criminal,"La Partida no define ""prostitución"" como un término único, sino que se refiere a las ""mujeres malas que viven públicamente en burdeles"" o ""prostitutas comunes"". El lenocinio se define bajo el término leno, que es el alcahuete que ""engaña a las mujeres atrayéndolas para que cometan maldad con sus cuerpos"" por dinero. Existen cinco tipos, incluyendo desde los que mantienen burdeles hasta el marido que actúa como alcahuete de su propia mujer. (Título XXII, Ley I; Título XXIV, Ley IX)",Nivel 2
+13,0/13,Bestialidad,Pecado nefando/Transvestirse/Relaciones unisexuales/Sodomía,Criminal,,Nivel 1
+13.1,0/13/13.1,Bestialidad,null,Criminal,"Se describe como el acto en que un ""hombre ó mujer tiene relaciones carnales con un animal"". El castigo para este pecado es la muerte de la persona, y se ordena que ""el animal también sea muerto"" para borrar el recuerdo del hecho. (Título XXI, Ley II).",Nivel 2
+13.2,0/13/13.2,Transvestirse,null,Criminal,"No existe una definición textual para este término, pero las Partidas lo regulan en dos sentidos: como una forma de deshonra, cuando una mujer de buena fama se viste con las ""ropas que suelen usar las mujeres malas"" (lo que le quita el derecho a reclamar por injurias), y como una forma de engaño, al castigar a quien asume la ""condición de caballero"" o de clérigo (incluyendo su vestimenta) sin serlo realmente. (Título IX, Ley XVIII; Título VII, Ley II)",Nivel 2
+13.3,0/13/13.3,Sodomía,Pecado nefando,Criminal,"Definido textualmente como el pecado que los hombres cometen ""teniendo relaciones unos con otros contra naturaleza y contra la costumbre ordinaria"". Se considera que este delito atrae males sobre la tierra, como hambre y pestilencia, y se sanciona con la muerte. (Título XXI, Leyes I y II)",Nivel 2
+13.4,0/13/13.4,Relaciones unisexuales,null,Criminal,"No se utiliza este término moderno, pero se definen coherentemente dentro de la sodomía. Se describe como hombres que ""yacen con otros hombres"". La ley establece que tanto el que comete el acto como el que lo consiente deben morir, a menos que se haya hecho por fuerza o el implicado sea menor de catorce años. (Título XXI, Ley II)",Nivel 1
+14,0/14,Rapto ,null,Criminal,"Se define como el acto de ""forzar ó llevarse a una mujer"" (sea virgen, casada, viuda o religiosa) de su lugar de residencia para tener acceso carnal con ella o para casarse sin el consentimiento de su familia. Asimismo, se incluye el rapto de personas bajo el nombre de plagium, que es el acto de ""furtar o saltear los fijos ó siervos de otros"" para venderlos en tierras enemigas o usarlos como esclavos. (Título XX, Ley I; Título XIV, Ley XXII)",Nivel 1
+15,0/15,Juicio de residencia,Naturaleza política/Queja sobre alcalde/Abuso de autoridad(general)/Pleito por jurisdicción/Persecución/Omisión de deberes del cargo,Criminal,,Nivel 1
+15.1,0/15/15.1,Juicio de residencia ,null,Criminal,"Aunque la Séptima Partida no utiliza este nombre técnico, establece el principio de rendición de cuentas al terminar el cargo. Se define como la norma que impide que los oficiales del Rey (jueces y gobernantes con poder de castigar) sean acusados por delitos comunes mientras están en sus funciones para que puedan trabajar sin impedimentos; sin embargo, una vez que el oficial ""deja el oficio que tiene"", queda plenamente sujeto a ser acusado y juzgado por sus actos. (Título I, Ley XI).",Nivel 2
+15.2,0/15/15.2,Abuso de autoridad (en general),Arbitraridades,Criminal,"Se define coherentemente como el acto de un oficial que ""oprime a alguien por razón de su oficio"" o que ""agravia a otro por alguna recompensa que le es dada"". Incluye también a los jueces que, por ""soberbia o malicia"", se niegan a otorgar una apelación a quien tiene derecho, y a los recaudadores que cobran a los hombres ""más de lo que deben"" o imponen nuevos tributos sin orden del Rey, lo cual se castiga como un acto de violencia. (Título I, Leyes VIII y XI; Título X, Leyes IV y V).",Nivel 2
+15.3,0/15/15.3,Pleito por jurisdicción,Extralimitación de jurisdicción,Criminal,"Se describe como el acto en que una autoridad actúa fuera de los límites de su poder legalmente conferido. Las Partidas dan el ejemplo claro de los jueces ordinarios, quienes tienen poder para condenar a muerte, pero ""no pueden echar a nadie de la tierra, ni desterrar a ninguna persona a una isla"", ya que dicha facultad es exclusiva del Rey o de su adelantado general. (Título XXXI, Ley V).",Nivel 2
+15.4,0/15/15.4,Persecución,null,Criminal,"Se define como el acto malicioso de oficiales, como los merinos, que informan secretamente al Rey sobre supuestos delitos de personas contra quienes tienen un ""rencor o enemistad"" (grudge), con el fin de ponerlas en peligro de sus cuerpos o bienes. Si se prueba que el oficial actuó con malicia, debe sufrir la misma pena que habría sufrido la víctima de su informe. (Título I, Ley V).",Nivel 2
+15.5,0/15/15.5,Omisión de deberes del cargo ,Violación de correspondencia/Perder documentos,Criminal,"Estos actos se clasifican generalmente bajo el delito de engaño (deceit). Se define como el yerro del oficial que ""deja de hacer su deber por alguna consideración que ha recibido"", o del juez o notario que, teniendo documentos o procesos que deben guardarse en secreto, ""los lee, o los muestra maliciosamente"" a la parte contraria. Asimismo, comete engaño quien tiene un documento o testamento bajo su custodia y ""niega tenerlo... o lo esconde, o lo rompe"". (Título I, Ley VIII; Título VII, Ley I)",Nivel 2
+16,0/16,Injuria,Insulto/Ofensa/Irrespeto/Ultraje/Ultraje de palabra/Agravios/Blasfemia/Atropellos,Criminal,,Nivel 1
+16.1,0/16/16.1,Injuria,Insulto/Ofensa/Irrespeto/Ultraje/Ultraje de palabra/Calumnias/Vejaciones/Burla/Agresión verbal,Criminal,"Se define textualmente como la deshonra hecha o dicha a otra persona de manera injusta o por desprecio. Se divide legalmente en dos formas: de palabra (insultos, apodos, burlas o calumnias ante otros) y de obra (gestos maliciosos, imitaciones burlonas, escupir al rostro o rasgar vestiduras). También incluye los libelos famosos, que son escritos u oraciones hechos para difamar públicamente a alguien. (Título IX, Leyes I, III, IV y VI).",Nivel 2
+16.2,0/16/16.2,Agravios,Persecución/hostilidades,Criminal,"Se tratan bajo los conceptos de perfidia y discordia. Se definen coherentemente como actos de ""hostilidad"" realizados con malicia para dañar el cuerpo, los bienes o la reputación de otro. Incluye perseguir maliciosamente a un hombre de buena fama o informar falsamente al Rey sobre supuestos delitos para poner a alguien en peligro de sus bienes o persona. (Título I, Ley V; Título III, Ley III; Título XII, Ley I).",Nivel 2
+16.3,0/16/16.3,Blasfemia,null,Criminal,"Se define como el acto de proferir insultos o palabras de desprecio contra Dios, la Virgen María o los Santos. Este delito puede cometerse por palabra (diciendo mal de ellos por pasión o maldad) o por obra (como escupir sobre la cruz, las imágenes sagradas o golpear las paredes de las iglesias). (Título XXVIII, Leyes I, II y V).",Nivel 2
+16.4,0/16/16.4,Atropellos,null,Criminal,"Las Partidas no utilizan este término técnico, pero lo regulan como actos de violencia e injusticia manifiesta. Se describen coherentemente como el hecho de ""oprimir"" o agraviar a alguien que no puede protegerse, como cuando un oficial cobra más impuestos de lo debido, un juez niega una apelación por soberbia, o un acreedor quita bienes por la fuerza sin orden judicial. (Título IX, Ley VII; Título X, Leyes I, IV y XIV).",Nivel 2
+17,0/17,Crimen militar,Deserción,Criminal,"Se definen como actos de traición o faltas graves que degradan la condición de caballero. Incluye el acto de ""desamparar al rey en la batalla"", pasarse al enemigo o abandonar el ejército sin órdenes antes de que expire el tiempo de servicio. Asimismo, se considera crimen militar el vender o perder las armas, desobedecer al comandante o realizar actos de cobardía relacionados con las armas. (Título II, Ley I; Título VI, Ley IV; Título IX, Ley XV; Título XXIX, Ley II).",Nivel 1
+18,0/18,Financiero,Fiscal/Fraude/Contrabando/Disputa de tierra/Negocios o juegos ilegales/Negocios incumplidos/Embargos/Porte ilegal de armas/Despojo/Destierro/Falsificación o suplantación,Criminal,,Nivel 2
+18.2,0/18/18.2,Contrabando,null,Criminal,"No se define con este nombre técnico, pero se describe coherentemente como el acto de ""sacar grano u otras cosas fuera del país"" contra la prohibición expresa y el mandato del Rey. (Título I, Ley III).",Nivel 2
+18.3,0/18/18.3,Evación fiscal,fraude (alcance de rentas)/Usura/Deuda/Exacción/Logrerismo,Criminal,"Estos actos se agrupan bajo el engaño y la violencia. Incluyen el acto de ""encubrir o hurtar tributos"" debidos al Rey, y el yerro de los oficiales o recaudadores que cobran ""más de lo que deben"" o imponen nuevos tributos sin orden real. La usura se define como el pecado de quienes prestan con ganancia desmedida, lo cual los vuelve legalmente infames. Asimismo, comete un grave delito el oficial que usa para su propio beneficio el dinero destinado a obras públicas o salarios. (Título I, Leyes III y VII; Título VI, Ley IV; Título X, Ley V; Título XIV, Ley XIV).",Nivel 2
+18.4,0/18/18.4,Negocios y juegos ilegales,Tahures/Estafas/Jugar de mala fe,Criminal,"Se define como el acto de los tahures que practican el ""juego fraudulento"" utilizando ""dados falsos"" u otros engaños para estafar a los hombres. También se penaliza a quien mantiene casas de juego o hospeda a tahures, pues se presume que estos son hombres de mala vida y ladrones. (Título XIV, Ley VI; Título XVI, Ley X).",Nivel 2
+18.5,0/18/18.5,Disputa de por animales (matar ganado ajeno),Mal uso de recursos,Criminal,"Se define como el daño causado al ""matar o herir ganado ajeno"" (caballos, bueyes, ovejas, etc.) de manera injusta, lo cual obliga al culpable a pagar su valor. También incluye el perjuicio que ocurre cuando el ganado entra en ""huertos, mieses o prados"" ajenos por negligencia de quien los guarda. (Título XV, Leyes XVIII y XXIV).",Nivel 2
+18.6,0/18/18.6,Negocios incumplidos,Salarios,Criminal,"El incumplimiento de negocios se define como el acto de ""entrar en un contrato u obligación y no cumplirlo"" en el plazo prometido, lo cual causa deshonra física (valer menos) al deudor. Respecto a los salarios, comete un yerro el oficial del Rey que, teniendo dinero para pagar las ""soldadas"" (salarios) de caballeros o peones, lo gasta en su provecho personal. (Título V, Ley II; Título XIV, Ley XIV).",Nivel 2
+18.7,0/18/18.7,Embargo,Despojo de bienes/Expropiación,Criminal,"Se define como el acto de ""entrar o apoderarse por fuerza"" de bienes muebles o raíces ajenos ""sin orden de tribunal o del Rey"". Incluye a los acreedores que despojan a sus deudores de manera violenta o sin mandamiento judicial, perdiendo por ello el derecho a cobrar la deuda original. (Título IX, Ley XI; Título X, Leyes X y XIV).",Nivel 2
+18.8,0/18/18.8,Porte de armas ilegales,Armas ilegales,Criminal,"No existe una prohibición general de porte, pero se sanciona como acto de violencia el ""ajuntar gente armada"" para cometer robos o asaltos, y el hecho de que hombres poderosos se presenten armados ante jueces o testigos para intimidarlos en un pleito. (Título X, Leyes I y VI).",Nivel 2
+18.9,0/18/18.9,Destierro,null,Criminal,"Definido textualmente como una de las penas mayores que los jueces pueden imponer, consistente en ""echar a alguien de la tierra"" o enviarlo a una isla de manera perpetua o por tiempo señalado. Si el desterrado regresa sin permiso del Rey, se le condena a muerte o se le duplica el tiempo de la pena. (Título XXXI, Leyes IV, V y X).",Nivel 2
+18.11,0/18/18.11,Falsificación o suplantación,Plagio,Criminal,"Es el acto de ""hacer cartas, sellos o moneda falsa"". La suplantación incluye asllmir la ""condición de caballero"" o de clérigo sin serlo realmente para engañar a otros. El plagio se define textualmente como el acto de ""furtar o saltear los fijos (hijos) o los siervos de otros"" para venderlos en tierra de enemigos o usarlos como esclavos. (Título VII, Leyes I, II y IV; Título XIV, Ley XXII).",Nivel 2
+18.12,0/18/18.12,Aceptar sobornos,Sobornar,Criminal,"Se define como el yerro del oficial que ""agravia a otro por alguna recompensa"" o deja de cumplir su deber por algo que ha recibido. También incluye a quien da o promete dinero a un juez para que dicte una sentencia contraria a la ley o a un testigo para que ""calle o niegue la verdad"". (Título I, Ley VIII; Título VI, Ley V; Título VII, Ley I).",Nivel 2
+18.13,0/18/18.13,Abandono de persona,null,Criminal,"Se regula específicamente como el acto de un médico o cirujano que, tras comenzar el tratamiento de un enfermo, lo desampara maliciosamente, resultando en su muerte o invalidez. También incluye la omisión de los siervos que, pudiendo hacerlo, no socorren a su señor o a su familia cuando son atacados. (Título VIII, Ley XVI; Título XV, Ley IX).",Nivel 2
+18.14,0/18/18.14,Trabajo forzado,Trabajo forzado/Explotación,Criminal,,Nivel 2
+18.15,0/18/18.15,Monedas ilegales,Productos adulterados,Criminal,"El delito de moneda ilegal consiste en hacer moneda falsa de cualquier metal o cercenar la moneda legítima. La adulteración se define como el fraude de mercaderes o boticarios que ""mezclan algo de menor valor con lo que venden"" (como boticarios que usan azúcar en lugar de miel, o joyeros que venden latón por oro) para engañar al comprador. (Título VII, Ley IV; Título XVI, Ley VIII).",Nivel 2
+19,0/19,Desacato,Inobediencia/Desobediencia/Resistencia a la autoridad/Insubordinación,Criminal,"Se define como el acto de quien ""se rebela contra el magistrado"", manifestando desprecio por sus citaciones o mandamientos. Incluye la resistencia armada a órdenes legales (como un registro de casa) y la insubordinación de caballeros que no obedecen a sus comandantes o desamparan a su Rey en la batalla. (Título II, Ley I; Título IX, Ley XVI; Título XIV, Ley XXIV).",Nivel 1
+20,0/20,Robo,Cuatreros/Abigeato/Daños/Manipulación a territorio y negocio(incluye incendios)/Traspaso/Escalamiento,Criminal,,Nivel 1
+20.1,0/20/20.1,Robo,Cuatreros/Abigeato/Hurtos/Latrocinio/Demandas por suma de.../Saltear/Asaltar,Criminal,"El hurto (larceny) es la sustracción secreta de bienes muebles ajenos sin consentimiento del dueño. El robo (robbery) es la sustracción hecha con ""fuerza de armas"" o violencia manifiesta. Los cuatreros (denominados abigei) son los ladrones que hurtan ""bestias de carga"" o ganado en grandes cantidades. (Título XIII, Ley I; Título XIV, Leyes I y XIX).",Nivel 2
+20.2,0/20/20.2,Daños,Manipulación a territorio y negocio(incluye incendios)/Delitos contra la propiedad,Criminal,"Se definen como toda ""diminución o destrucción"" que un hombre sufre en sus bienes por culpa de otro. Incluye el incendio provocado de casas o cosechas
+ y la acción de mover o cambiar maliciosamente los mojones o términos para usurpar territorio o límites de ciudades. (Título X, Ley IX; Título XIV, Ley XXX; Título XV, Ley I).",Nivel 2
+20.3,0/20/20.3,Traspaso,Traspaso/Escalamiento,Criminal,"Se define como el acto de ""entrar en casa ajena por fuerza"" y contra la voluntad del dueño. El escalamiento se describe como la acción de quien ""ayuda a otro a subir"" o proporciona escaleras y herramientas para entrar secretamente a un lugar con el fin de hurtar. (Título IX, Ley VI; Título XIV, Leyes IV y XVIII).",Nivel 2
+21,0/21,Fuga (e intento),"Fuga (e intento) (incluye carcel, exilio o juicio) /Ayudar a fugarse (cómplice) ",Criminal,,Nivel 1
+21.1,0/21/21.1,Fuga o intento de fuga,"Fuga o intento de fuga (de cárcel, de exilio, etc)",Criminal,"Es el acto de los presos que acuerdan ""quebrantar la cárcel"" y escapar de su lugar de detención sin conocimiento de sus guardas. También incluye al desterrado que, desobedeciendo la orden del Rey, abandona el lugar de su exilio antes de cumplirse el plazo. (Título XXIX, Ley XIII; Título XXXI, Ley X).",Nivel 2
+21.2,0/21/21.2,Ayudar a alguien a fugarse,Evadir captura,Criminal,"Definido como el acto de quien ""libera o contraviene la fuga"" de un acusado de traición, o de quien saca por fuerza a un preso de su cadena o prisión. También incluye al que aconseja o asiste a un siervo ajeno para que se escape de su señor. (Título II, Ley I; Título XIV, Ley VIII; Título XXIX, Ley XIV).",Nivel 2
+22,0/22,Vagancia,Excesos/Escándalo/Desmanes/Desafuero,Criminal,,Nivel 1
+22.1,0/22/22.1,Vagancia,Mal entretenido/Crápula,Criminal,"Se definen como aquellos que viven sin oficio honesto ni provecho, degradándose públicamente por un precio o entregándose a vicios. (Título VI, Ley IV; Título XIV, Ley VI; Título XIX, Ley I).",Nivel 2
+22.2,0/22/22.2,Excesos,null,Criminal,"Se definen coherentemente como actos de ""insolencia"" o ""gran atrevimiento"". Se refiere a la osadía de cometer hechos prohibidos que desafían el orden legal, tales como reunir grupos de hombres armados para realizar agravios que el individuo no osaría intentar solo, o la detención ilegal de personas en prisiones privadas sin mandato del Rey. (Título X, Ley II; Título XXIX, Ley XV).",Nivel 2
+22.3,0/22/22.3,Escándalo,null,Criminal,"Se define textualmente como el acto de provocar ""tumultos o ruidos escandalosos"" en lugares públicos como ciudades o castillos. También se asocia a la deshonra pública y al ""pesar"" que ciertos crímenes (como el adulterio o el incesto) causan en la comunidad cuando se vuelven de dominio público, alterando la paz y la concordia debidas. (Título X, Ley II; Título XVII, Ley II).",Nivel 2
+22.4,0/22/22.4,Desmanes,null,Criminal,"No aparecen con este nombre técnico, pero se describen como ""tumultos"" o ""ruidos"" provocados maliciosamente. Se definen como las acciones de hombres que usan gente armada para ""intimidar"" a jueces y testigos en un pleito, o para generar desórdenes públicos que obliguen a la gente a abandonar sus casas y negocios por miedo, facilitando así la comisión de robos bajo la confusión del alboroto. (Título X, Leyes II y VI).",Nivel 2
+22.5,0/22/22.5,Desafuero,Conducta disociadora,Criminal,"Se define coherentemente como el acto de obrar ""de otra guisa"" (de otra manera) a lo establecido por las leyes o contra el fuero. Incluye el uso de la fuerza para tomar justicia por mano propia sin orden de un juez, lo cual se considera una violación de la lealtad y concordia debida. (Título XII, Ley III; Título X, Ley X)",Nivel 2
+22.6,0/22/22.6,Embriaguez,null,Criminal,"Se describe como el estado de quien está ""embriagado"" (intoxicated) y ha perdido el ""control de su cerebro"", de modo que no entiende lo que dice ni lo que hace. Se trata legalmente como una circunstancia que puede atenuar la pena en casos de insultos al Rey o accidentes, siempre que no sea habitual. (Título II, Ley VI; Título VIII, Ley V)",Nivel 2
+22.7,0/22/22.7,Pernicioso,Mal vecino,Criminal,"Se define como aquel que causa ""deshonra y molestia"" a sus vecinos mediante actos físicos malintencionados, como construir fuegos para ahumar la casa de arriba, arrojar líquidos desde una ventana para mojar a los transeúntes, o colocar ""cuernos u otras cosas"" en la puerta ajena para avergonzar al dueño. (Título IX, Ley VI)",Nivel 2
+22.8,0/22/22.8,Caviloso,null,Criminal,"El texto no define ""caviloso"" textualmente, pero lo trata bajo el concepto de ""malicia"" (malice). Se define como el actuar con ""engaño"" o con un pensamiento torcido para dañar a otro o evadir la ley, poniendo en obra planes para cometer traición o crímenes secretos. (Título XXXI, Ley II; Título XVI, Ley I)",Nivel 2
+22.9,0/22/22.9,Contra la moralidad,Contra las buenas costumbres,Criminal,"Se definen bajo el término de ""licenciosidad"" (licentiousness). Incluye el corromper a mujeres honradas (vírgenes o viudas) mediante engaños, o cometer el ""pecado contra natura"" (sodomía), actos que se consideran contrarios a la castidad y que traen males sobre la tierra. (Título XIX, Ley I; Título XXI, Ley I) ",Nivel 2
+23,0/23,Crimen eclesiástico,null,Criminal,"Se refiere a delitos como la ""herejía"" (separarse de la fe católica o pervertir las palabras de Cristo) y el ""sacrilegio"" (robar o dañar cosas sagradas). También incluye la simonía, que es la compra o venta de cosas espirituales. (Título XXVI, Ley I; Título I, Ley VIII)",Nivel 1
+24,0/24,Mala praxis de abogados,Falsas declaraciones judiciales/Perjurio/Jueces cuestionables/Debido proceso/Injusticia de sentencia/Abuso de autoridad(en sentencias),Criminal,,Nivel 1
+24.1,0/24/24.1,Jueces cuestionables,Debido proceso/Injusticia de sentencia/Abuso de autoridad(en sentencias),Criminal,"Se define como el acto del juez que ""a sabiendas dicta una sentencia contraria a la ley"" o que, por ""soberbia o malicia"", niega una apelación. Las Partidas establecen que un juez que condena injustamente a muerte o pérdida de miembro debe sufrir él mismo la pena de homicidio. (Título VII, Ley I; Título X, Ley IV; Título VIII, Ley XI)",Nivel 2
+24.2,0/24/24.2,Malapraxis de abogados ,Rábula/Tinterillo,Criminal,"Se define bajo el término latino praevaricator, que es el abogado que ""obra engañosamente hacia quien debería ayudar"". Esto incluye revelar secretos del cliente a la parte contraria, mostrarle sus documentos o introducir maliciosamente leyes falsas en el proceso. (Título VII, Ley I)",Nivel 2
+24.3,0/24/24.3,Perjurio,Falsas declaraciones/Falso denuncio,Criminal,"Es el acto de quien, siendo testigo, ""niega la verdad o dice mentira a sabiendas"" tras prestar juramento. También incluye al que acusa a otro de un crimen sabiendo que es falso, por lo cual debe sufrir la misma pena que habría sufrido el acusado. (Título VII, Ley I; Título I, Ley I)",Nivel 2
+24.4,0/24/24.4,Demora en trámites judiciales,null,Criminal,"Se define a través de la regla que prohíbe que cualquier caso criminal dure ""más de dos años"". Si en ese tiempo no se prueba la acusación, el juez debe liberar al preso y castigar al acusador. (Título XXIX, Ley VII)",Nivel 2
+25,0/25,Sublevación,Motín/Traición/Militar con enemigo/Agitador/Asonada,Criminal,,Nivel 1
+25.1,0/25/25.1,Sublevación,Motín/Asonada/Incursión/Movimientos revolucionarios/Tumulto/Insurrección/Sedición/Rebeldía,Criminal,"Se define como el acto de ""causar un levantamiento en el reino"" o hacer que la gente se rebele contra el Rey. Incluye también el ""ajuntar gente armada"" para causar escándalos o tumultos en las ciudades, lo cual es considerado un acto de violencia grave. (Título II, Ley I, punto 7; Título X, Ley II)",Nivel 2
+25.2,0/25/25.2,Agitación,Disturbios/Alboroto/Revoltoso/Incendiario/Inquieto,Criminal,"Se describe como la conducta de hombres poderosos que se presentan con gente armada ante jueces para ""intimidarlos"", o de quienes provocan ruidos y desórdenes públicos para que la gente abandone sus negocios por miedo, facilitando así robos. (Título X, Leyes VI y X)",Nivel 2
+25.3,0/25/25.3,Militar con un enemigo,null,Criminal,"Definido como el acto del caballero o guardaespaldas que, recibiendo paga del Rey, ""se retira de su servicio y se pasa al enemigo"", o le da ayuda y consejo para daño del reino. (Título I, Ley VII; Título II, Ley I, punto 2)",Nivel 2
+25.4,0/25/25.4,Traición,Conspiración,Criminal,"Bajo el nombre de Laesae Majestatis Crimen, se define como el deseo de ""traer la muerte al Rey"", quitarle su honor o privarle de su reino. La conspiración se describe como el acto de ""consentir con otros"" para realizar estos hechos, incluso si el plan no llega a ejecutarse. (Título II, Ley I; Título II, Ley V)",Nivel 2
+26,0/26,Suicidio o intento,null,Criminal,"Se define como el acto de quien, por ""desesperación"", se quita la vida con sus propias manos o toma drogas para morir. Si lo hace por miedo a la pena de un crimen cometido, sus bienes son confiscados; si es por locura, dolor o enfermedad, no hay pena hereditaria. (Título XXVII, Leyes I y II)",Nivel 1
+27,0/27,Migración ilegal,,Criminal,"Se define coherentemente como el acto de entrar al reino desde tierras ajenas o enemigas sin contar con una ""aseguranza"" o ""seguridad"" (promesa de no recibir daño) otorgada por el Rey, la cual debe establecerse ante testigos o por escrito. Las Partidas establecen que solo los enviados (embajadores) de otros reinos tienen garantizada la seguridad para ""entrar e ir"" por los dominios reales siempre que vengan en misión oficial. Aquellos que entran sin este permiso o protección del Rey son considerados legalmente como ""enemigos"" (hostis), definidos como oponentes abiertos del soberano o del reino, y no gozan de la protección legal de sus bienes. El caso más específico de entrada prohibida es el del desterrado, a quien se le prohíbe bajo pena de muerte volver a entrar en el país sin un mandato o permiso expreso del Rey. (Título XII, Leyes I y II; Título XXV, Ley IX; Título XXXIII, Ley VII; Título XXXI, Ley X).",Nivel 1
+28,0/28,Tipo de documento diferente a sumario ,null,No criminal,,Nivel 1
+28.1,0/28/28.1,Peticiones y solicitudes,null,No criminal,,Nivel 2
+28.2,0/28/28.2,Justficación,null,No criminal,,Nivel 2
+28.3,0/28/28.3,Apelación,null,No criminal,,Nivel 2
+28.4,0/28/28.4,Notas,null,No criminal,,Nivel 2
+28.5,0/28/28.5,Informe,Circular,No criminal,,Nivel 2
+28.6,0/28/28.6,Reclamo,null,No criminal,,Nivel 2
+28.7,0/28/28.7,Memorial,null,No criminal,,Nivel 2
+28.8,0/28/28.8,Consulta,null,No criminal,,Nivel 2
+28.9,0/28/28.9,Perdon (no oficial),Retiro de demanda,No criminal,,Nivel 2
+28.11,0/28/28.11,Carta,null,No criminal,,Nivel 2
+28.12,0/28/28.12,Requisitoria,null,No criminal,,Nivel 2
+28.13,0/28/28.13,Multa,null,No criminal,,Nivel 2
+28.14,0/28/28.14,Poder,null,No criminal,,Nivel 2
+29,0/29,Separación,Divorcio,No criminal,,Nivel 1
+29.1,0/29/29.1,Separación,null,No criminal,,Nivel 2
+29.2,0/29/29.2,Divorcio,null,No criminal,,Nivel 2
+29.3,0/29/29.3,Disenso matrimonial,Anulación,No criminal,,Nivel 2
+30,0/30,Sucesión,Linaje,No criminal,,Nivel 2
+31,0/31,Actos oficiales,null,No criminal,,Nivel 1
+32,0/32,No Casos,null,No criminal,,Nivel 1
+33,0/33,Ambiguos,null,No criminal,,Nivel 1
+34,0/34,Traslados y petición de traslado,null,No criminal,,Nivel 1
+35,0/35,Petición de indulto,Excarcelación,No criminal,,Nivel 1
+35.1,0/35/35.1,Indulto,null,No criminal,,Nivel 2
+35.2,0/35/35.2,Excarcelación,Libertad/Fianza,No criminal,,Nivel 2
+36,0/36,Juicios civiles,null,No criminal,,Nivel 1
+36.1,0/36/36.1,Por costos de un juicio,null,No criminal,,Nivel 2
+36.2,0/36/36.2,Propiedad y bienes,null,No criminal,,Nivel 2
+36.3,0/36/36.3,Contratos,null,No criminal,,Nivel 2
+36.4,0/36/36.4,Daños e indemnizaciones,null,No criminal,,Nivel 2
+36.5,0/36/36.5,Deudas,null,No criminal,,Nivel 2

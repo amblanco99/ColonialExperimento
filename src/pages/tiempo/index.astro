@@ -6,6 +6,7 @@ import '../../styles/pages/tooltips.scss';
 import '../../styles/pages/botones.scss';
 import '../../styles/pages/paneles-filtro.scss';
 import '../../styles/pages/mapa.scss';
+import '../../styles/pages/crimenesPorTipo.scss';
 
 // Tres cosas que este módulo hace y ninguna otra página necesita:
 //
@@ -28,19 +29,77 @@ import '../../styles/pages/mapa.scss';
 
 <BaseLayout title="Tiempo" active="tiempo">
   <main class="container">
-    <h1 class="section-mainTitle">Tiempo</h1>
+    <h1 class="section-mainTitle">Tiempo, lugares y crímenes</h1>
+
+    <div class="mapa-selector-vista">
+      <button type="button" id="btn-vista-lugar" class="btn-mapa-vista btn-mapa--activo">Lugar</button>
+      <button type="button" id="btn-vista-crimenes" class="btn-mapa-vista">Crímenes</button>
+    </div>
 
     <div id="panel-filtros" class="controles"></div>
 
-    <div class="dashboard-visualizaciones" style="display: flex; gap: 20px; flex-wrap: wrap;">
-      <div id="mapa-contenedor" style="flex: 1; min-width: 350px;"></div>
-      <div id="crimenesChart" style="flex: 1; min-width: 450px;"></div>
+    <div id="vista-lugar">
+      <div class="dashboard-visualizaciones" style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div id="mapa-contenedor" style="flex: 1; min-width: 350px;"></div>
+        <div id="crimenesChart" style="flex: 1; min-width: 450px;"></div>
+      </div>
+    </div>
+
+    <div id="vista-crimenes" class="mapa-vista--oculta mapa-vista-crimenes">
+      <div class="mapa-tarjeta mapa-tarjeta--compacta">
+        <div class="mapa-tarjeta-encabezado">
+          <div class="mapa-tarjeta-titulo">Crímenes por tipo</div>
+          <div class="mapa-tarjeta-subtitulo">
+            Delitos criminales registrados por linaje, según los filtros de arriba. No incluye los
+            linajes no criminales (documentos, traslados, juicios civiles, etc.).
+          </div>
+        </div>
+        <div class="mapa-tarjeta-divisor"></div>
+        <div id="crimenesPorTipo"></div>
+      </div>
+
+      <div class="mapa-tarjeta mapa-tarjeta--compacta">
+        <div class="mapa-tarjeta-encabezado">
+          <div class="mapa-tarjeta-titulo">Relación entre crímenes</div>
+          <div class="mapa-tarjeta-subtitulo">
+            Crímenes cometidos en un mismo caso · Selecciona los filtros para una visión granular
+          </div>
+        </div>
+        <div class="mapa-tarjeta-divisor"></div>
+        <div id="grafoRelacionContenedor"></div>
+      </div>
     </div>
 
     <script>
       import { inicializarDashboard } from '../../scripts/charts/TiempoCrimenesMapa.js';
+      import { crearCrimenesPorTipo } from '../../scripts/charts/CrimenesPorTipo.js';
+      import { crearRelacionCrimenes } from '../../scripts/charts/RelacionCrimenes.js';
 
       inicializarDashboard();
+
+      const btnVistaLugar = document.getElementById('btn-vista-lugar')!;
+      const btnVistaCrimenes = document.getElementById('btn-vista-crimenes')!;
+      const vistaLugar = document.getElementById('vista-lugar')!;
+      const vistaCrimenes = document.getElementById('vista-crimenes')!;
+
+      let vistaCrimenesInicializada = false;
+
+      function mostrarVista(vista: 'lugar' | 'crimenes') {
+        const esLugar = vista === 'lugar';
+        vistaLugar.classList.toggle('mapa-vista--oculta', !esLugar);
+        vistaCrimenes.classList.toggle('mapa-vista--oculta', esLugar);
+        btnVistaLugar.classList.toggle('btn-mapa--activo', esLugar);
+        btnVistaCrimenes.classList.toggle('btn-mapa--activo', !esLugar);
+
+        if (!esLugar && !vistaCrimenesInicializada) {
+          vistaCrimenesInicializada = true;
+          crearCrimenesPorTipo('crimenesPorTipo');
+          crearRelacionCrimenes('grafoRelacionContenedor');
+        }
+      }
+
+      btnVistaLugar.addEventListener('click', () => mostrarVista('lugar'));
+      btnVistaCrimenes.addEventListener('click', () => mostrarVista('crimenes'));
     </script>
   </main>
 </BaseLayout>

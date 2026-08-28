@@ -27,6 +27,17 @@ import '../../styles/pages/caso.scss';
         </select>
 
         <input type="text" id="busqueda" placeholder="Buscar..." />
+
+        <span class="filtro-rango-anio">
+          <input type="number" id="filtroAnioDesde" placeholder="Año desde" />
+          <span class="filtro-rango-separador">–</span>
+          <input type="number" id="filtroAnioHasta" placeholder="Año hasta" />
+        </span>
+
+        <label class="filtro-checkbox" for="filtroCrimenesPenales">
+          <input type="checkbox" id="filtroCrimenesPenales" checked />
+          Crímenes penales
+        </label>
       </div>
 
       <div id="tablaContainer"></div>

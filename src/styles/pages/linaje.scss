@@ -1,0 +1,100 @@
+/* =====================================================
+   POPUP DE DEFINICIÓN (árbol de linajes de delitos criminales)
+   Tarjeta que se abre al hacer clic en el nombre de un nodo: definición,
+   sinónimos y un botón para ver los casos de ese crimen/subcrimen.
+===================================================== */
+.linaje-wrapper {
+  position: relative;
+}
+
+.linaje-etiqueta-clicable {
+  cursor: pointer;
+}
+
+.linaje-etiqueta-clicable:hover {
+  text-decoration: underline;
+}
+
+.linaje-popup-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: $z-panel-flotante;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.linaje-popup-backdrop--visible {
+  display: block;
+}
+
+.linaje-popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: $z-panel-flotante + 1;
+  width: 420px;
+  max-width: calc(100% - 32px);
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  background: var(--parchment, #f7f2e8);
+  border: 1px solid var(--rule, #c8b89a);
+  border-radius: 6px;
+  padding: 24px 28px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  font-family: var(--font-body);
+}
+
+.linaje-popup--visible {
+  display: block;
+}
+
+.linaje-popup__cerrar {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--ink-light, #4a3f35);
+}
+
+.linaje-popup__titulo {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--accent);
+  margin: 0 24px 12px 0;
+}
+
+.linaje-popup__definicion {
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+
+.linaje-popup__sinonimos {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-light, #4a3f35);
+  margin: 0 0 18px;
+}
+
+.linaje-popup__boton {
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-size: 12.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.linaje-popup__boton:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent-dim);
+}

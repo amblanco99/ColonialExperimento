@@ -14,6 +14,14 @@ type SeleccionD3 = any; // se usa en las cadenas de transición de más abajo
 declare global {
   interface Window {
     __actualizarPanelSecundarioDashboard?: (conAnimacion?: boolean) => void;
+    __obtenerFiltrosCrimenesPorTipo?: () => {
+      decadaDesde: number;
+      decadaHasta: number;
+      codigo: string | null;
+      subcodigo: string | null;
+      lugar: string | null;
+    } | null;
+    __actualizarCrimenesPorTipoDashboard?: () => void;
   }
 }
 
@@ -33,6 +41,18 @@ const SERIE_FALLBACK = [
 function leerVariableCss(nombre: string, fallback: string): string {
   const valor = getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
   return valor || fallback;
+}
+
+// El corpus documental colonial llega hasta 1824 (fin de la etapa cubierta
+// por las fuentes), aunque la última década (1820) solo tenga datos reales
+// hasta ese año. formatoDecada() lo usa para mostrar "1824" en vez de "1820"
+// dondequiera que se muestre esa última década; los cálculos internos (bucket,
+// filtros, parámetros de URL) siguen usando el número de década (1820).
+const ULTIMO_ANIO_COLONIAL = 1824;
+const ULTIMA_DECADA = Math.floor(ULTIMO_ANIO_COLONIAL / 10) * 10;
+
+function formatoDecada(decada: number): number {
+  return decada === ULTIMA_DECADA ? ULTIMO_ANIO_COLONIAL : decada;
 }
 
 export async function inicializarDashboard() {
@@ -62,17 +82,8 @@ export async function inicializarDashboard() {
   // FeatureCollection, que es lo que trae NuevaGranada.json.
   const NuevaGranada = rewind(NuevaGranadaRaw as any, { reverse: true }) as any;
 
-  const SIGLOS = ['Siglo XVI', 'Siglo XVII', 'Siglo XVIII', 'Siglo XIX'];
-
-  const getSiglo = (y: number) => {
-    if (y >= 1500 && y <= 1599) return 'Siglo XVI';
-    if (y >= 1600 && y <= 1699) return 'Siglo XVII';
-    if (y >= 1700 && y <= 1799) return 'Siglo XVIII';
-    if (y >= 1800 && y <= 1899) return 'Siglo XIX';
-    return null;
-  };
-
   const getDecada = (y: number) => Math.floor(y / 10) * 10;
+  const decadaValida = (y: number) => y >= 1500 && y <= 1899;
 
   const coordPorLugar: Record<string, any> = {};
   rawLugar.forEach((d: FilaCsv) => {
@@ -91,16 +102,26 @@ export async function inicializarDashboard() {
     .map((d: FilaCsv) => ({
       ...d,
       año: +d.Año,
-      siglo: getSiglo(+d.Año),
       decada: getDecada(+d.Año),
       lugar: d.Lugar.trim(),
       coords: coordPorLugar[d.Lugar.trim()] || null,
     }))
-    .filter((d: FilaCsv) => d.siglo);
+    .filter((d: FilaCsv) => decadaValida(d.año));
 
-  const DECADAS = [...new Set(datosLimpios.map((d: FilaCsv) => d.decada))].sort(
+  // El período colonial documentado llega hasta 1824 (ver ULTIMO_ANIO_COLONIAL
+  // más abajo), aunque Visualizaciones.csv no tenga filas en la última década
+  // (1818 es el año máximo real ahí; crimenes.csv sí llega a 1824). Se arma la
+  // lista de décadas de forma contigua entre la mínima con datos y esa década
+  // final, en vez de tomar solo las décadas presentes en Visualizaciones.csv,
+  // para que el deslizador pueda llegar hasta 1824 y así cubrir también los
+  // datos de "Crímenes por tipo" (basados en crimenes.csv).
+  const decadasConDatos = [...new Set(datosLimpios.map((d: FilaCsv) => d.decada))].sort(
     (a: NodoMutable, b: NodoMutable) => a - b,
   );
+  const DECADAS: NodoMutable[] = [];
+  for (let d = decadasConDatos[0] as number; d <= ULTIMA_DECADA; d += 10) {
+    DECADAS.push(d);
+  }
 
   const linajeFilas = rawLinaje.map((d: FilaCsv) => ({
     idCodigo: (d['ID_Código'] || '').trim(),
@@ -113,9 +134,13 @@ export async function inicializarDashboard() {
   const ordenPorCodigo = new Map(linajeFilas.map((f, i) => [f.idCodigo, i]));
 
   const codigoPorNombreSub = new Map();
+  const codigoPorNombreCrimen = new Map();
   datosLimpios.forEach((d: FilaCsv) => {
     if (d.Nombre_Sub_Codigo && !codigoPorNombreSub.has(d.Nombre_Sub_Codigo)) {
       codigoPorNombreSub.set(d.Nombre_Sub_Codigo, (d['Sub_Código'] || '').trim());
+    }
+    if (d.Nombre_Codigo && !codigoPorNombreCrimen.has(d.Nombre_Codigo)) {
+      codigoPorNombreCrimen.set(d.Nombre_Codigo, (d['Código'] || '').trim());
     }
   });
 
@@ -143,22 +168,48 @@ export async function inicializarDashboard() {
   const crimenesLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Nombre_Codigo))].sort();
 
   const estado = {
-    modoTiempo: 'siglo',
-    tiempoIdx: SIGLOS.indexOf('Siglo XVII'),
+    decadaMinIdx: 0,
+    decadaMaxIdx: DECADAS.length - 1,
     crimen: 'Todos',
     subcrimen: 'Todos',
     lugar: 'Todos',
     lugaresFijados: new Set(),
   };
 
-  function tiempoListaActual() {
-    return estado.modoTiempo === 'siglo' ? SIGLOS : DECADAS;
+  function decadasSeleccionadas() {
+    return DECADAS.slice(estado.decadaMinIdx, estado.decadaMaxIdx + 1);
   }
-  function valorTiempoActual() {
-    return tiempoListaActual()[estado.tiempoIdx];
+  function rangoDecadaActual(): [number, number] {
+    return [DECADAS[estado.decadaMinIdx] as number, DECADAS[estado.decadaMaxIdx] as number];
   }
-  function campoTiempoActual() {
-    return estado.modoTiempo === 'siglo' ? 'siglo' : 'decada';
+  function etiquetaRangoActual() {
+    const [desde, hasta] = rangoDecadaActual();
+    const desdeTxt = formatoDecada(desde);
+    const hastaTxt = formatoDecada(hasta);
+    return desdeTxt === hastaTxt ? `${desdeTxt}` : `${desdeTxt} – ${hastaTxt}`;
+  }
+
+  window.__obtenerFiltrosCrimenesPorTipo = function () {
+    const [decadaDesde, decadaHasta] = rangoDecadaActual();
+    return {
+      decadaDesde,
+      decadaHasta,
+      codigo: estado.crimen === 'Todos' ? null : codigoPorNombreCrimen.get(estado.crimen) || null,
+      subcodigo: estado.subcrimen === 'Todos' ? null : codigoPorNombreSub.get(estado.subcrimen) || null,
+      lugar: estado.lugar === 'Todos' ? null : estado.lugar,
+    };
+  };
+
+  window.__obtenerRangoDecadaGrafo = function () {
+    return rangoDecadaActual();
+  };
+
+  function actualizarCrimenesPorTipo() {
+    window.__actualizarCrimenesPorTipoDashboard?.();
+  }
+
+  function actualizarGrafoRelacion() {
+    window.__actualizarGrafoRelacionDashboard?.();
   }
 
   function irATablasFiltradas(overrides: Record<string, any> = {}) {
@@ -179,16 +230,16 @@ export async function inicializarDashboard() {
         : estado.subcrimen !== 'Todos'
           ? estado.subcrimen
           : null;
-    const fecha = 'fecha' in overrides ? overrides.fecha : valorTiempoActual();
-    const escala = 'escala' in overrides ? overrides.escala : campoTiempoActual();
-
     const params = new URLSearchParams();
     if (lugar) params.set('lugar', lugar);
     if (codigo) params.set('codigo', codigo);
     if (subcodigo) params.set('subcodigo', subcodigo);
-    if (fecha != null) {
-      params.set('fecha', fecha);
-      params.set('escala', escala);
+    if ('fecha' in overrides) {
+      params.set('fecha', overrides.fecha);
+    } else {
+      const [desde, hasta] = rangoDecadaActual();
+      params.set('fechaDesde', desde as unknown as string);
+      params.set('fechaHasta', hasta as unknown as string);
     }
     window.location.href = `${import.meta.env.BASE_URL}base-de-datos/index.html?${params.toString()}`;
   }
@@ -224,10 +275,9 @@ export async function inicializarDashboard() {
   }
 
   function datosReferenciaLugar(lugar: string) {
-    const campo = campoTiempoActual();
-    const valor = valorTiempoActual();
+    const [desde, hasta] = rangoDecadaActual();
     const filas = datosFiltradosBase().filter(
-      (d: FilaCsv) => d.lugar === lugar && d[campo] === valor,
+      (d: FilaCsv) => d.lugar === lugar && d.decada >= desde && d.decada <= hasta,
     );
 
     const map: Record<string, any> = {};
@@ -248,10 +298,10 @@ export async function inicializarDashboard() {
   }
 
   function agruparMapaInstante() {
-    const campo = campoTiempoActual();
-    const valor = valorTiempoActual();
+    const [desde, hasta] = rangoDecadaActual();
     const filas = datosFiltradosBase().filter(
-      (d: FilaCsv) => d[campo] === valor && d.coords && !isNaN(d.coords[0]) && !isNaN(d.coords[1]),
+      (d: FilaCsv) =>
+        d.decada >= desde && d.decada <= hasta && d.coords && !isNaN(d.coords[0]) && !isNaN(d.coords[1]),
     );
 
     const map: Record<string, any> = {};
@@ -277,9 +327,6 @@ export async function inicializarDashboard() {
   if (!mapaContenedor) return;
   const contenedorLineasEl = document.getElementById('crimenesChart');
   const dashboardWrap = mapaContenedor.parentElement;
-
-  const contenedorGrafoEl = document.createElement('div');
-  contenedorGrafoEl.id = 'grafoRelacionContenedor';
 
   const mainContenedor = document.querySelector('main.container');
   if (mainContenedor) {
@@ -337,20 +384,11 @@ export async function inicializarDashboard() {
         envolverEnTarjeta(
           contenedorLineasEl,
           'Evolución en el tiempo',
-          'Casos por siglo o década según las selecciones',
+          'Casos por década según el rango seleccionado',
         ),
       ),
     );
   }
-  columnaIzquierda.appendChild(
-    paraColumnaVertical(
-      envolverEnTarjeta(
-        contenedorGrafoEl,
-        'Relación entre crímenes',
-        'Crímenes cometidos en un mismo caso · Selecciona los filtros para una visión granular',
-      ),
-    ),
-  );
 
   columnaViz.appendChild(columnaIzquierda);
   columnaViz.appendChild(
@@ -363,34 +401,7 @@ export async function inicializarDashboard() {
 
   if (dashboardWrap) {
     dashboardWrap.classList.add('mapa-dashboard-wrap');
-    dashboardWrap.appendChild(panelFiltros);
     dashboardWrap.appendChild(columnaViz);
-  }
-
-  let barraModoTiempo = document.getElementById('barra-modo-tiempo');
-  if (!barraModoTiempo) {
-    barraModoTiempo = document.createElement('div');
-    barraModoTiempo.id = 'barra-modo-tiempo';
-  }
-  barraModoTiempo.className = 'mapa-barra-modo-tiempo';
-
-  const MODOS_TIEMPO = [
-    { modo: 'decada', etiqueta: 'Década' },
-    { modo: 'siglo', etiqueta: 'Siglo' },
-  ];
-  const botonesModoTiempo: Record<string, any> = {};
-  MODOS_TIEMPO.forEach(({ modo, etiqueta }) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = etiqueta as unknown as string;
-    btn.className = 'btn-mapa-modo';
-    btn.addEventListener('click', () => cambiarModoTiempo(modo));
-    botonesModoTiempo[modo] = btn;
-    barraModoTiempo.appendChild(btn);
-  });
-
-  if (dashboardWrap && dashboardWrap.parentElement) {
-    dashboardWrap.parentElement.insertBefore(barraModoTiempo, dashboardWrap);
   }
 
   mapaContenedor.classList.add('mapa-panel-ancho-completo');
@@ -504,103 +515,64 @@ export async function inicializarDashboard() {
   wrapTiempo.className = 'mapa-wrap-tiempo';
 
   const labelTiempo = document.createElement('label');
-  labelTiempo.textContent = 'Fecha';
+  labelTiempo.textContent = 'Década';
   labelTiempo.className = 'filtro-label';
 
-  const slider = document.createElement('input');
-  slider.type = 'range';
-  slider.className = 'mapa-slider';
+  const sliderRango = document.createElement('div');
+  sliderRango.className = 'mapa-slider-rango';
 
-  const filaSiglos = document.createElement('div');
-  filaSiglos.className = 'mapa-fila-siglos';
-  const botonesSiglo: Record<string, any> = {};
-  SIGLOS.forEach((siglo) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = siglo.replace('Siglo ', '');
-    btn.className = 'btn-mapa-siglo';
-    btn.addEventListener('click', () => {
-      estado.tiempoIdx = SIGLOS.indexOf(siglo);
-      sincronizarSlider();
-      actualizarMapa();
-      actualizarGrafoRelacion();
-    });
-    botonesSiglo[siglo] = btn;
-    filaSiglos.appendChild(btn);
-  });
+  const sliderTrack = document.createElement('div');
+  sliderTrack.className = 'mapa-slider-track';
+
+  const sliderProgreso = document.createElement('div');
+  sliderProgreso.className = 'mapa-slider-progreso';
+
+  const sliderMin = document.createElement('input');
+  sliderMin.type = 'range';
+  sliderMin.className = 'mapa-slider mapa-slider--min';
+
+  const sliderMax = document.createElement('input');
+  sliderMax.type = 'range';
+  sliderMax.className = 'mapa-slider mapa-slider--max';
+
+  sliderRango.append(sliderTrack, sliderProgreso, sliderMin, sliderMax);
 
   const etiquetaTiempo = document.createElement('div');
   etiquetaTiempo.className = 'mapa-etiqueta-tiempo';
 
   function sincronizarSlider() {
-    const lista = tiempoListaActual();
-    const esSiglo = estado.modoTiempo === 'siglo';
-    slider.min = 0 as unknown as string;
-    slider.max = (lista.length - 1) as unknown as string;
-    slider.step = 1 as unknown as string;
-    slider.value = estado.tiempoIdx as unknown as string;
-    slider.classList.toggle('mapa-slider--oculto', esSiglo);
-    filaSiglos.classList.toggle('mapa-fila-siglos--oculta', !esSiglo);
-    etiquetaTiempo.textContent = valorTiempoActual();
-    Object.entries(botonesModoTiempo).forEach(([modo, btn]) => {
-      btn.classList.toggle('btn-mapa--activo', estado.modoTiempo === modo);
-    });
-    Object.entries(botonesSiglo).forEach(([siglo, btn]) => {
-      btn.classList.toggle('btn-mapa--activo', esSiglo && valorTiempoActual() === siglo);
-    });
+    const maxIdx = DECADAS.length - 1;
+    sliderMin.min = sliderMax.min = 0 as unknown as string;
+    sliderMin.max = sliderMax.max = maxIdx as unknown as string;
+    sliderMin.step = sliderMax.step = 1 as unknown as string;
+    sliderMin.value = estado.decadaMinIdx as unknown as string;
+    sliderMax.value = estado.decadaMaxIdx as unknown as string;
+    const pctMin = maxIdx === 0 ? 0 : (estado.decadaMinIdx / maxIdx) * 100;
+    const pctMax = maxIdx === 0 ? 100 : (estado.decadaMaxIdx / maxIdx) * 100;
+    sliderProgreso.style.left = `${pctMin}%`;
+    sliderProgreso.style.width = `${pctMax - pctMin}%`;
+    sliderMin.classList.toggle('mapa-slider--encima', estado.decadaMinIdx >= estado.decadaMaxIdx);
+    etiquetaTiempo.textContent = etiquetaRangoActual();
   }
 
-  function añoRepresentativoActual() {
-    const valor = valorTiempoActual();
-    if (estado.modoTiempo === 'siglo') {
-      const base: Record<string, number> = {
-        'Siglo XVI': 1550,
-        'Siglo XVII': 1650,
-        'Siglo XVIII': 1750,
-        'Siglo XIX': 1850,
-      };
-      return base[valor] ?? 1650;
-    }
-    return valor;
-  }
-
-  function indiceMasCercano(lista: any[], valor: any) {
-    let mejorIdx = 0;
-    let mejorDist = Infinity;
-    lista.forEach((v, i) => {
-      const dist = Math.abs(v - valor);
-      if (dist < mejorDist) {
-        mejorDist = dist;
-        mejorIdx = i;
-      }
-    });
-    return mejorIdx;
-  }
-
-  function cambiarModoTiempo(modo: string) {
-    if (estado.modoTiempo === modo) return;
-    const añoRef = añoRepresentativoActual();
-    estado.modoTiempo = modo;
-    if (modo === 'siglo') {
-      const siglo = getSiglo(añoRef) || SIGLOS[0];
-      estado.tiempoIdx = Math.max(0, SIGLOS.indexOf(siglo));
-    } else {
-      estado.tiempoIdx = indiceMasCercano(DECADAS, getDecada(añoRef));
-    }
+  function actualizarPorCambioRango() {
     sincronizarSlider();
     actualizarMapa();
-    actualizarPanelSecundario(true);
     actualizarGrafoRelacion();
+    actualizarPanelSecundario(false);
+    actualizarCrimenesPorTipo();
   }
 
-  slider.addEventListener('input', () => {
-    estado.tiempoIdx = +slider.value;
-    etiquetaTiempo.textContent = valorTiempoActual();
-    actualizarMapa();
-    actualizarGrafoRelacion();
+  sliderMin.addEventListener('input', () => {
+    estado.decadaMinIdx = Math.min(+sliderMin.value, estado.decadaMaxIdx);
+    actualizarPorCambioRango();
+  });
+  sliderMax.addEventListener('input', () => {
+    estado.decadaMaxIdx = Math.max(+sliderMax.value, estado.decadaMinIdx);
+    actualizarPorCambioRango();
   });
 
-  wrapTiempo.append(labelTiempo, slider, filaSiglos, etiquetaTiempo);
+  wrapTiempo.append(labelTiempo, sliderRango, etiquetaTiempo);
   panelFiltros!.appendChild(wrapTiempo);
 
   function subcrimenesParaCrimen(crimen: string) {
@@ -637,6 +609,7 @@ export async function inicializarDashboard() {
     comboSubcrimen.actualizarOpciones(subcrimenesParaCrimen(estado.crimen));
     actualizarMapa();
     actualizarPanelSecundario(true);
+    actualizarCrimenesPorTipo();
   });
   wrapCrimen.append(labelCrimen, selectCrimen);
   panelFiltros!.appendChild(wrapCrimen);
@@ -650,6 +623,7 @@ export async function inicializarDashboard() {
       estado.subcrimen = valor;
       actualizarMapa();
       actualizarPanelSecundario(true);
+      actualizarCrimenesPorTipo();
     },
   });
 
@@ -660,6 +634,7 @@ export async function inicializarDashboard() {
     onChange: (valor: number) => {
       estado.lugar = valor as unknown as string;
       actualizarMapa();
+      actualizarCrimenesPorTipo();
     },
   });
 
@@ -684,15 +659,14 @@ export async function inicializarDashboard() {
       avisoSinDatos.classList.remove('filtro-aviso-sin-datos--visible');
       return;
     }
-    const campo = campoTiempoActual();
-    const valor = valorTiempoActual();
+    const [desde, hasta] = rangoDecadaActual();
     const hayDatos = datosFiltradosBase().some(
-      (d: FilaCsv) => d.lugar === estado.lugar && d[campo] === valor,
+      (d: FilaCsv) => d.lugar === estado.lugar && d.decada >= desde && d.decada <= hasta,
     );
     if (hayDatos) {
       avisoSinDatos.classList.remove('filtro-aviso-sin-datos--visible');
     } else {
-      avisoSinDatos.textContent = `No hay datos para "${estado.lugar}" en ${valor}.`;
+      avisoSinDatos.textContent = `No hay datos para "${estado.lugar}" en ${etiquetaRangoActual()}.`;
       avisoSinDatos.classList.add('filtro-aviso-sin-datos--visible');
     }
   }
@@ -888,7 +862,7 @@ export async function inicializarDashboard() {
       .attr('x', 10)
       .attr('y', 30)
       .attr('class', 'mapa-capsula-subtitulo')
-      .text(`${provincia} · ${valorTiempoActual()}`);
+      .text(`${provincia} · ${etiquetaRangoActual()}`);
 
     if (totalCasos === 0) {
       g.append('text')
@@ -1123,25 +1097,27 @@ export async function inicializarDashboard() {
     const PAUSA = 130;
 
     function buildSerieTotal() {
-      const lista = tiempoListaActual();
-      const campo = campoTiempoActual();
+      const lista = decadasSeleccionadas();
       const filtrados = datosFiltradosBase();
       const puntos = lista.map((t) => {
         const set = new Set(
           filtrados
-            .filter((d: FilaCsv) => d[campo] === t)
+            .filter((d: FilaCsv) => d.decada === t)
             .map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`),
         );
         const cantidad = set.size;
-        return { tiempo: t, cantidad, etiqueta: `Todos los crímenes\n${t}: ${cantidad} casos` };
+        return {
+          tiempo: t,
+          cantidad,
+          etiqueta: `Todos los crímenes\n${formatoDecada(t)}: ${cantidad} casos`,
+        };
       });
       const total = puntos.reduce((a, p) => a + p.cantidad, 0);
       return [{ nombre: 'Todos los crímenes', total, puntos }];
     }
 
     function buildSeriesSubcrimen() {
-      const lista = tiempoListaActual();
-      const campo = campoTiempoActual();
+      const lista = decadasSeleccionadas();
       const filtrados = datosFiltradosBase();
       const filtradosConSubcrimen = filtrados.filter(
         (d: FilaCsv) => !nombresGenerales.has(d.Nombre_Sub_Codigo),
@@ -1154,11 +1130,15 @@ export async function inicializarDashboard() {
         const puntos = lista.map((t) => {
           const set = new Set(
             filtrados
-              .filter((d: FilaCsv) => d[campo] === t)
+              .filter((d: FilaCsv) => d.decada === t)
               .map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`),
           );
           const cantidad = set.size;
-          return { tiempo: t, cantidad, etiqueta: `${estado.crimen}\n${t}: ${cantidad} casos` };
+          return {
+            tiempo: t,
+            cantidad,
+            etiqueta: `${estado.crimen}\n${formatoDecada(t)}: ${cantidad} casos`,
+          };
         });
         const total = puntos.reduce((a, p) => a + p.cantidad, 0);
         return [{ nombre: estado.crimen, total, puntos }];
@@ -1169,11 +1149,11 @@ export async function inicializarDashboard() {
         const puntos = lista.map((t) => {
           const set = new Set(
             filas
-              .filter((d: FilaCsv) => d[campo] === t)
+              .filter((d: FilaCsv) => d.decada === t)
               .map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`),
           );
           const cantidad = set.size;
-          return { tiempo: t, cantidad, etiqueta: `${sub}\n${t}: ${cantidad} casos` };
+          return { tiempo: t, cantidad, etiqueta: `${sub}\n${formatoDecada(t)}: ${cantidad} casos` };
         });
         const total = puntos.reduce((a, p) => a + p.cantidad, 0);
         return { nombre: sub, total, puntos };
@@ -1181,8 +1161,7 @@ export async function inicializarDashboard() {
     }
 
     function buildSeriesLugaresFijados() {
-      const lista = tiempoListaActual();
-      const campo = campoTiempoActual();
+      const lista = decadasSeleccionadas();
       const filtrados = datosFiltradosBase();
 
       return [...estado.lugaresFijados].map((lugar: any) => {
@@ -1190,11 +1169,15 @@ export async function inicializarDashboard() {
         const puntos = lista.map((t) => {
           const set = new Set(
             filas
-              .filter((d: FilaCsv) => d[campo] === t)
+              .filter((d: FilaCsv) => d.decada === t)
               .map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`),
           );
           const cantidad = set.size;
-          return { tiempo: t, cantidad, etiqueta: `${lugar}\n${t}: ${cantidad} casos` };
+          return {
+            tiempo: t,
+            cantidad,
+            etiqueta: `${lugar}\n${formatoDecada(t)}: ${cantidad} casos`,
+          };
         });
         const total = puntos.reduce((a, p) => a + p.cantidad, 0);
         return { nombre: lugar, total, puntos };
@@ -1219,27 +1202,25 @@ export async function inicializarDashboard() {
         : estado.crimen === 'Todos'
           ? buildSerieTotal()
           : buildSeriesSubcrimen();
-      const lista = tiempoListaActual();
+      const lista = decadasSeleccionadas();
       const totalGeneral = series.reduce((a, s) => a + s.total, 0);
 
       function irDesdeLineaSerie(serie: NodoMutable, tiempo: number) {
         if (enModoComparacion) {
-          irATablasFiltradas({ lugar: serie.nombre, fecha: tiempo, escala: campoTiempoActual() });
+          irATablasFiltradas({ lugar: serie.nombre, fecha: tiempo });
         } else if (estado.crimen === 'Todos') {
-          irATablasFiltradas({ fecha: tiempo, escala: campoTiempoActual() });
+          irATablasFiltradas({ fecha: tiempo });
         } else if (serie.nombre === estado.crimen) {
           irATablasFiltradas({
             codigo: estado.crimen,
             subcodigo: null,
             fecha: tiempo,
-            escala: campoTiempoActual(),
           });
         } else {
           irATablasFiltradas({
             codigo: estado.crimen,
             subcodigo: serie.nombre,
             fecha: tiempo,
-            escala: campoTiempoActual(),
           });
         }
       }
@@ -1313,12 +1294,13 @@ export async function inicializarDashboard() {
           gg.selectAll('line').attr('class', 'mapa-linea-grid-linea');
         });
 
-      const ejeXTiempo = d3.axisBottom(x).tickSize(0);
-      if (estado.modoTiempo !== 'siglo' && lista.length > 2) {
+      const ejeXTiempo = d3
+        .axisBottom(x)
+        .tickSize(0)
+        .tickFormat((d) => formatoDecada(d as unknown as number) as unknown as string);
+      if (lista.length > 2) {
         ejeXTiempo.tickValues([lista[0], lista[lista.length - 1]]);
       }
-      const haySigloXIXTruncado = estado.modoTiempo === 'siglo' && lista.includes('Siglo XIX');
-      ejeXTiempo.tickFormat((d: FilaCsv) => (d === 'Siglo XIX' ? `${d} *` : d));
       g.append('g')
         .attr('transform', `translate(0,${IH})`)
         .call(ejeXTiempo)
@@ -1357,19 +1339,7 @@ export async function inicializarDashboard() {
         .attr('y', 40)
         .attr('text-anchor', 'middle')
         .attr('class', 'mapa-linea-subtitulo')
-        .text(
-          `${totalGeneral} registros únicos · ${estado.modoTiempo === 'siglo' ? 'por siglo' : 'por década'}`,
-        );
-
-      if (haySigloXIXTruncado) {
-        svgLine
-          .append('text')
-          .attr('x', MARGIN.left + IW)
-          .attr('y', HEIGHT - 8)
-          .attr('text-anchor', 'end')
-          .attr('class', 'mapa-linea-nota')
-          .text('* Siglo XIX: solo hasta 1824');
-      }
+        .text(`${totalGeneral} registros únicos · por década`);
 
       const lineGen = (d3.line() as any)
         .x((d: FilaCsv) => x(d.tiempo))
@@ -1478,368 +1448,6 @@ export async function inicializarDashboard() {
     }
   }
 
-  const estadoGrafo = { agente: 'Todos', atributo: 'Todos', genero: 'Todos' };
-
-  const agentesLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Agente))]
-    .filter(Boolean)
-    .sort();
-  const atributosLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Atributo))]
-    .filter(Boolean)
-    .sort();
-  const generosLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Género))]
-    .filter(Boolean)
-    .sort();
-
-  function crearSelectGrafo(etiqueta: string, opciones: any[], onChange: (v: any) => void) {
-    const wrap = document.createElement('div');
-    wrap.className = 'mapa-wrap-select-grafo';
-    const label = document.createElement('label');
-    label.textContent = etiqueta as unknown as string;
-    label.className = 'filtro-label filtro-label--chico';
-    const select = document.createElement('select');
-    select.className = 'filtro-select filtro-select--compacto';
-    ['Todos', ...opciones].forEach((op) => {
-      const opt = document.createElement('option');
-      opt.value = op as unknown as string;
-      opt.textContent = op as unknown as string;
-      select.appendChild(opt);
-    });
-    select.value = 'Todos';
-    select.addEventListener('change', () => onChange(select.value));
-    wrap.append(label, select);
-    return wrap;
-  }
-
-  const filaFiltrosGrafo = document.createElement('div');
-  filaFiltrosGrafo.className = 'mapa-fila-filtros-grafo';
-  filaFiltrosGrafo.append(
-    crearSelectGrafo('Agente', agentesLista, (valor: any) => {
-      estadoGrafo.agente = valor;
-      dibujarGrafo();
-    }),
-    crearSelectGrafo('Atributo', atributosLista, (valor: any) => {
-      estadoGrafo.atributo = valor;
-      dibujarGrafo();
-    }),
-    crearSelectGrafo('Género', generosLista, (valor: any) => {
-      estadoGrafo.genero = valor;
-      dibujarGrafo();
-    }),
-  );
-
-  const botonVerCasosGrafo = crearBotonVerCasos();
-
-  const areaGrafo = document.createElement('div');
-  areaGrafo.className = 'mapa-area-grafo';
-
-  contenedorGrafoEl.append(filaFiltrosGrafo, botonVerCasosGrafo.boton, areaGrafo);
-
-  const GRAFO_WIDTH = 700;
-  const GRAFO_HEIGHT = 380;
-  const GRAFO_PADDING = 40;
-
-  const tooltipGrafo = document.createElement('div');
-  tooltipGrafo.className = 'tooltip-grafico';
-
-  let simulationGrafoRef: NodoMutable = null;
-
-  function dragGrafo(simulation: NodoMutable) {
-    function dragstarted(event: any, d: NodoMutable) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
-      d.fx = d.x;
-      d.fy = d.y;
-    }
-    function dragged(event: any, d: NodoMutable) {
-      d.fx = event.x;
-      d.fy = event.y;
-    }
-    function dragended(event: any, d: NodoMutable) {
-      if (!event.active) simulation.alphaTarget(0);
-      d.fx = null;
-      d.fy = null;
-    }
-    return d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
-  }
-
-  function dibujarGrafo() {
-    if (simulationGrafoRef) simulationGrafoRef.stop();
-    botonVerCasosGrafo.ocultar();
-
-    const campo = campoTiempoActual();
-    const valor = valorTiempoActual();
-    const filtrados = datosLimpios.filter(
-      (d) =>
-        d[campo] === valor &&
-        (estadoGrafo.agente === 'Todos' || d.Agente === estadoGrafo.agente) &&
-        (estadoGrafo.atributo === 'Todos' || d.Atributo === estadoGrafo.atributo) &&
-        (estadoGrafo.genero === 'Todos' || d.Género === estadoGrafo.genero),
-    );
-
-    const agenteCrimenes = new Map();
-    const crimenInfo = new Map();
-    filtrados.forEach((d: FilaCsv) => {
-      const idAgente = d.ID_Agente;
-      const codigo = d.Código;
-      const nombre = d.Nombre_Codigo;
-      if (!idAgente || !codigo) return;
-      if (!agenteCrimenes.has(idAgente))
-        agenteCrimenes.set(idAgente, { codigos: new Set(), idCaso: d.ID_Caso });
-      agenteCrimenes.get(idAgente).codigos.add(codigo);
-      if (!crimenInfo.has(codigo)) crimenInfo.set(codigo, { nombre, count: 0 });
-      crimenInfo.get(codigo).count += 1;
-    });
-
-    const nodes = Array.from(crimenInfo, ([codigo, info]) => ({
-      id: codigo,
-      nombre: info.nombre,
-      count: info.count,
-    }));
-
-    const edgeMap = new Map();
-    const casosPorEdge = new Map();
-    agenteCrimenes.forEach(({ codigos: codigosSet, idCaso }) => {
-      const codigos = Array.from(codigosSet);
-      if (codigos.length < 2) return;
-      for (let i = 0; i < codigos.length; i++) {
-        for (let j = i + 1; j < codigos.length; j++) {
-          const [a, b] = [codigos[i], codigos[j]].sort();
-          const key = `${a}|${b}`;
-          edgeMap.set(key, (edgeMap.get(key) || 0) + 1);
-          if (!casosPorEdge.has(key)) casosPorEdge.set(key, new Set());
-          if (idCaso) casosPorEdge.get(key).add(idCaso);
-        }
-      }
-    });
-    const links = Array.from(edgeMap, ([key, weight]) => {
-      const [source, target] = key.split('|');
-      return { source, target, weight, casos: [...(casosPorEdge.get(key) || [])] };
-    });
-
-    const adyacencia = new Map();
-    nodes.forEach((n) => adyacencia.set(n.id, new Set()));
-    links.forEach((l) => {
-      adyacencia.get(l.source)?.add(l.target);
-      adyacencia.get(l.target)?.add(l.source);
-    });
-
-    const vinculadosPorCodigo = new Map();
-    nodes.forEach((n) => vinculadosPorCodigo.set(n.id, new Set()));
-    agenteCrimenes.forEach(({ codigos: codigosSet }, idAgente) => {
-      if (codigosSet.size < 2) return;
-      codigosSet.forEach((codigo: string) => vinculadosPorCodigo.get(codigo)?.add(idAgente));
-    });
-
-    areaGrafo.innerHTML = '';
-    areaGrafo.appendChild(tooltipGrafo);
-
-    if (nodes.length === 0) {
-      const aviso = document.createElement('div');
-      aviso.className = 'mapa-aviso-vacio mapa-aviso-vacio--compacto';
-      aviso.textContent = 'Sin casos con los filtros actuales';
-      areaGrafo.appendChild(aviso);
-      return;
-    }
-
-    const svg = d3
-      .create('svg')
-      .attr('viewBox', `0 0 ${GRAFO_WIDTH} ${GRAFO_HEIGHT}`)
-      .attr('class', 'mapa-grafo-svg');
-
-    const radiusScale = d3
-      .scaleSqrt()
-      .domain([0, d3.max(nodes, (d: FilaCsv) => d.count) || 1])
-      .range([7, 32]);
-    const linkScale = d3
-      .scaleLinear()
-      .domain([1, d3.max(links, (d: FilaCsv) => d.weight) || 1])
-      .range([1, 7]);
-    const color = d3.scaleOrdinal(COLORES_SERIE).domain(nodes.map((d: FilaCsv) => d.id));
-
-    const simulation = d3
-      .forceSimulation(nodes as any)
-      .force(
-        'link',
-        d3
-          .forceLink(links)
-          .id((d: FilaCsv) => d.id)
-          .distance((d: FilaCsv) => 120 - linkScale(d.weight) * 4)
-          .strength((d: FilaCsv) => 0.1 + linkScale(d.weight) * 0.02),
-      )
-      .force('charge', d3.forceManyBody().strength(-260))
-      .force('center', d3.forceCenter(GRAFO_WIDTH / 2, GRAFO_HEIGHT / 2))
-      .force(
-        'collide',
-        d3.forceCollide((d: FilaCsv) => radiusScale(d.count) + 5),
-      )
-      .force('x', d3.forceX(GRAFO_WIDTH / 2).strength(0.05))
-      .force('y', d3.forceY(GRAFO_HEIGHT / 2).strength(0.05));
-
-    simulationGrafoRef = simulation;
-
-    const link = svg
-      .append('g')
-      .selectAll('line')
-      .data(links)
-      .join('line')
-      .attr('class', 'mapa-grafo-link')
-      .attr('stroke', PALETA.borde)
-      .attr('stroke-opacity', 0.35)
-      .attr('stroke-width', (d: FilaCsv) => linkScale(d.weight));
-
-    const node = svg
-      .append('g')
-      .selectAll('circle')
-      .data(nodes)
-      .join('circle')
-      .attr('class', 'mapa-grafo-nodo')
-      .attr('r', (d: FilaCsv) => radiusScale(d.count))
-      .attr('fill', (d: FilaCsv) => color(d.id))
-      .attr('stroke', PALETA.fondoPergamino)
-      .attr('stroke-width', 1.5)
-      .call(dragGrafo(simulation) as any);
-
-    const label = svg
-      .append('g')
-      .selectAll('text')
-      .data(nodes)
-      .join('text')
-      .text((d: FilaCsv) => d.nombre)
-      .attr('class', 'mapa-grafo-etiqueta')
-      .attr('dy', (d: FilaCsv) => -radiusScale(d.count) - 6);
-
-    let seleccionNodo: NodoMutable = null;
-    let seleccionLink: NodoMutable = null;
-
-    function limpiarSeleccionGrafo() {
-      seleccionNodo = null;
-      seleccionLink = null;
-      botonVerCasosGrafo.ocultar();
-      aplicarResaltado();
-    }
-
-    function aplicarResaltado() {
-      if (seleccionNodo === null && seleccionLink === null) {
-        node.attr('opacity', 1).attr('stroke', PALETA.fondoPergamino).attr('stroke-width', 1.5);
-        link
-          .attr('stroke', PALETA.borde)
-          .attr('stroke-opacity', 0.35)
-          .attr('stroke-width', (d: FilaCsv) => linkScale(d.weight));
-        label.attr('opacity', 1);
-        return;
-      }
-
-      const nodosActivos = new Set();
-      const linksActivos = new Set();
-
-      if (seleccionNodo !== null) {
-        nodosActivos.add(seleccionNodo);
-        (adyacencia.get(seleccionNodo) || new Set()).forEach((id: string) => nodosActivos.add(id));
-        links.forEach((l) => {
-          if (l.source.id === seleccionNodo || l.target.id === seleccionNodo) linksActivos.add(l);
-        });
-      } else if (seleccionLink !== null) {
-        nodosActivos.add(seleccionLink.source.id);
-        nodosActivos.add(seleccionLink.target.id);
-        linksActivos.add(seleccionLink);
-      }
-
-      node
-        .attr('opacity', (d: FilaCsv) => (nodosActivos.has(d.id) ? 1 : 0.15))
-        .attr('stroke', (d: FilaCsv) =>
-          seleccionNodo !== null && d.id === seleccionNodo
-            ? PALETA.tintaOscura
-            : PALETA.fondoPergamino,
-        )
-        .attr('stroke-width', (d: FilaCsv) =>
-          seleccionNodo !== null && d.id === seleccionNodo ? 3 : 1.5,
-        );
-      label.attr('opacity', (d: FilaCsv) => (nodosActivos.has(d.id) ? 1 : 0.15));
-      link
-        .attr('stroke', (d: FilaCsv) => (linksActivos.has(d) ? PALETA.acentoLinea : '#ccc'))
-        .attr('stroke-opacity', (d: FilaCsv) => (linksActivos.has(d) ? 0.9 : 0.1))
-        .attr('stroke-width', (d: FilaCsv) =>
-          linksActivos.has(d) ? linkScale(d.weight) + 2 : linkScale(d.weight),
-        );
-    }
-
-    node.on('click', (event: MouseEvent, d: FilaCsv) => {
-      event.stopPropagation();
-      if (seleccionNodo === d.id) {
-        limpiarSeleccionGrafo();
-        return;
-      }
-      seleccionNodo = d.id;
-      seleccionLink = null;
-      aplicarResaltado();
-      botonVerCasosGrafo.mostrar(d.nombre, () => irATablasFiltradas({ codigo: d.nombre }));
-    });
-
-    link.on('click', (event: MouseEvent, d: FilaCsv) => {
-      event.stopPropagation();
-      if (seleccionLink === d) {
-        limpiarSeleccionGrafo();
-        return;
-      }
-      seleccionLink = d;
-      seleccionNodo = null;
-      aplicarResaltado();
-      const nombreOrigen = d.source.nombre || d.source;
-      const nombreDestino = d.target.nombre || d.target;
-      botonVerCasosGrafo.mostrar(`${nombreOrigen} ↔ ${nombreDestino}`, () =>
-        irATablasFiltradas({ casos: d.casos }),
-      );
-    });
-
-    svg.on('click', () => limpiarSeleccionGrafo());
-
-    node
-      .on('mouseenter', (event: MouseEvent, d: FilaCsv) => {
-        const vinculados = vinculadosPorCodigo.get(d.id)?.size || 0;
-        tooltipGrafo.innerHTML = `<strong>${d.nombre}</strong><br/>Casos: ${d.count}<br/>Vínculos con otros crímenes: ${vinculados}`;
-        tooltipGrafo.classList.add('tooltip-grafico--visible');
-      })
-      .on('mousemove', (event: MouseEvent) => {
-        const rect = areaGrafo.getBoundingClientRect();
-        tooltipGrafo.style.left = event.clientX - rect.left + 12 + 'px';
-        tooltipGrafo.style.top = event.clientY - rect.top + 12 + 'px';
-      })
-      .on('mouseleave', () => tooltipGrafo.classList.remove('tooltip-grafico--visible'));
-
-    link
-      .on('mouseenter', (event: MouseEvent, d: FilaCsv) => {
-        tooltipGrafo.innerHTML = `${d.source.nombre || d.source} ↔ ${d.target.nombre || d.target}<br/>Agentes en común: <strong>${d.weight}</strong>`;
-        tooltipGrafo.classList.add('tooltip-grafico--visible');
-      })
-      .on('mousemove', (event: MouseEvent) => {
-        const rect = areaGrafo.getBoundingClientRect();
-        tooltipGrafo.style.left = event.clientX - rect.left + 12 + 'px';
-        tooltipGrafo.style.top = event.clientY - rect.top + 12 + 'px';
-      })
-      .on('mouseleave', () => tooltipGrafo.classList.remove('tooltip-grafico--visible'));
-
-    simulation.on('tick', () => {
-      nodes.forEach((d: FilaCsv) => {
-        const r = radiusScale(d.count);
-        d.x = Math.max(r + GRAFO_PADDING, Math.min(GRAFO_WIDTH - r - GRAFO_PADDING, d.x));
-        d.y = Math.max(r + GRAFO_PADDING, Math.min(GRAFO_HEIGHT - r - GRAFO_PADDING, d.y));
-      });
-      link
-        .attr('x1', (d: FilaCsv) => d.source.x)
-        .attr('y1', (d: FilaCsv) => d.source.y)
-        .attr('x2', (d: FilaCsv) => d.target.x)
-        .attr('y2', (d: FilaCsv) => d.target.y);
-      node.attr('cx', (d: FilaCsv) => d.x).attr('cy', (d: FilaCsv) => d.y);
-      label.attr('x', (d: FilaCsv) => d.x).attr('y', (d: FilaCsv) => d.y);
-    });
-
-    areaGrafo.appendChild(svg.node()!);
-  }
-
-  function actualizarGrafoRelacion() {
-    dibujarGrafo();
-  }
-
   actualizarMapa();
   actualizarPanelSecundario(true);
-  actualizarGrafoRelacion();
 }

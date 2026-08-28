@@ -6,10 +6,29 @@ export async function crearTabla() {
     tablaContainerInicial.innerHTML = `<p class="cargando">Cargando...</p>`;
   }
 
-  const [dataCrimenes, dataViz] = await Promise.all([
+  const [dataCrimenesCrudo, dataViz, dataLinaje] = await Promise.all([
     d3.csv(`${import.meta.env.BASE_URL}data/crimenes.csv`),
     d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`),
+    d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`),
   ]);
+
+  // crimenes.csv ya no trae el nombre del crimen/subcrimen: solo Código y
+  // Sub_Código. Se resuelven aquí contra Linaje.csv (ID_Código → Nombre).
+  const linajeMap = new Map(dataLinaje.map((d) => [d['ID_Código'], d.Nombre]));
+
+  // Tipo_delito ("Criminal" / "No criminal" / "No aplica") vive en Linaje.csv
+  // por ID_Código, tanto para el código raíz como para el sub-código. Cuando
+  // difieren, el sub-código manda: es el nivel más específico y en la práctica
+  // el código raíz casi nunca marca "Criminal" algo cuyo sub-código no lo sea.
+  const tipoDelitoMap = new Map(dataLinaje.map((d) => [d['ID_Código'], d.Tipo_delito]));
+  const dataCrimenes = dataCrimenesCrudo.map((d) => {
+    const tipoDelito = tipoDelitoMap.get(d['Sub_Código']) ?? tipoDelitoMap.get(d['Código']);
+    return Object.assign(d, {
+      crimen: linajeMap.get(d['Código']) || '',
+      subcrimen: linajeMap.get(d['Sub_Código']) || '',
+      esCriminal: tipoDelito === 'Criminal',
+    });
+  });
 
   const params = new URLSearchParams(window.location.search);
   const genero = params.get('genero');
@@ -19,19 +38,13 @@ export async function crearTabla() {
   const subcodigo = params.get('subcodigo');
   const lugarParam = params.get('lugar');
   const fecha = params.get('fecha');
-  const escala = params.get('escala');
+  const fechaDesde = params.get('fechaDesde');
+  const fechaHasta = params.get('fechaHasta');
   const casosParam = params.get('casos');
   const vieneDeFiltro = params.toString() !== '';
 
   // Implementación local; hay otras tres en el proyecto con contratos distintos
   // (ver MIGRATION.md). Esta recibe el número que le pasa el llamante.
-  const getSiglo = (y: number) => {
-    if (y >= 1500 && y <= 1599) return 'Siglo XVI';
-    if (y >= 1600 && y <= 1699) return 'Siglo XVII';
-    if (y >= 1700 && y <= 1799) return 'Siglo XVIII';
-    if (y >= 1800 && y <= 1899) return 'Siglo XIX';
-    return null;
-  };
   const getDecada = (y: number) => Math.floor(y / 10) * 10;
 
   let idDocumentosPermitidos = null;
@@ -56,8 +69,11 @@ export async function crearTabla() {
       const cumpleCodigo = !codigo || d.Nombre_Codigo === codigo;
       const cumpleSubcodigo = !subcodigo || d.Nombre_Sub_Codigo === subcodigo;
       const cumpleLugar = !lugarParam || d.Lugar?.trim() === lugarParam;
-      const cumpleFecha =
-        !fecha || (escala === 'decada' ? getDecada(+d.Año) === +fecha : getSiglo(+d.Año) === fecha);
+      const cumpleFecha = fecha
+        ? getDecada(+d.Año) === +fecha
+        : fechaDesde && fechaHasta
+          ? getDecada(+d.Año) >= +fechaDesde && getDecada(+d.Año) <= +fechaHasta
+          : true;
       return (
         cumpleGenero &&
         cumpleAtributo &&
@@ -79,11 +95,14 @@ export async function crearTabla() {
   const filtroLugar = document.getElementById('filtroLugar') as HTMLSelectElement;
   const filtroCrimen = document.getElementById('filtroCrimen') as HTMLSelectElement;
   const busqueda = document.getElementById('busqueda') as HTMLInputElement;
+  const filtroCrimenesPenales = document.getElementById('filtroCrimenesPenales') as HTMLInputElement;
+  const filtroAnioDesde = document.getElementById('filtroAnioDesde') as HTMLInputElement;
+  const filtroAnioHasta = document.getElementById('filtroAnioHasta') as HTMLInputElement;
 
   const datosFiltradosPorViz = idCasosPermitidos
     ? dataCrimenes.filter((d) => idCasosPermitidos.has(d.ID_Caso))
     : idDocumentosPermitidos
-      ? dataCrimenes.filter((d) => idDocumentosPermitidos.has(d.ID_Documento))
+      ? dataCrimenes.filter((d) => idDocumentosPermitidos.has(d['ID_Crímen']))
       : dataCrimenes;
 
   const lugares = [...new Set(datosFiltradosPorViz.map((d) => d.Lugar))].filter(Boolean).sort();
@@ -106,6 +125,20 @@ export async function crearTabla() {
     filtroCrimen.append(option);
   });
 
+  const anios = datosFiltradosPorViz.map((d) => +d.Año).filter((a) => !isNaN(a));
+  if (anios.length) {
+    // El año mínimo real incluye datos sin fecha (0), así que el rango
+    // seleccionable llega hasta ahí, pero el valor de inicio por defecto es
+    // 1550: el arranque real de los casos coloniales documentados.
+    const ANIO_INICIO_POR_DEFECTO = 1550;
+    const anioMinimo = Math.min(...anios);
+    const anioMaximo = Math.max(...anios);
+    filtroAnioDesde.min = filtroAnioHasta.min = String(anioMinimo);
+    filtroAnioDesde.max = filtroAnioHasta.max = String(anioMaximo);
+    filtroAnioDesde.value = String(Math.max(ANIO_INICIO_POR_DEFECTO, anioMinimo));
+    filtroAnioHasta.value = String(anioMaximo);
+  }
+
   if (vieneDeFiltro) {
     const contenedor = document.getElementById('filtros-activos');
     if (contenedor) {
@@ -118,7 +151,11 @@ export async function crearTabla() {
         codigo && `Crimen: <strong>${codigo}</strong>`,
         subcodigo && `Subcrimen: <strong>${subcodigo}</strong>`,
         lugarParam && `Lugar: <strong>${lugarParam}</strong>`,
-        fecha && `Fecha: <strong>${fecha}</strong>`,
+        fecha
+          ? `Fecha: <strong>${fecha}</strong>`
+          : fechaDesde && fechaHasta
+            ? `Fecha: <strong>${fechaDesde === fechaHasta ? fechaDesde : `${fechaDesde} – ${fechaHasta}`}</strong>`
+            : null,
       ].filter(Boolean);
 
       contenedor.innerHTML = `
@@ -133,12 +170,17 @@ export async function crearTabla() {
     const lugar = filtroLugar.value;
     const crimen = filtroCrimen.value;
     const texto = busqueda.value.toLowerCase();
+    const anioDesde = filtroAnioDesde.value ? +filtroAnioDesde.value : null;
+    const anioHasta = filtroAnioHasta.value ? +filtroAnioHasta.value : null;
 
     const filtrados = datosFiltradosPorViz.filter((d) => {
       const cumpleLugar = !lugar || d.Lugar === lugar;
       const cumpleCrimen = !crimen || d.crimen === crimen;
       const cumpleBusqueda = Object.values(d).join(' ').toLowerCase().includes(texto);
-      return cumpleLugar && cumpleCrimen && cumpleBusqueda;
+      const cumplePenal = !filtroCrimenesPenales.checked || d.esCriminal;
+      const cumpleAnio =
+        (anioDesde === null || +d.Año >= anioDesde) && (anioHasta === null || +d.Año <= anioHasta);
+      return cumpleLugar && cumpleCrimen && cumpleBusqueda && cumplePenal && cumpleAnio;
     });
 
     tablaContainer.innerHTML = `
@@ -181,6 +223,9 @@ export async function crearTabla() {
   filtroLugar.addEventListener('change', renderTabla);
   filtroCrimen.addEventListener('change', renderTabla);
   busqueda.addEventListener('input', renderTabla);
+  filtroCrimenesPenales.addEventListener('change', renderTabla);
+  filtroAnioDesde.addEventListener('input', renderTabla);
+  filtroAnioHasta.addEventListener('input', renderTabla);
 
   renderTabla();
 }

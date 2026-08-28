@@ -110,6 +110,14 @@ main.personas-main-ancho {
   margin: 0 auto;
 }
 
+/* Igual que agParticipacionTiempo: el grafo de fuerzas usaba el ancho
+   completo de la fila y quedaba enorme (viewBox 700x380 escalado al 100%).
+   Al reducirlo se ve completo sin desplazamiento. */
+#relacionCrimenes {
+  width: 55%;
+  margin: 0 auto;
+}
+
 @media (max-width: v.$bp-dashboard) {
   .personas-filtros-top {
     position: static;

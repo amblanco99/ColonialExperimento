@@ -286,6 +286,120 @@ body {
   border-top: 1px dashed var(--rule);
 }
 
+/* ── Casos similares ─────────────────────────────────────── */
+.similares-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.similares-tab {
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink-light);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.similares-tab:hover {
+  border-color: var(--accent-dim);
+}
+
+.similares-tab--activa {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.similares-carrusel-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.similares-carrusel {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-behavior: smooth;
+  padding-bottom: 0.5rem;
+}
+
+.similar-card {
+  flex: 0 0 240px;
+  scroll-snap-align: start;
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  background: #fff;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.similar-card:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.similar-card-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.similar-card-desc {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.similar-card-crimen {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-light);
+}
+
+.similares-vacio {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--ink-light);
+}
+
+.carrusel-flecha {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--accent);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.carrusel-flecha:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
 /* ── Estado carga / error ────────────────────────────────── */
 .state-msg {
   text-align: center;

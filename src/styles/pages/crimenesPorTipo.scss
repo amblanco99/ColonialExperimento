@@ -1,0 +1,18 @@
+/* =====================================================
+   BARRAS HORIZONTALES: CRÍMENES POR TIPO (CrimenesPorTipo.ts)
+   Ranking de linajes de crimen (Código) por cantidad total de registros,
+   sin desglose por fecha.
+===================================================== */
+.barra-crimenes-tipo-wrapper {
+  position: relative;
+  max-width: 100%;
+}
+
+.barra-crimenes-tipo__barra {
+  fill: var(--accent);
+  transition: fill 0.1s;
+}
+
+.barra-crimenes-tipo__barra--hover {
+  fill: var(--accent-dim, #a0622f);
+}

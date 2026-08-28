@@ -1,8 +1,11 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/pages/linaje.scss';
+import '../../styles/pages/tooltips.scss';
 
-// Los otros dos gráficos de aboutmain.js: aquí están #conteoCrimenes y
-// #chartLinaje, pero no #tipoCaso, así que no se llama a crearTiposCasos.
+// Los otros dos gráficos de aboutmain.js: aquí están #conteoCrimenes y los dos
+// linajes (#chartLinajeCriminal y #chartLinajeNoCriminal), pero no #tipoCaso,
+// así que no se llama a crearTiposCasos.
 // Entre esta página y fuentes.html quedan cubiertos los tres.
 ---
 
@@ -27,9 +30,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </section>
 
     <section>
-      <h2>Linajes</h2>
-      <p>Esta gráfica muestra la clasificación metodológica de los crímenes</p>
-      <div id="chartLinaje"></div>
+      <h2>Linajes de delitos criminales</h2>
+      <p>Esta gráfica muestra la clasificación metodológica de los delitos criminales</p>
+      <div id="chartLinajeCriminal" class="chart-linaje"></div>
+    </section>
+
+    <section>
+      <h2>Linajes de casos no criminales</h2>
+      <p>
+        Esta gráfica muestra la clasificación metodológica de los expedientes que no son delitos
+        criminales
+      </p>
+      <div id="chartLinajeNoCriminal" class="chart-linaje"></div>
     </section>
 
     <script>
@@ -37,7 +49,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       import { crearLinaje } from '../../scripts/charts/Linaje.js';
 
       crearConteoCrimenes();
-      crearLinaje();
+      crearLinaje('chartLinajeCriminal', true);
+      crearLinaje('chartLinajeNoCriminal', false);
     </script>
   </main>
 </BaseLayout>

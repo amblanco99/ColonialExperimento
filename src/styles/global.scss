@@ -133,7 +133,7 @@ a.card p {
   max-width: none;
 }
 
-#chartLinaje,
+.chart-linaje,
 #tablaContainer,
 #tablaMetadatos {
   overflow-x: auto;
@@ -199,6 +199,47 @@ a.card p {
 .filters select:focus,
 .filters input:focus {
   border-color: var(--accent);
+}
+
+.filtro-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.filtro-checkbox input {
+  cursor: pointer;
+}
+
+.filtro-rango-anio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.filtro-rango-anio input {
+  width: 100px;
+  padding: 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: #ffffff;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  outline: none;
+}
+
+.filtro-rango-anio input:focus {
+  border-color: var(--accent);
+}
+
+.filtro-rango-separador {
+  color: var(--ink-light);
 }
 
 /* =====================================================

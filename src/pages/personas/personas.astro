@@ -11,6 +11,8 @@ import '../../styles/pages/apilado.scss';
 import '../../styles/pages/lineas.scss';
 import '../../styles/pages/sunburst.scss';
 import '../../styles/pages/dashboard.scss';
+import '../../styles/pages/paneles-filtro.scss';
+import '../../styles/pages/mapa.scss';
 
 // El carrusel pw-* que describía el plan ya no existe: origin/main lo sustituyó
 // por este conmutador de vistas. Ya no hay acoplamiento por data-index con un
@@ -64,6 +66,13 @@ import '../../styles/pages/dashboard.scss';
           </div>
         </div>
       </div>
+
+      <h3>Relación entre crímenes</h3>
+      <div class="personas-fila-ancha">
+        <div class="personas-tarjeta">
+          <div id="relacionCrimenes"></div>
+        </div>
+      </div>
     </section>
 
     <section class="vista-historia" id="vistaHistoria" hidden>
@@ -72,9 +81,11 @@ import '../../styles/pages/dashboard.scss';
 
     <script>
       import { crearPersonasDashboard } from '../../scripts/charts/PersonasDashboard.js';
+      import { crearRelacionCrimenes } from '../../scripts/charts/RelacionCrimenes.js';
       import { initVistaToggle } from '../../scripts/ui/vistaToggle.js';
 
       crearPersonasDashboard();
+      crearRelacionCrimenes('relacionCrimenes');
 
       initVistaToggle({
         botones: ['vistaBtnDashboard', 'vistaBtnHistoria'],
