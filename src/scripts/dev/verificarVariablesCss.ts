@@ -20,16 +20,18 @@
  *
  * Este chequeo convierte ese fallo invisible en un error duro.
  *
- * CASO ESPECIAL: --mapa-serie-1 … --mapa-serie-10
+ * CASO ESPECIAL: --mapa-serie-1 … --mapa-serie-10 y --mapa-provincia-1 … --mapa-provincia-4
  *
- * TiempoCrimenesMapa.js:27 las pide con un nombre construido en runtime:
+ * TiempoCrimenesMapa.js las pide con un nombre construido en runtime:
  *
  *   SERIE_FALLBACK.map((valor, i) => leerVariableCss(`--mapa-serie-${i + 1}`, valor))
+ *   PROVINCIA_FALLBACK.map((valor, i) => leerVariableCss(`--mapa-provincia-${i + 1}`, valor))
  *
  * Al no aparecer nunca como cadenas literales, **ningún grep sobre el bundle
  * puede verificarlas**: buscar "--mapa-serie-7" devuelve cero siempre, exista
  * o no la propiedad. Este chequeo es la única cobertura que tienen, y por eso
- * las genera igual que el módulo: del 1 al 10, en el mismo orden.
+ * las genera igual que el módulo: del 1 al 10 (series) y del 1 al 4
+ * (provincias), en el mismo orden.
  */
 
 /** Las ocho del mapa, por nombre. `TiempoCrimenesMapa.js:17-24`. */
@@ -51,6 +53,9 @@ const MAPA_NOMBRADAS = [
  */
 const MAPA_SERIES = Array.from({ length: 10 }, (_, i) => `--mapa-serie-${i + 1}`);
 
+/** Las cuatro de la coropleta de provincias, generadas igual que arriba. */
+const MAPA_PROVINCIAS = Array.from({ length: 4 }, (_, i) => `--mapa-provincia-${i + 1}`);
+
 export const VARIABLES_REQUERIDAS: readonly string[] = [
   // agentesComun.js:9-11 — leídas al importar el módulo, no al dibujar.
   '--tipo-institucion',
@@ -64,6 +69,7 @@ export const VARIABLES_REQUERIDAS: readonly string[] = [
 
   ...MAPA_NOMBRADAS,
   ...MAPA_SERIES,
+  ...MAPA_PROVINCIAS,
 
   // TiempoCrimenesMapa.js:624
   '--mapa-punto-color',

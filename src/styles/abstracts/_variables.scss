@@ -67,6 +67,19 @@ $mapa-series: (
   10: #a05080,
 );
 
+// Paleta de la coropleta de provincias. Solo 4 tonos: el grafo de provincias
+// vecinas de NuevaGranada.json nunca necesita más (teorema de los cuatro
+// colores), y este subconjunto de 4 de la paleta categórica estándar es el
+// único que pasa las seis verificaciones de accesibilidad de dataviz para
+// TODOS los pares sobre el fondo pergamino de este mapa (#f4ecd8) — ver
+// PROVINCIA_FALLBACK en TiempoCrimenesMapa.ts.
+$mapa-provincias: (
+  1: #2a78d6,
+  2: #1baf7a,
+  3: #008300,
+  4: #4a3aa7,
+);
+
 // ── Paleta de género ─────────────────────────────────────
 $genero-mujer: #ffa600;
 $genero-hombre: #bb4e99;

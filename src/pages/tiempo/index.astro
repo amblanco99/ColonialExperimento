@@ -7,62 +7,102 @@ import '../../styles/pages/botones.scss';
 import '../../styles/pages/paneles-filtro.scss';
 import '../../styles/pages/mapa.scss';
 import '../../styles/pages/crimenesPorTipo.scss';
+import '../../styles/pages/lineaTiempoCasos.scss';
+import 'lenis/dist/lenis.css';
 
-// Tres cosas que este módulo hace y ninguna otra página necesita:
-//
-// 1. TiempoCrimenesMapa.js:237 hace document.querySelector("main.container") y
-//    le añade la clase mapa-main-ancho en tiempo de ejecución. Por eso el <main>
-//    tiene que llevar class="container": si no, el selector no encuentra nada,
-//    no hay error y la página se queda estrecha.
-// 2. #panel-filtros y #columna-visualizaciones siguen un patrón buscar-o-crear
-//    (líneas 265-275). #panel-filtros va en el marcado, así que se encuentra;
-//    #columna-visualizaciones no, así que lo crea el módulo.
-// 3. #mapa-contenedor es obligatorio: la línea 230 hace return si falta.
-//
-// Los estilos en línea del contenedor de visualizaciones se copian literales:
-// los min-width de 350 y 450 son los que fuerzan el salto de línea, y mapa.css
-// no los duplica.
-//
-// El original cerraba </main> dos veces (líneas 15 y 17). Se elimina el
-// duplicado, que era una etiqueta desbalanceada.
 ---
 
 <BaseLayout title="Tiempo" active="tiempo">
   <main class="container">
-    <h1 class="section-mainTitle">Tiempo, lugares y crímenes</h1>
+    <h1 class="section-mainTitle">Cambio en el tiempo y espacio de los crímenes</h1>
 
     <div class="mapa-selector-vista">
-      <button type="button" id="btn-vista-lugar" class="btn-mapa-vista btn-mapa--activo">Lugar</button>
-      <button type="button" id="btn-vista-crimenes" class="btn-mapa-vista">Crímenes</button>
+      <div class="mapa-selector-vista-grupo">
+        <button type="button" id="btn-vista-lugar" class="btn-mapa-vista btn-mapa--activo">Lugar</button>
+        <button type="button" id="btn-vista-tiempo" class="btn-mapa-vista">Línea de tiempo</button>
+        <button type="button" id="btn-vista-crimenes" class="btn-mapa-vista">Crímenes</button>
+      </div>
+      <button type="button" id="btn-instrucciones" class="btn-mapa-vista mapa-selector-vista-instrucciones">
+        Instrucciones
+      </button>
+    </div>
+
+    <div id="panel-instrucciones" class="mapa-tarjeta mapa-vista--oculta">
+      <div class="mapa-tarjeta-titulo">Instrucciones</div>
+      <div class="mapa-tarjeta-divisor"></div>
+      <p class="mapa-tarjeta-parrafo">Pendiente.</p>
     </div>
 
     <div id="panel-filtros" class="controles"></div>
 
     <div id="vista-lugar">
-      <div class="dashboard-visualizaciones" style="display: flex; gap: 20px; flex-wrap: wrap;">
-        <div id="mapa-contenedor" style="flex: 1; min-width: 350px;"></div>
-        <div id="crimenesChart" style="flex: 1; min-width: 450px;"></div>
+      <div class="dashboard-visualizaciones">
+        <div id="mapa-contenedor"></div>
+        <div id="crimenesChart"></div>
+      </div>
+    </div>
+
+    <div id="vista-tiempo" class="mapa-vista--oculta">
+      <div class="mapa-tarjeta">
+        <div class="mapa-tarjeta-encabezado">
+          <div class="mapa-tarjeta-titulo">Línea de tiempo de casos</div>
+          <div class="mapa-tarjeta-subtitulo">
+            Cada punto es un caso individual en su año exacto, según los filtros de arriba.
+          </div>
+        </div>
+        <div class="mapa-tarjeta-divisor"></div>
+        <div id="lineaTiempoCasosContenedor"></div>
       </div>
     </div>
 
     <div id="vista-crimenes" class="mapa-vista--oculta mapa-vista-crimenes">
-      <div class="mapa-tarjeta mapa-tarjeta--compacta">
-        <div class="mapa-tarjeta-encabezado">
-          <div class="mapa-tarjeta-titulo">Crímenes por tipo</div>
-          <div class="mapa-tarjeta-subtitulo">
-            Delitos criminales registrados por linaje, según los filtros de arriba. No incluye los
-            linajes no criminales (documentos, traslados, juicios civiles, etc.).
+      <div class="mapa-crimenes-layout">
+        <div class="mapa-crimenes-col-izquierda">
+          <div class="mapa-tarjeta mapa-tarjeta--compacta">
+            <div class="mapa-tarjeta-encabezado">
+              <div class="mapa-tarjeta-titulo">Crímenes por tipo</div>
+              <div class="mapa-tarjeta-subtitulo">
+                Delitos criminales registrados por linaje, según década y lugar, de mayor a menor.
+                Haz clic en uno o más para ver su definición y comparar su tendencia por década (o
+                elegilo en el filtro "Crimen" de arriba). No incluye los linajes no criminales
+                (documentos, traslados, juicios civiles, etc.).
+              </div>
+            </div>
+            <div class="mapa-tarjeta-divisor"></div>
+            <div id="crimenesPorTipo"></div>
           </div>
         </div>
-        <div class="mapa-tarjeta-divisor"></div>
-        <div id="crimenesPorTipo"></div>
+
+        <div class="mapa-crimenes-col-derecha mapa-crimenes-col-derecha--oculta">
+          <div class="mapa-tarjeta mapa-tarjeta--compacta">
+            <div class="mapa-tarjeta-encabezado">
+              <div class="mapa-tarjeta-titulo">Evolución del crimen</div>
+              <div class="mapa-tarjeta-subtitulo">
+                Casos por década de todo el corpus, según crimen/subcrimen/lugar
+              </div>
+            </div>
+            <div class="mapa-tarjeta-divisor"></div>
+            <div id="crimenesSpikeContenedor"></div>
+          </div>
+
+          <div class="mapa-tarjeta mapa-tarjeta--compacta">
+            <div class="mapa-tarjeta-encabezado">
+              <div class="mapa-tarjeta-titulo">Subcrímenes</div>
+              <div class="mapa-tarjeta-subtitulo">
+                Del crimen fijado, según los filtros de arriba
+              </div>
+            </div>
+            <div class="mapa-tarjeta-divisor"></div>
+            <div id="crimenesDonutContenedor"></div>
+          </div>
+        </div>
       </div>
 
-      <div class="mapa-tarjeta mapa-tarjeta--compacta">
+      <div class="mapa-tarjeta mapa-tarjeta--compacta mapa-tarjeta--grafo-relacion">
         <div class="mapa-tarjeta-encabezado">
           <div class="mapa-tarjeta-titulo">Relación entre crímenes</div>
           <div class="mapa-tarjeta-subtitulo">
-            Crímenes cometidos en un mismo caso · Selecciona los filtros para una visión granular
+            Qué crímenes son comunes encontrar juntos en un mismo caso
           </div>
         </div>
         <div class="mapa-tarjeta-divisor"></div>
@@ -74,32 +114,97 @@ import '../../styles/pages/crimenesPorTipo.scss';
       import { inicializarDashboard } from '../../scripts/charts/TiempoCrimenesMapa.js';
       import { crearCrimenesPorTipo } from '../../scripts/charts/CrimenesPorTipo.js';
       import { crearRelacionCrimenes } from '../../scripts/charts/RelacionCrimenes.js';
+      import { crearLineaTiempoCasos } from '../../scripts/charts/LineaTiempoCasos.js';
+
+      // El botón "Ver en el mapa" de LineaTiempoCasos.ts vive en otra vista;
+      // llega hasta acá por este hook global en vez de importar mostrarVista
+      // directamente, mismo patrón de desacople que usan los demás módulos
+      // (ver __obtenerFiltrosCrimenesPorTipo en TiempoCrimenesMapa.ts).
+      declare global {
+        interface Window {
+          __irAVistaLugar?: () => void;
+        }
+      }
 
       inicializarDashboard();
 
-      const btnVistaLugar = document.getElementById('btn-vista-lugar')!;
-      const btnVistaCrimenes = document.getElementById('btn-vista-crimenes')!;
-      const vistaLugar = document.getElementById('vista-lugar')!;
-      const vistaCrimenes = document.getElementById('vista-crimenes')!;
+      type Vista = 'lugar' | 'tiempo' | 'crimenes';
 
+      const vistas: Record<Vista, { boton: HTMLElement; contenedor: HTMLElement }> = {
+        lugar: {
+          boton: document.getElementById('btn-vista-lugar')!,
+          contenedor: document.getElementById('vista-lugar')!,
+        },
+        tiempo: {
+          boton: document.getElementById('btn-vista-tiempo')!,
+          contenedor: document.getElementById('vista-tiempo')!,
+        },
+        crimenes: {
+          boton: document.getElementById('btn-vista-crimenes')!,
+          contenedor: document.getElementById('vista-crimenes')!,
+        },
+      };
+
+      // Cada vista, salvo "Lugar" (visible desde la carga inicial de la
+      // página), crea sus widgets recién la primera vez que el usuario entra
+      // a ella, no antes.
+      let vistaTiempoInicializada = false;
       let vistaCrimenesInicializada = false;
 
-      function mostrarVista(vista: 'lugar' | 'crimenes') {
-        const esLugar = vista === 'lugar';
-        vistaLugar.classList.toggle('mapa-vista--oculta', !esLugar);
-        vistaCrimenes.classList.toggle('mapa-vista--oculta', esLugar);
-        btnVistaLugar.classList.toggle('btn-mapa--activo', esLugar);
-        btnVistaCrimenes.classList.toggle('btn-mapa--activo', !esLugar);
+      function mostrarVista(vista: Vista) {
+        (Object.keys(vistas) as Vista[]).forEach((clave) => {
+          const activa = clave === vista;
+          vistas[clave].contenedor.classList.toggle('mapa-vista--oculta', !activa);
+          vistas[clave].boton.classList.toggle('btn-mapa--activo', activa);
+        });
 
-        if (!esLugar && !vistaCrimenesInicializada) {
+        // El filtro de Lugar no aplica en "Línea de tiempo" (esa vista ya no
+        // agrupa por lugar); se oculta solo ahí, sigue disponible en "Lugar"
+        // y "Crímenes".
+        document
+          .getElementById('filtro-lugar-wrap')
+          ?.classList.toggle('mapa-vista--oculta', vista === 'tiempo');
+
+        // El filtro de Provincia solo hace falta en "Lugar" (el único que lo
+        // usa para acotar el mapa/combo de Lugar); se oculta en las demás.
+        document
+          .getElementById('filtro-provincia-wrap')
+          ?.classList.toggle('mapa-vista--oculta', vista !== 'lugar');
+
+        // El filtro de Subcrimen ya no se muestra en ninguna vista (ver
+        // comboSubcrimen en TiempoCrimenesMapa.ts, que lo arranca oculto y
+        // nada lo vuelve a mostrar) — no hace falta alternarlo acá.
+
+        if (vista === 'tiempo' && !vistaTiempoInicializada) {
+          vistaTiempoInicializada = true;
+          crearLineaTiempoCasos('lineaTiempoCasosContenedor');
+        }
+        if (vista === 'crimenes' && !vistaCrimenesInicializada) {
           vistaCrimenesInicializada = true;
-          crearCrimenesPorTipo('crimenesPorTipo');
+          crearCrimenesPorTipo({
+            barrasId: 'crimenesPorTipo',
+            spikeId: 'crimenesSpikeContenedor',
+            donutId: 'crimenesDonutContenedor',
+          });
           crearRelacionCrimenes('grafoRelacionContenedor');
         }
       }
 
-      btnVistaLugar.addEventListener('click', () => mostrarVista('lugar'));
-      btnVistaCrimenes.addEventListener('click', () => mostrarVista('crimenes'));
+      window.__irAVistaLugar = () => mostrarVista('lugar');
+
+      vistas.lugar.boton.addEventListener('click', () => mostrarVista('lugar'));
+      vistas.tiempo.boton.addEventListener('click', () => mostrarVista('tiempo'));
+      vistas.crimenes.boton.addEventListener('click', () => mostrarVista('crimenes'));
+
+      // Panel aparte de las vistas de arriba: no oculta ni reemplaza la
+      // vista activa, solo se abre/cierra encima del selector de vistas.
+      const btnInstrucciones = document.getElementById('btn-instrucciones')!;
+      const panelInstrucciones = document.getElementById('panel-instrucciones')!;
+      btnInstrucciones.addEventListener('click', () => {
+        panelInstrucciones.classList.toggle('mapa-vista--oculta');
+        const abierto = !panelInstrucciones.classList.contains('mapa-vista--oculta');
+        btnInstrucciones.classList.toggle('btn-mapa--activo', abierto);
+      });
     </script>
   </main>
 </BaseLayout>

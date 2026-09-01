@@ -106,72 +106,31 @@ export async function crearRelacionCrimenes(containerId: string) {
 
   const rawViz = await d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`);
 
+  // ID_Caso, no ID_Agente: la relación es entre CASOS (qué crímenes aparecen
+  // juntos en un mismo caso), no entre las personas involucradas — un caso
+  // con dos agentes que cometieron cada uno un delito distinto sigue siendo
+  // un caso con dos crímenes relacionados.
   const datosLimpios = rawViz
-    .filter((d: FilaCsv) => d.Nombre_Codigo && d['Código'] && d.ID_Agente)
+    .filter((d: FilaCsv) => d.Nombre_Codigo && d['Código'] && d.ID_Caso)
     .map((d: FilaCsv) => ({
       ...d,
       decada: getDecada(+d.Año),
     }));
-
-  const estadoGrafo = { agente: 'Todos', atributo: 'Todos', genero: 'Todos' };
-
-  const agentesLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Agente))]
-    .filter(Boolean)
-    .sort();
-  const atributosLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Atributo))]
-    .filter(Boolean)
-    .sort();
-  const generosLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.Género))]
-    .filter(Boolean)
-    .sort();
-
-  function crearSelectGrafo(etiqueta: string, opciones: any[], onChange: (v: any) => void) {
-    const wrap = document.createElement('div');
-    wrap.className = 'mapa-wrap-select-grafo';
-    const label = document.createElement('label');
-    label.textContent = etiqueta as unknown as string;
-    label.className = 'filtro-label filtro-label--chico';
-    const select = document.createElement('select');
-    select.className = 'filtro-select filtro-select--compacto';
-    ['Todos', ...opciones].forEach((op) => {
-      const opt = document.createElement('option');
-      opt.value = op as unknown as string;
-      opt.textContent = op as unknown as string;
-      select.appendChild(opt);
-    });
-    select.value = 'Todos';
-    select.addEventListener('change', () => onChange(select.value));
-    wrap.append(label, select);
-    return wrap;
-  }
-
-  const filaFiltrosGrafo = document.createElement('div');
-  filaFiltrosGrafo.className = 'mapa-fila-filtros-grafo';
-  filaFiltrosGrafo.append(
-    crearSelectGrafo('Agente', agentesLista, (valor: any) => {
-      estadoGrafo.agente = valor;
-      dibujarGrafo();
-    }),
-    crearSelectGrafo('Atributo', atributosLista, (valor: any) => {
-      estadoGrafo.atributo = valor;
-      dibujarGrafo();
-    }),
-    crearSelectGrafo('Género', generosLista, (valor: any) => {
-      estadoGrafo.genero = valor;
-      dibujarGrafo();
-    }),
-  );
 
   const botonVerCasosGrafo = crearBotonVerCasos();
 
   const areaGrafo = document.createElement('div');
   areaGrafo.className = 'mapa-area-grafo';
 
-  container.append(filaFiltrosGrafo, botonVerCasosGrafo.boton, areaGrafo);
+  container.append(botonVerCasosGrafo.boton, areaGrafo);
 
-  const GRAFO_WIDTH = 700;
-  const GRAFO_HEIGHT = 380;
-  const GRAFO_PADDING = 40;
+  // El ancho de la tarjeta ya lo da el contenedor (mismo ancho que la fila de
+  // arriba, ver .mapa-area-grafo); el alto controla qué tan grande se ve el
+  // grafo en esa misma proporción, sin importar el ancho final que le toque
+  // en pantalla — bajado un 30% (480 → 336) desde el último ajuste.
+  const GRAFO_WIDTH = 620;
+  const GRAFO_HEIGHT = 336;
+  const GRAFO_PADDING = 36;
 
   const tooltipGrafo = document.createElement('div');
   tooltipGrafo.className = 'tooltip-grafico';
@@ -184,51 +143,53 @@ export async function crearRelacionCrimenes(containerId: string) {
 
     const rango = window.__obtenerRangoDecadaGrafo?.() ?? null;
     const filtrados = datosLimpios.filter(
-      (d: FilaCsv) =>
-        (!rango || (d.decada >= rango[0] && d.decada <= rango[1])) &&
-        (estadoGrafo.agente === 'Todos' || d.Agente === estadoGrafo.agente) &&
-        (estadoGrafo.atributo === 'Todos' || d.Atributo === estadoGrafo.atributo) &&
-        (estadoGrafo.genero === 'Todos' || d.Género === estadoGrafo.genero),
+      (d: FilaCsv) => !rango || (d.decada >= rango[0] && d.decada <= rango[1]),
     );
 
-    const agenteCrimenes = new Map();
-    const crimenInfo = new Map();
+    // Qué códigos de crimen aparecen en cada caso (Set: un mismo caso puede
+    // traer el mismo código varias veces, por varios agentes o subcrímenes,
+    // y acá cuenta una sola vez), y en cuántos casos distintos aparece cada
+    // código — la base de "qué crímenes son comunes encontrar juntos".
+    const casoCrimenes = new Map<string, Set<string>>();
+    const crimenInfo = new Map<string, { nombre: string; casos: Set<string> }>();
     filtrados.forEach((d: FilaCsv) => {
-      const idAgente = d.ID_Agente;
+      const idCaso = d.ID_Caso;
       const codigo = d.Código;
       const nombre = d.Nombre_Codigo;
-      if (!idAgente || !codigo) return;
-      if (!agenteCrimenes.has(idAgente))
-        agenteCrimenes.set(idAgente, { codigos: new Set(), idCaso: d.ID_Caso });
-      agenteCrimenes.get(idAgente).codigos.add(codigo);
-      if (!crimenInfo.has(codigo)) crimenInfo.set(codigo, { nombre, count: 0 });
-      crimenInfo.get(codigo).count += 1;
+      if (!idCaso || !codigo) return;
+      if (!casoCrimenes.has(idCaso)) casoCrimenes.set(idCaso, new Set());
+      casoCrimenes.get(idCaso)!.add(codigo);
+      if (!crimenInfo.has(codigo)) crimenInfo.set(codigo, { nombre, casos: new Set() });
+      crimenInfo.get(codigo)!.casos.add(idCaso);
     });
 
     const nodes = Array.from(crimenInfo, ([codigo, info]) => ({
       id: codigo,
-      nombre: (info as any).nombre,
-      count: (info as any).count,
+      nombre: info.nombre,
+      count: info.casos.size,
     }));
 
-    const edgeMap = new Map();
-    const casosPorEdge = new Map();
-    agenteCrimenes.forEach(({ codigos: codigosSet, idCaso }) => {
+    // Peso de cada vínculo = en cuántos casos distintos coinciden esos dos
+    // crímenes (no cuántas filas: un caso con el mismo par repetido por
+    // varios agentes sigue siendo UN caso donde coinciden).
+    const casosPorEdge = new Map<string, Set<string>>();
+    casoCrimenes.forEach((codigosSet, idCaso) => {
       const codigos = Array.from(codigosSet);
       if (codigos.length < 2) return;
       for (let i = 0; i < codigos.length; i++) {
         for (let j = i + 1; j < codigos.length; j++) {
           const [a, b] = [codigos[i], codigos[j]].sort();
           const key = `${a}|${b}`;
-          edgeMap.set(key, (edgeMap.get(key) || 0) + 1);
           if (!casosPorEdge.has(key)) casosPorEdge.set(key, new Set());
-          if (idCaso) casosPorEdge.get(key).add(idCaso);
+          casosPorEdge.get(key)!.add(idCaso);
         }
       }
     });
-    const links = Array.from(edgeMap, ([key, weight]) => {
+    // NodoMutable: d3.forceLink() muta source/target de string (id) a
+    // objeto-nodo en tiempo de ejecución (ver el resto del archivo).
+    const links: NodoMutable[] = Array.from(casosPorEdge, ([key, casosSet]) => {
       const [source, target] = key.split('|');
-      return { source, target, weight, casos: [...(casosPorEdge.get(key) || [])] };
+      return { source, target, weight: casosSet.size, casos: [...casosSet] };
     });
 
     const adyacencia = new Map();
@@ -238,11 +199,13 @@ export async function crearRelacionCrimenes(containerId: string) {
       adyacencia.get(l.target)?.add(l.source);
     });
 
-    const vinculadosPorCodigo = new Map();
+    // En cuántos casos un código coincide con al menos otro crimen (para el
+    // tooltip "Vínculos con otros crímenes").
+    const vinculadosPorCodigo = new Map<string, Set<string>>();
     nodes.forEach((n) => vinculadosPorCodigo.set(n.id, new Set()));
-    agenteCrimenes.forEach(({ codigos: codigosSet }, idAgente) => {
+    casoCrimenes.forEach((codigosSet, idCaso) => {
       if (codigosSet.size < 2) return;
-      codigosSet.forEach((codigo: string) => vinculadosPorCodigo.get(codigo)?.add(idAgente));
+      codigosSet.forEach((codigo) => vinculadosPorCodigo.get(codigo)?.add(idCaso));
     });
 
     areaGrafo.innerHTML = '';
@@ -423,7 +386,7 @@ export async function crearRelacionCrimenes(containerId: string) {
 
     link
       .on('mouseenter', (event: MouseEvent, d: FilaCsv) => {
-        tooltipGrafo.innerHTML = `${d.source.nombre || d.source} ↔ ${d.target.nombre || d.target}<br/>Agentes en común: <strong>${d.weight}</strong>`;
+        tooltipGrafo.innerHTML = `${d.source.nombre || d.source} ↔ ${d.target.nombre || d.target}<br/>Casos en común: <strong>${d.weight}</strong>`;
         tooltipGrafo.classList.add('tooltip-grafico--visible');
       })
       .on('mousemove', (event: MouseEvent) => {

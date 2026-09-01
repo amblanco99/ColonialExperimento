@@ -3,9 +3,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import '../../styles/pages/linaje.scss';
 import '../../styles/pages/tooltips.scss';
 
-// Los otros dos gráficos de aboutmain.js: aquí están #conteoCrimenes y los dos
-// linajes (#chartLinajeCriminal y #chartLinajeNoCriminal), pero no #tipoCaso,
-// así que no se llama a crearTiposCasos.
+// De los otros gráficos de aboutmain.js, aquí están los dos linajes
+// (#chartLinajeCriminal y #chartLinajeNoCriminal); ni #conteoCrimenes (se
+// quitó de esta página) ni #tipoCaso, así que no se llama a
+// crearConteoCrimenes ni a crearTiposCasos.
 // Entre esta página y fuentes.html quedan cubiertos los tres.
 ---
 
@@ -19,15 +20,6 @@ import '../../styles/pages/tooltips.scss';
       linaje al que pertenecen dentro del sistema penal colonial. Esta clasificación permite
       comparar y agregar los casos en las visualizaciones del proyecto.
     </p>
-
-    <section>
-      <h2>Conteo de crímenes</h2>
-      <p>
-        Aquí puedes encontrar las sumas totales de crímenes registrados en la base de datos,
-        desglosadas por siglo.
-      </p>
-      <div id="conteoCrimenes"></div>
-    </section>
 
     <section>
       <h2>Linajes de delitos criminales</h2>
@@ -45,10 +37,8 @@ import '../../styles/pages/tooltips.scss';
     </section>
 
     <script>
-      import { crearConteoCrimenes } from '../../scripts/charts/ConteoCrimenes.js';
       import { crearLinaje } from '../../scripts/charts/Linaje.js';
 
-      crearConteoCrimenes();
       crearLinaje('chartLinajeCriminal', true);
       crearLinaje('chartLinajeNoCriminal', false);
     </script>

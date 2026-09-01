@@ -1,0 +1,286 @@
+@use 'abstracts/variables' as v;
+
+/* =====================================================
+   LÍNEA DE TIEMPO DE CASOS (rueda selectora de años, scroll vertical)
+   (LineaTiempoCasos.ts) — solo entran al roll los años con casos (ver
+   dibujar()). El año más cerca del centro se ve nítido y grande; los de
+   alrededor se van desvaneciendo con la distancia — la opacidad de cada
+   fila se fija por JS en cada frame (actualizarDesvanecido), no por CSS.
+   Un degradado en los bordes (mask-image) refuerza el efecto de rueda.
+   Sin scrollbar visible; el scroll sigue funcionando con rueda/trackpad
+   (vía Lenis).
+
+   A diferencia de una rueda de alto de fila fijo, acá cada año ocupa el
+   alto que necesite: si tiene muchos casos, sus puntos pasan a varias
+   líneas y la fila crece, en vez de recortarlos (min-height, no height, en
+   .linea-tiempo-casos-anio; ver ALTO_FILA_BASE/FILAS_VISIBLES en el .ts,
+   que ya no son "el" alto de fila sino solo la unidad para dimensionar la
+   ventana visible).
+
+   .linea-tiempo-casos-cuerpo centra la columna de la rueda con
+   justify-content; al hacer clic en un punto, la tarjeta de detalle de al
+   lado (.linea-tiempo-casos-panel-caso) gana ancho, y ese mismo centrado
+   hace que la rueda se corra sola un poco a la izquierda — no hay que
+   animar ninguna posición a mano.
+===================================================== */
+.linea-tiempo-casos-wrapper {
+  position: relative;
+  max-width: 100%;
+}
+
+.linea-tiempo-casos-cuerpo {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 28px;
+}
+
+.linea-tiempo-casos-columna-izq {
+  flex: none;
+  width: 480px;
+  max-width: 100%;
+}
+
+.linea-tiempo-casos-lista {
+  position: relative;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // Edge/IE viejos
+  mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 18%,
+    black 82%,
+    transparent 100%
+  );
+}
+
+.linea-tiempo-casos-lista::-webkit-scrollbar {
+  display: none; // Chrome/Safari/Edge nuevos
+}
+
+.linea-tiempo-casos-lista-contenido {
+  // Aleja el número del borde izquierdo de la columna, en vez de quedar
+  // pegado a él.
+  padding-left: 16px;
+}
+
+// Sin alto fijo (min-height, no height): un año con muchos casos crece para
+// que todos sus puntos entren, en vez de recortarlos — ver
+// .linea-tiempo-casos-anio-circulos más abajo (ya no tiene overflow:hidden).
+.linea-tiempo-casos-anio {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 72px;
+  padding: 8px 0;
+  box-sizing: border-box;
+}
+
+.linea-tiempo-casos-anio-numero {
+  flex: none;
+  width: 120px;
+  font-family: v.$font-sistema;
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--mapa-tinta-oscura);
+  transition:
+    color 0.15s ease,
+    font-size 0.15s ease;
+}
+
+.linea-tiempo-casos-anio--activo .linea-tiempo-casos-anio-numero {
+  color: var(--mapa-acento-linea);
+  font-size: 56px;
+}
+
+.linea-tiempo-casos-anio-circulos {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  gap: 6px;
+}
+
+.linea-tiempo-casos-punto {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--mapa-punto-color);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.linea-tiempo-casos-punto:hover {
+  background: var(--mapa-acento-linea);
+  transform: scale(1.25);
+}
+
+// Casos de linajes "No criminal" (documentos, traslados, juicios civiles,
+// etc.) — mismo azul secundario que ya usa el resto del mapa, distinto del
+// morado de los delitos.
+.linea-tiempo-casos-punto--no-criminal {
+  background: var(--mapa-acento-secundario);
+}
+
+.linea-tiempo-casos-punto--no-criminal:hover {
+  background: var(--mapa-acento-linea);
+}
+
+.linea-tiempo-casos-nota {
+  font-size: 11px;
+  font-style: italic;
+  font-family: var(--mapa-font);
+  color: var(--mapa-borde);
+  opacity: 0.85;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.linea-tiempo-casos-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 18px;
+  margin-top: 6px;
+}
+
+.linea-tiempo-casos-leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-family: var(--mapa-font);
+  color: var(--mapa-borde);
+}
+
+.linea-tiempo-casos-leyenda-punto {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--mapa-punto-color);
+  flex: none;
+}
+
+.linea-tiempo-casos-leyenda-punto--no-criminal {
+  background: var(--mapa-acento-secundario);
+}
+
+/* Tarjeta de detalle del caso, a la derecha de la rueda — colapsada
+   (ancho 0) hasta que se hace clic en un punto. */
+.linea-tiempo-casos-panel-caso {
+  position: relative;
+  flex: none;
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  align-self: stretch;
+  background: var(--mapa-tarjeta-fondo);
+  border: 1px solid var(--mapa-borde);
+  border-radius: 6px;
+  padding: 0;
+  font-family: var(--mapa-font);
+  transition:
+    width 0.25s ease,
+    opacity 0.2s ease,
+    padding 0.25s ease;
+}
+
+.linea-tiempo-casos-panel-caso--visible {
+  width: 320px;
+  opacity: 1;
+  padding: 20px 22px;
+  overflow-y: auto;
+}
+
+.linea-tiempo-casos-panel-caso__cerrar {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: none;
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--mapa-borde);
+  cursor: pointer;
+}
+
+.linea-tiempo-casos-panel-caso__fecha {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--mapa-tinta-oscura);
+  padding-right: 24px;
+  white-space: nowrap;
+}
+
+.linea-tiempo-casos-panel-caso__lugar {
+  font-size: 12.5px;
+  color: var(--mapa-borde);
+  margin-top: 2px;
+  margin-bottom: 12px;
+  white-space: nowrap;
+}
+
+.linea-tiempo-casos-panel-caso__lista {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.linea-tiempo-casos-panel-caso__lista li {
+  font-size: 13px;
+  color: var(--mapa-tinta-oscura);
+  padding: 6px 10px;
+  background: var(--mapa-panel);
+  border-radius: 4px;
+}
+
+.linea-tiempo-casos-panel-caso__boton-mapa {
+  width: 100%;
+  padding: 9px 14px;
+  border: 1px solid var(--mapa-borde);
+  border-radius: 4px;
+  background: var(--mapa-acento-linea);
+  color: #fff;
+  font-family: var(--mapa-font);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.linea-tiempo-casos-panel-caso__boton-mapa:disabled {
+  background: var(--mapa-tierra);
+  color: var(--mapa-borde);
+  cursor: not-allowed;
+}
+
+.linea-tiempo-casos-panel-caso__boton-caso {
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px 14px;
+  border: 1px solid var(--mapa-borde);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--mapa-tinta-oscura);
+  font-family: var(--mapa-font);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.linea-tiempo-casos-panel-caso__boton-caso:hover {
+  background: var(--mapa-panel);
+}

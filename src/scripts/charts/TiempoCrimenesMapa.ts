@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import rewind from '@turf/rewind';
+import { crearMapaBaseTopografico } from './mapaBaseTopografico.js';
 import type { FilaCsv } from './agentesComun.js';
 
 // TODO: type — nodo/dato mutado por d3 (grafo de relación, jerarquías). Ver MIGRATION.md.
@@ -22,6 +23,8 @@ declare global {
       lugar: string | null;
     } | null;
     __actualizarCrimenesPorTipoDashboard?: () => void;
+    __actualizarLineaTiempoCasosDashboard?: () => void;
+    __resaltarCasoEnMapa?: (lugar: string) => void;
   }
 }
 
@@ -38,6 +41,15 @@ const SERIE_FALLBACK = [
   '#a05080',
 ];
 
+// Paleta categórica para el relleno de provincias (coropletas). Solo 4 tonos:
+// el grafo de provincias vecinas (ver construirGruposColorProvincia) nunca
+// necesita más de 4 — teorema de los cuatro colores — y este subconjunto de 4
+// tonos (de los 8 de la paleta categórica estándar) es el único que pasa las
+// seis verificaciones de accesibilidad para TODOS los pares sobre el fondo
+// pergamino de este sitio (#f4ecd8): las combinaciones que incluyen amarillo
+// junto con naranja o rojo fallan el piso de visión normal (ΔE < 15).
+const PROVINCIA_FALLBACK = ['#2a78d6', '#1baf7a', '#008300', '#4a3aa7'];
+
 function leerVariableCss(nombre: string, fallback: string): string {
   const valor = getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
   return valor || fallback;
@@ -53,6 +65,60 @@ const ULTIMA_DECADA = Math.floor(ULTIMO_ANIO_COLONIAL / 10) * 10;
 
 function formatoDecada(decada: number): number {
   return decada === ULTIMA_DECADA ? ULTIMO_ANIO_COLONIAL : decada;
+}
+function construirGruposColorProvincia(features: NodoMutable[]): number[] {
+  const DECIMALES = 3; // ~111 m de precisión: suficiente para igualar vértices de una misma topología
+  const claveDe = ([lon, lat]: [number, number]) => `${lon.toFixed(DECIMALES)},${lat.toFixed(DECIMALES)}`;
+
+  function anillosDe(geom: NodoMutable): NodoMutable[] {
+    if (!geom) return [];
+    if (geom.type === 'Polygon') return geom.coordinates;
+    if (geom.type === 'MultiPolygon') return geom.coordinates.flat();
+    return [];
+  }
+
+  const puntosPorFeature = features.map((f) => {
+    const set = new Set<string>();
+    anillosDe(f.geometry).forEach((anillo: NodoMutable) =>
+      anillo.forEach((pt: NodoMutable) => set.add(claveDe(pt))),
+    );
+    return set;
+  });
+
+  const n = features.length;
+  const UMBRAL_VERTICES_COMPARTIDOS = 4;
+  const vecinos: Set<number>[] = Array.from({ length: n }, () => new Set());
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      let compartidos = 0;
+      for (const clave of puntosPorFeature[i]) {
+        if (puntosPorFeature[j].has(clave)) {
+          compartidos++;
+          if (compartidos >= UMBRAL_VERTICES_COMPARTIDOS) break;
+        }
+      }
+      if (compartidos >= UMBRAL_VERTICES_COMPARTIDOS) {
+        vecinos[i].add(j);
+        vecinos[j].add(i);
+      }
+    }
+  }
+
+  // Coloreado greedy (Welsh–Powell): se colorea primero la provincia con más
+  // vecinas, y a cada una se le asigna el color de menor índice que ninguna
+  // de sus vecinas ya coloreadas esté usando.
+  const orden = [...Array(n).keys()].sort((a, b) => vecinos[b].size - vecinos[a].size);
+  const grupo = new Array(n).fill(-1);
+  orden.forEach((i) => {
+    const usados = new Set<number>();
+    vecinos[i].forEach((j) => {
+      if (grupo[j] !== -1) usados.add(grupo[j]);
+    });
+    let c = 0;
+    while (usados.has(c)) c++;
+    grupo[i] = c;
+  });
+  return grupo;
 }
 
 export async function inicializarDashboard() {
@@ -71,6 +137,10 @@ export async function inicializarDashboard() {
     leerVariableCss(`--mapa-serie-${i + 1}`, valor),
   );
 
+  const COLORES_PROVINCIA = PROVINCIA_FALLBACK.map((valor, i) =>
+    leerVariableCss(`--mapa-provincia-${i + 1}`, valor),
+  );
+
   const [NuevaGranadaRaw, rawViz, rawLugar, rawLinaje] = await Promise.all([
     d3.json(`${import.meta.env.BASE_URL}data/NuevaGranada.json`),
     d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`),
@@ -86,12 +156,31 @@ export async function inicializarDashboard() {
   const decadaValida = (y: number) => y >= 1500 && y <= 1899;
 
   const coordPorLugar: Record<string, any> = {};
+  // Lugar.csv escribe "null" como texto literal (no una celda vacía) para los
+  // campos sin dato; valorONulo homogeniza ambos casos a `null` real, así el
+  // resto del código (ver renderizarInfoLugares) nunca tiene que comparar
+  // contra la cadena "null".
+  function valorONulo(v: string | undefined): string | null {
+    const limpio = (v || '').trim();
+    return !limpio || limpio.toLowerCase() === 'null' ? null : limpio;
+  }
+  const infoPorLugar: Record<
+    string,
+    { clasificacion: string | null; pais: string | null; notas: string | null }
+  > = {};
   rawLugar.forEach((d: FilaCsv) => {
     const nombre = d.Lugar?.trim();
     const lon = +d.Longitud;
     const lat = +d.Latitud;
     if (nombre && !isNaN(lon) && !isNaN(lat)) {
       coordPorLugar[nombre] = [lon, lat];
+    }
+    if (nombre) {
+      infoPorLugar[nombre] = {
+        clasificacion: valorONulo(d['Clasificación']),
+        pais: valorONulo(d['País_Contemporáneo']),
+        notas: valorONulo(d['Notas']),
+      };
     }
   });
 
@@ -151,13 +240,43 @@ export async function inicializarDashboard() {
     return a.localeCompare(b);
   }
 
+  const featuresProvincias = NuevaGranada.features ? NuevaGranada.features : [NuevaGranada];
+  const nombreDeProvincia = (f: NodoMutable) => f.properties?.Nombre || 'Desconocida';
+
   function getProvincia(coords: [number, number]) {
-    const features = NuevaGranada.features ? NuevaGranada.features : [NuevaGranada];
-    const feature = features.find((f: any) => d3.geoContains(f, coords));
-    return feature ? feature.properties?.Nombre || 'Desconocida' : 'Desconocida';
+    const feature = featuresProvincias.find((f: any) => d3.geoContains(f, coords));
+    return feature ? nombreDeProvincia(feature) : 'Desconocida';
   }
 
+  // Grupo de color por índice de feature (0..3, ver construirGruposColorProvincia)
+  // y color final por nombre de provincia, para pintar cada polígono y para
+  // resaltar la provincia elegida en el selector.
+  const grupoColorPorIndiceProvincia = construirGruposColorProvincia(featuresProvincias);
+  const colorPorNombreProvincia = new Map<string, string>();
+  featuresProvincias.forEach((f: NodoMutable, i: number) => {
+    colorPorNombreProvincia.set(
+      nombreDeProvincia(f),
+      COLORES_PROVINCIA[grupoColorPorIndiceProvincia[i] % COLORES_PROVINCIA.length],
+    );
+  });
+
+  const provinciasLista = [...new Set(featuresProvincias.map(nombreDeProvincia))].sort();
+
   const lugaresLista = [...new Set(datosLimpios.map((d: FilaCsv) => d.lugar))].sort();
+
+  // Provincia de cada lugar, según sus coordenadas (Lugar.csv) contenidas en
+  // el polígono de la provincia (NuevaGranada.json). Sostiene el filtro
+  // "Provincia": elegir una acota el combo "Lugar" a los territorios que
+  // caen dentro de sus límites geográficos.
+  const provinciaPorLugar: Record<string, string> = {};
+  Object.entries(coordPorLugar).forEach(([lugar, coords]) => {
+    provinciaPorLugar[lugar] = getProvincia(coords as [number, number]);
+  });
+
+  function lugaresDeProvincia(provincia: string) {
+    if (provincia === 'Todos') return lugaresLista;
+    return lugaresLista.filter((lugar: NodoMutable) => provinciaPorLugar[lugar] === provincia);
+  }
   const subcrimenesLista = [
     ...new Set(
       datosLimpios
@@ -173,6 +292,7 @@ export async function inicializarDashboard() {
     crimen: 'Todos',
     subcrimen: 'Todos',
     lugar: 'Todos',
+    provincia: 'Todos',
     lugaresFijados: new Set(),
   };
 
@@ -206,6 +326,7 @@ export async function inicializarDashboard() {
 
   function actualizarCrimenesPorTipo() {
     window.__actualizarCrimenesPorTipoDashboard?.();
+    window.__actualizarLineaTiempoCasosDashboard?.();
   }
 
   function actualizarGrafoRelacion() {
@@ -270,7 +391,9 @@ export async function inicializarDashboard() {
       const okCrimen = estado.crimen === 'Todos' || d.Nombre_Codigo === estado.crimen;
       const okSub = estado.subcrimen === 'Todos' || d.Nombre_Sub_Codigo === estado.subcrimen;
       const okLugar = estado.lugar === 'Todos' || d.lugar === estado.lugar;
-      return okCrimen && okSub && okLugar;
+      const okProvincia =
+        estado.provincia === 'Todos' || provinciaPorLugar[d.lugar] === estado.provincia;
+      return okCrimen && okSub && okLugar && okProvincia;
     });
   }
 
@@ -295,6 +418,112 @@ export async function inicializarDashboard() {
     return Object.entries(map)
       .map(([nombre, set]) => ({ nombre, casos: set.size }))
       .sort((a: NodoMutable, b: NodoMutable) => b.casos - a.casos);
+  }
+
+  // Un renglón por cada crimen que ocurrió en el lugar (mismos filtros que
+  // datosReferenciaLugar), con el año o los años exactos en que pasó — para
+  // la tarjeta de información de lugares fijados (ver renderizarInfoLugares).
+  // La vista "Lugar" no distingue por subcrimen, solo por crimen.
+  function resumenCrimenesLugar(lugar: string) {
+    const [desde, hasta] = rangoDecadaActual();
+    const filas = datosFiltradosBase().filter(
+      (d: FilaCsv) => d.lugar === lugar && d.decada >= desde && d.decada <= hasta,
+    );
+
+    const grupos = new Map<string, { crimen: string; anios: Set<number> }>();
+    filas.forEach((d: FilaCsv) => {
+      if (!grupos.has(d.Nombre_Codigo)) {
+        grupos.set(d.Nombre_Codigo, { crimen: d.Nombre_Codigo, anios: new Set() });
+      }
+      grupos.get(d.Nombre_Codigo)!.anios.add(d.año);
+    });
+
+    return [...grupos.values()]
+      .map((g) => ({ ...g, anios: [...g.anios].sort((a, b) => a - b) }))
+      .sort((a, b) => a.crimen.localeCompare(b.crimen));
+  }
+
+  function crearFilaInfoLugar(etiqueta: string, valor: string) {
+    const fila = document.createElement('div');
+    fila.className = 'mapa-info-lugar-fila';
+    const dt = document.createElement('span');
+    dt.className = 'mapa-info-lugar-etiqueta';
+    dt.textContent = etiqueta;
+    const dd = document.createElement('span');
+    dd.className = 'mapa-info-lugar-valor';
+    dd.textContent = valor;
+    fila.append(dt, dd);
+    return fila;
+  }
+
+  // Una sola tarjeta con una sección por lugar fijado (estado.lugaresFijados),
+  // debajo de "Evolución en el tiempo": clasificación/país/notas de
+  // Lugar.csv (solo los campos que no sean null) y, renglón por renglón,
+  // cada crimen+subcrimen que ocurrió ahí con su año o años exactos (ver
+  // resumenCrimenesLugar). Cuando hay más de un lugar fijado, sus secciones
+  // van una debajo de la otra separadas por un divisor, dentro de la MISMA
+  // tarjeta — no una tarjeta por lugar.
+  function renderizarInfoLugares() {
+    if (!contenedorInfoLugares) return;
+    contenedorInfoLugares.innerHTML = '';
+
+    [...estado.lugaresFijados].forEach((lugar: NodoMutable, i: number) => {
+      if (i > 0) {
+        const divisor = document.createElement('div');
+        divisor.className = 'mapa-tarjeta-divisor';
+        contenedorInfoLugares!.appendChild(divisor);
+      }
+
+      const info = infoPorLugar[lugar];
+      const titulo = document.createElement('div');
+      titulo.className = 'mapa-tarjeta-titulo';
+      titulo.textContent = lugar;
+      contenedorInfoLugares!.appendChild(titulo);
+
+      const provincia = provinciaPorLugar[lugar];
+      if (provincia) {
+        contenedorInfoLugares!.appendChild(crearFilaInfoLugar('Provincia', provincia));
+      }
+      if (info?.clasificacion) {
+        contenedorInfoLugares!.appendChild(crearFilaInfoLugar('Clasificación', info.clasificacion));
+      }
+      if (info?.pais) {
+        contenedorInfoLugares!.appendChild(crearFilaInfoLugar('País contemporáneo', info.pais));
+      }
+      if (info?.notas) {
+        contenedorInfoLugares!.appendChild(crearFilaInfoLugar('Notas', info.notas));
+      }
+
+      const subtitulo = document.createElement('div');
+      subtitulo.className = 'mapa-info-lugar-subtitulo';
+      subtitulo.textContent = `Los crímenes ocurridos en ${lugar}`;
+      contenedorInfoLugares!.appendChild(subtitulo);
+
+      const detalle = resumenCrimenesLugar(lugar);
+      if (detalle.length === 0) {
+        const vacio = document.createElement('div');
+        vacio.className = 'mapa-info-lugar-vacio';
+        vacio.textContent = 'Sin casos con los filtros actuales.';
+        contenedorInfoLugares!.appendChild(vacio);
+      } else {
+        const lista = document.createElement('ul');
+        lista.className = 'mapa-info-lugar-crimenes';
+        detalle.forEach((r) => {
+          const li = document.createElement('li');
+          li.className = 'mapa-info-lugar-crimen-fila';
+          const etiquetaAnios = r.anios.length === 1 ? `Año ${r.anios[0]}` : `Años ${r.anios.join(', ')}`;
+          li.textContent = `${r.crimen} — ${etiquetaAnios}`;
+          // Lleva a la tabla general (base-de-datos), filtrada por este lugar
+          // y este crimen concreto — mismo destino que "Ver casos" en el
+          // resto del dashboard (ver irATablasFiltradas).
+          li.addEventListener('click', () => {
+            irATablasFiltradas({ lugar, codigo: r.crimen, subcodigo: null });
+          });
+          lista.appendChild(li);
+        });
+        contenedorInfoLugares!.appendChild(lista);
+      }
+    });
   }
 
   function agruparMapaInstante() {
@@ -362,46 +591,64 @@ export async function inicializarDashboard() {
     panelFiltros.id = 'panel-filtros';
   }
 
-  let columnaViz = document.getElementById('columna-visualizaciones');
-  if (!columnaViz) {
-    columnaViz = document.createElement('div');
-    columnaViz.id = 'columna-visualizaciones';
+  let layoutLugar = document.getElementById('mapa-lugar-layout');
+  if (!layoutLugar) {
+    layoutLugar = document.createElement('div');
+    layoutLugar.id = 'mapa-lugar-layout';
   }
-  columnaViz.classList.add('mapa-columna-viz');
+  layoutLugar.classList.add('mapa-lugar-layout');
 
-  const columnaIzquierda = document.createElement('div');
-  columnaIzquierda.id = 'columna-izquierda';
-  columnaIzquierda.className = 'mapa-columna-izquierda';
-
-  function paraColumnaVertical(tarjeta: HTMLElement) {
-    tarjeta.classList.add('mapa-tarjeta--vertical');
-    return tarjeta;
-  }
-
-  if (contenedorLineasEl) {
-    columnaIzquierda.appendChild(
-      paraColumnaVertical(
-        envolverEnTarjeta(
-          contenedorLineasEl,
-          'Evolución en el tiempo',
-          'Casos por década según el rango seleccionado',
-        ),
-      ),
-    );
-  }
-
-  columnaViz.appendChild(columnaIzquierda);
-  columnaViz.appendChild(
+  // Columna del mapa: ocupa todo el ancho y queda centrada mientras no haya
+  // ningún lugar fijado (ver actualizarVisibilidadSpike). Al fijar el primer
+  // lugar, el mapa se recorre a la izquierda para dejar sitio a la columna
+  // del spike ("Evolución en el tiempo").
+  const columnaMapa = document.createElement('div');
+  columnaMapa.className = 'mapa-lugar-col-mapa';
+  columnaMapa.appendChild(
     envolverEnTarjeta(
       mapaContenedor,
       'Distribución geográfica',
       'Haz clic en un punto para fijarlo y compararlo',
     ),
   );
+  layoutLugar.appendChild(columnaMapa);
+
+  // Columna del spike: arranca oculta (mapa-lugar-col-spike--oculta) y solo
+  // se revela cuando estado.lugaresFijados deja de estar vacío, ver
+  // actualizarVisibilidadSpike() más abajo.
+  let columnaSpike: HTMLElement | null = null;
+  // Una sola tarjeta con la información de todos los lugares fijados, debajo
+  // de "Evolución en el tiempo" (ver renderizarInfoLugares): clasificación,
+  // país contemporáneo y notas de cada lugar (Lugar.csv), más el detalle de
+  // crímenes/subcrímenes y sus años según los filtros vigentes. Con más de
+  // un lugar fijado, cada uno es una sección dentro de esta misma tarjeta.
+  let contenedorInfoLugares: HTMLElement | null = null;
+  if (contenedorLineasEl) {
+    columnaSpike = document.createElement('div');
+    columnaSpike.className = 'mapa-lugar-col-spike mapa-lugar-col-spike--oculta';
+    columnaSpike.appendChild(
+      envolverEnTarjeta(
+        contenedorLineasEl,
+        'Evolución en el tiempo',
+        'Casos por década según el rango seleccionado',
+      ),
+    );
+    contenedorInfoLugares = document.createElement('div');
+    contenedorInfoLugares.id = 'info-lugares-fijados';
+    contenedorInfoLugares.className = 'mapa-tarjeta mapa-info-lugares';
+    columnaSpike.appendChild(contenedorInfoLugares);
+    layoutLugar.appendChild(columnaSpike);
+  }
+
+  function actualizarVisibilidadSpike() {
+    const hayLugarSeleccionado = estado.lugaresFijados.size > 0;
+    layoutLugar!.classList.toggle('mapa-lugar-layout--con-spike', hayLugarSeleccionado);
+    columnaSpike?.classList.toggle('mapa-lugar-col-spike--oculta', !hayLugarSeleccionado);
+  }
 
   if (dashboardWrap) {
     dashboardWrap.classList.add('mapa-dashboard-wrap');
-    dashboardWrap.appendChild(columnaViz);
+    dashboardWrap.appendChild(layoutLugar);
   }
 
   mapaContenedor.classList.add('mapa-panel-ancho-completo');
@@ -614,6 +861,14 @@ export async function inicializarDashboard() {
   wrapCrimen.append(labelCrimen, selectCrimen);
   panelFiltros!.appendChild(wrapCrimen);
 
+  // Filtro oculto en las tres vistas ("Lugar" no habla de subcrímenes, ver
+  // renderizarInfoLugares/buildSerieTotal; "Línea de tiempo" y "Crímenes"
+  // ya no lo muestran en la barra de filtros, ver mostrarVista en
+  // index.astro): el estado sigue existiendo (estado.subcrimen), solo que
+  // ninguna vista deja elegirlo desde acá. En "Crímenes", seleccionar un
+  // crimen específico en el filtro compartido de arriba dispara la misma
+  // selección que un clic en su barra (ver __obtenerFiltrosCrimenesPorTipo
+  // y renderizar() en CrimenesPorTipo.ts).
   const comboSubcrimen = crearComboBuscable({
     etiqueta: 'Subcrimen',
     opciones: subcrimenesParaCrimen(estado.crimen),
@@ -626,8 +881,33 @@ export async function inicializarDashboard() {
       actualizarCrimenesPorTipo();
     },
   });
+  comboSubcrimen.wrap.id = 'filtro-subcrimen-wrap';
+  comboSubcrimen.wrap.classList.add('mapa-vista--oculta');
 
-  crearComboBuscable({
+  // Al elegir una provincia se acotan las opciones de "Lugar" a los
+  // territorios que caen dentro de sus límites (provinciaPorLugar, calculado
+  // por lat/long contra el polígono de la provincia) y el mapa hace zoom a
+  // su recuadro; ver actualizarResaltadoProvincia/zoomAProvincia más abajo.
+  const comboProvincia = crearComboBuscable({
+    etiqueta: 'Provincia',
+    opciones: provinciasLista,
+    valorInicial: estado.provincia,
+    onChange: (valor: any) => {
+      estado.provincia = valor;
+      estado.lugar = 'Todos';
+      comboLugar.actualizarOpciones(lugaresDeProvincia(valor));
+      actualizarMapa();
+      actualizarPanelSecundario(true);
+      actualizarCrimenesPorTipo();
+      actualizarResaltadoProvincia();
+      zoomAProvincia(valor);
+    },
+  });
+  comboProvincia.wrap.id = 'filtro-provincia-wrap';
+
+  // Id fijo: tiempo/index.astro lo usa para ocultar este filtro solo en la
+  // vista "Línea de tiempo" (ahí no aplica, ver mostrarVista()).
+  const comboLugar = crearComboBuscable({
     etiqueta: 'Lugar',
     opciones: lugaresLista,
     valorInicial: estado.lugar,
@@ -637,6 +917,7 @@ export async function inicializarDashboard() {
       actualizarCrimenesPorTipo();
     },
   });
+  comboLugar.wrap.id = 'filtro-lugar-wrap';
 
   const btnLimpiarPines = document.createElement('button');
   btnLimpiarPines.type = 'button';
@@ -647,6 +928,7 @@ export async function inicializarDashboard() {
     btnLimpiarPines.classList.remove('btn-mapa--visible');
     actualizarMapa();
     actualizarPanelSecundario(true);
+    actualizarVisibilidadSpike();
   });
   panelFiltros!.appendChild(btnLimpiarPines);
 
@@ -678,6 +960,13 @@ export async function inicializarDashboard() {
 
   const RADIO_PUNTO = 2;
   const PUNTO_COLOR = leerVariableCss('--mapa-punto-color', '#7b5ea7');
+  // Grosor del borde entre provincias en unidades de viewBox (a k=1, sin
+  // zoom); el handler de zoom lo divide entre k para que se vea igual de
+  // grueso en pantalla sin importar el nivel de zoom. Más grueso solo con el
+  // mapa topográfico de fondo activo (ver mapaBaseVisible más abajo); en el
+  // mapa normal se mantiene el grosor de siempre.
+  const GROSOR_BORDE_PROVINCIA_NORMAL = 0.5;
+  const GROSOR_BORDE_PROVINCIA_TOPOGRAFICO = 1.5;
   const rScale = d3.scaleLog().range([RADIO_PUNTO, 18]);
   const colorScaleMap = d3.scaleSequentialLog(
     d3.interpolateHcl(PALETA.acentoSecundario, PALETA.acentoLinea),
@@ -703,8 +992,27 @@ export async function inicializarDashboard() {
   actualizarEstiloBotonEscalar();
   mapaContenedor.appendChild(btnEscalarTamanio);
 
+  const btnMapaBase = document.createElement('button');
+  btnMapaBase.type = 'button';
+  btnMapaBase.textContent = 'Mapa topográfico de fondo';
+  btnMapaBase.className = 'btn-mapa-base-topografico';
+  mapaContenedor.appendChild(btnMapaBase);
+
+  // El SVG y el mapa base de OpenLayers (ver abajo) comparten este lienzo:
+  // mismo recuadro, superpuestos, con el SVG encima (todo el pan/zoom/hover
+  // sigue siendo de d3, el mapa base solo se sincroniza con él — no tiene
+  // interacciones propias, ver mapaBaseTopografico.ts).
+  const mapaLienzo = document.createElement('div');
+  mapaLienzo.className = 'mapa-lienzo';
+  mapaContenedor.appendChild(mapaLienzo);
+
+  const mapaBaseDiv = document.createElement('div');
+  mapaBaseDiv.className = 'mapa-base-topografico';
+  mapaBaseDiv.style.display = 'none';
+  mapaLienzo.appendChild(mapaBaseDiv);
+
   const svgMapa = d3
-    .select(mapaContenedor)
+    .select(mapaLienzo)
     .append('svg')
     .attr('width', width)
     .attr('height', height)
@@ -733,19 +1041,46 @@ export async function inicializarDashboard() {
   const gZoom = svgMapa.append('g').attr('class', 'capa-zoom');
   const gMapaBase = gZoom.append('g').attr('class', 'capa-mapa');
 
+  const tooltipProvincia = document.createElement('div');
+  tooltipProvincia.className = 'tooltip-grafico tooltip-grafico--sans';
+  mapaContenedor.appendChild(tooltipProvincia);
+
   gMapaBase
     .selectAll('path')
-    .data(NuevaGranada.features ? NuevaGranada.features : [NuevaGranada])
+    .data(featuresProvincias)
     .join('path')
     .attr('d', path as any)
-    .attr('fill', PALETA.tierra)
+    .attr('fill', (f: NodoMutable) => colorPorNombreProvincia.get(nombreDeProvincia(f)) as string)
     .attr('stroke', PALETA.borde)
-    .attr('stroke-opacity', 0.7);
+    .attr('stroke-opacity', 0.7)
+    .attr('class', 'mapa-provincia')
+    .on('mouseenter', function (this: NodoMutable, _event: MouseEvent, f: NodoMutable) {
+      d3.select(this).classed('mapa-provincia--hover', true);
+      tooltipProvincia.textContent = nombreDeProvincia(f);
+      tooltipProvincia.classList.add('tooltip-grafico--visible');
+    })
+    .on('mousemove', (event: MouseEvent) => {
+      const rect = mapaContenedor.getBoundingClientRect();
+      tooltipProvincia.style.left = event.clientX - rect.left + 12 + 'px';
+      tooltipProvincia.style.top = event.clientY - rect.top + 12 + 'px';
+    })
+    .on('mouseleave', function (this: NodoMutable) {
+      d3.select(this).classed('mapa-provincia--hover', false);
+      tooltipProvincia.classList.remove('tooltip-grafico--visible');
+    });
 
   const gPuntos = gZoom.append('g').attr('class', 'capa-puntos');
   const gCapsulas = gZoom.append('g').attr('class', 'capa-capsulas');
+  const gMarcadorCaso = gZoom.append('g').attr('class', 'capa-marcador-caso');
 
   let lugarHoverActivo: NodoMutable = null;
+
+  // Mapa base de OpenLayers (tiles de OpenTopoMap): opcional, oculto por
+  // defecto, creado recién al activarlo por primera vez (ver btnMapaBase más
+  // abajo). Mientras está visible se sincroniza en cada evento de zoom de d3
+  // (más abajo) para mostrar siempre el mismo recuadro que el SVG.
+  let mapaBase: ReturnType<typeof crearMapaBaseTopografico> | null = null;
+  let mapaBaseVisible = false;
 
   const zoom = d3
     .zoom()
@@ -753,7 +1088,10 @@ export async function inicializarDashboard() {
     .on('zoom', (event: any) => {
       gZoom.attr('transform', event.transform);
       const k = event.transform.k;
-      gMapaBase.selectAll('path').attr('stroke-width', 0.5 / k);
+      const grosorBorde = mapaBaseVisible
+        ? GROSOR_BORDE_PROVINCIA_TOPOGRAFICO
+        : GROSOR_BORDE_PROVINCIA_NORMAL;
+      gMapaBase.selectAll('path').attr('stroke-width', grosorBorde / k);
       gPuntos.selectAll('circle').attr('stroke-width', 0.5 / k);
       dibujarCapsulasFijadas();
       if (lugarHoverActivo) {
@@ -761,9 +1099,106 @@ export async function inicializarDashboard() {
         const gTemp = gCapsulas.append('g').attr('class', 'capsula-hover');
         construirCapsula(gTemp, lugarHoverActivo.lugar, lugarHoverActivo.coords);
       }
+      if (mapaBaseVisible && mapaBase) {
+        mapaBase.sincronizar({ projection, transform: event.transform, width, height });
+      }
     });
 
   svgMapa.call(zoom as any);
+
+  btnMapaBase.addEventListener('click', () => {
+    mapaBaseVisible = !mapaBaseVisible;
+    btnMapaBase.classList.toggle('btn-mapa--activo', mapaBaseVisible);
+    svgMapa.classed('mapa-svg--fondo-transparente', mapaBaseVisible);
+    // Con el mapa topográfico de fondo, las provincias quedan solo de
+    // contorno (sin relleno, borde blanco y más grueso) para no taparlo —
+    // se ven sus límites y los puntos; en el mapa normal el borde vuelve a
+    // ser el de siempre.
+    gMapaBase.selectAll('path').classed('mapa-provincia--sin-relleno', mapaBaseVisible);
+    const kActual = d3.zoomTransform(svgMapa.node()!).k;
+    const grosorBordeActual = mapaBaseVisible
+      ? GROSOR_BORDE_PROVINCIA_TOPOGRAFICO
+      : GROSOR_BORDE_PROVINCIA_NORMAL;
+    gMapaBase.selectAll('path').attr('stroke-width', grosorBordeActual / kActual);
+    if (mapaBaseVisible) {
+      if (!mapaBase) mapaBase = crearMapaBaseTopografico(mapaBaseDiv);
+      const t = d3.zoomTransform(svgMapa.node()!);
+      mapaBase.sincronizar({ projection, transform: t, width, height });
+      mapaBase.mostrar();
+    } else {
+      mapaBase?.ocultar();
+    }
+  });
+
+  // Resalta con un trazo más marcado la provincia elegida en el selector
+  // (ver comboProvincia más arriba); no toca el relleno, que ya distingue
+  // cada provincia de sus vecinas.
+  function actualizarResaltadoProvincia() {
+    gMapaBase
+      .selectAll('path')
+      .classed(
+        'mapa-provincia--seleccionada',
+        (f: NodoMutable) => nombreDeProvincia(f) === estado.provincia,
+      );
+  }
+
+  // Centra y hace zoom al recuadro de la provincia elegida; sin provincia
+  // ("Todos") vuelve a la vista completa.
+  function zoomAProvincia(nombreProvincia: string) {
+    if (nombreProvincia === 'Todos') {
+      svgMapa.transition().duration(600).call(zoom.transform as any, d3.zoomIdentity);
+      return;
+    }
+    const feature = featuresProvincias.find(
+      (f: NodoMutable) => nombreDeProvincia(f) === nombreProvincia,
+    );
+    if (!feature) return;
+    const [[lonMin, latMin], [lonMax, latMax]] = d3.geoBounds(feature);
+    const [x0, y1] = projection([lonMin, latMin])!;
+    const [x1, y0] = projection([lonMax, latMax])!;
+    const anchoBox = Math.max(Math.abs(x1 - x0), 1);
+    const altoBox = Math.max(Math.abs(y1 - y0), 1);
+    const escala = Math.min(6, 0.82 * Math.min(width / anchoBox, height / altoBox));
+    const cx = (x0 + x1) / 2;
+    const cy = (y0 + y1) / 2;
+    const transform = d3.zoomIdentity
+      .translate(width / 2, height / 2)
+      .scale(escala)
+      .translate(-cx, -cy);
+    svgMapa.transition().duration(600).call(zoom.transform as any, transform);
+  }
+
+  // Hook para LineaTiempoCasos.ts: su botón "Ver en el mapa" cambia a la
+  // vista "Lugar" (ver __irAVistaLugar en index.astro) y llama a este, que
+  // centra el mapa en el lugar del caso y deja un marcador rojo persistente
+  // (independiente de los puntos normales, que usan PUNTO_COLOR).
+  window.__resaltarCasoEnMapa = function (lugar: string) {
+    const coords = coordPorLugar[lugar];
+    if (!coords) return;
+    const destino = projection(coords);
+    if (!destino) return;
+    const [px, py] = destino;
+    const escala = 4;
+    const transform = d3.zoomIdentity
+      .translate(width / 2, height / 2)
+      .scale(escala)
+      .translate(-px, -py);
+    svgMapa.transition().duration(600).call(zoom.transform as any, transform);
+
+    gMarcadorCaso.selectAll('*').remove();
+    gMarcadorCaso
+      .append('circle')
+      .attr('cx', px)
+      .attr('cy', py)
+      .attr('r', 10 / escala)
+      .attr('class', 'mapa-marcador-caso-halo');
+    gMarcadorCaso
+      .append('circle')
+      .attr('cx', px)
+      .attr('cy', py)
+      .attr('r', 4 / escala)
+      .attr('class', 'mapa-marcador-caso-punto');
+  };
 
   let seleccionFilaMapa: NodoMutable = null;
 
@@ -1019,6 +1454,7 @@ export async function inicializarDashboard() {
     btnLimpiarPines.classList.toggle('btn-mapa--visible', estado.lugaresFijados.size > 0);
     dibujarCapsulasFijadas();
     actualizarPanelSecundario(true);
+    actualizarVisibilidadSpike();
   }
 
   function seSuperponen(a: NodoMutable, b: NodoMutable, margen = 4) {
@@ -1083,6 +1519,7 @@ export async function inicializarDashboard() {
       contenedorLineas!.parentElement.insertBefore(botonVerCasosLinea.boton, contenedorLineas);
     }
     let seleccionPuntoLinea: NodoMutable = null;
+    let serieResaltada: string | null = null;
     let lineGroupsPorSerie = new Map();
 
     const tooltipLineas = document.createElement('div');
@@ -1091,14 +1528,48 @@ export async function inicializarDashboard() {
     const MARGIN = { top: 60, right: 170, bottom: 50, left: 55 };
     const WIDTH = 700,
       HEIGHT = 300;
+
+    // Reparte etiquetas verticalmente para que ninguna se superponga: parte
+    // de la posición "natural" de cada una (la altura de su último punto),
+    // las separa de arriba hacia abajo dejando al menos `gapMinimo` entre
+    // ellas y, si así se salen del alto disponible, hace una segunda pasada
+    // de abajo hacia arriba para que quepan todas dentro de [0, alto].
+    function repartirEtiquetasSinSuperposicion(
+      entradas: { nombre: string; y: number }[],
+      gapMinimo: number,
+      alto: number,
+    ): Map<string, number> {
+      const ordenadas = entradas.map((e) => ({ ...e })).sort((a, b) => a.y - b.y);
+
+      for (let i = 1; i < ordenadas.length; i++) {
+        const yMinima = ordenadas[i - 1].y + gapMinimo;
+        if (ordenadas[i].y < yMinima) ordenadas[i].y = yMinima;
+      }
+
+      const ultimo = ordenadas[ordenadas.length - 1];
+      if (ultimo && ultimo.y > alto) {
+        ultimo.y = alto;
+        for (let i = ordenadas.length - 2; i >= 0; i--) {
+          const yMaxima = ordenadas[i + 1].y - gapMinimo;
+          if (ordenadas[i].y > yMaxima) ordenadas[i].y = yMaxima;
+        }
+      }
+
+      return new Map(ordenadas.map((e) => [e.nombre, e.y]));
+    }
     const IW = WIDTH - MARGIN.left - MARGIN.right;
     const IH = HEIGHT - MARGIN.top - MARGIN.bottom;
     const DURACION_LINEA = 700;
     const PAUSA = 130;
 
+    // La vista "Lugar" no distingue por subcrimen (ver comboSubcrimen oculto
+    // acá en index.astro): con un crimen filtrado, esta serie ya trae solo
+    // sus casos (datosFiltradosBase respeta estado.crimen) y muestra su
+    // nombre en vez de "Todos los crímenes".
     function buildSerieTotal() {
       const lista = decadasSeleccionadas();
       const filtrados = datosFiltradosBase();
+      const nombreSerie = estado.crimen === 'Todos' ? 'Todos los crímenes' : estado.crimen;
       const puntos = lista.map((t) => {
         const set = new Set(
           filtrados
@@ -1109,55 +1580,11 @@ export async function inicializarDashboard() {
         return {
           tiempo: t,
           cantidad,
-          etiqueta: `Todos los crímenes\n${formatoDecada(t)}: ${cantidad} casos`,
+          etiqueta: `${nombreSerie}\n${formatoDecada(t)}: ${cantidad} casos`,
         };
       });
       const total = puntos.reduce((a, p) => a + p.cantidad, 0);
-      return [{ nombre: 'Todos los crímenes', total, puntos }];
-    }
-
-    function buildSeriesSubcrimen() {
-      const lista = decadasSeleccionadas();
-      const filtrados = datosFiltradosBase();
-      const filtradosConSubcrimen = filtrados.filter(
-        (d: FilaCsv) => !nombresGenerales.has(d.Nombre_Sub_Codigo),
-      );
-      const subNombres = [
-        ...new Set(filtradosConSubcrimen.map((d: FilaCsv) => d.Nombre_Sub_Codigo)),
-      ].sort(compararPorLinaje);
-
-      if (subNombres.length === 0) {
-        const puntos = lista.map((t) => {
-          const set = new Set(
-            filtrados
-              .filter((d: FilaCsv) => d.decada === t)
-              .map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`),
-          );
-          const cantidad = set.size;
-          return {
-            tiempo: t,
-            cantidad,
-            etiqueta: `${estado.crimen}\n${formatoDecada(t)}: ${cantidad} casos`,
-          };
-        });
-        const total = puntos.reduce((a, p) => a + p.cantidad, 0);
-        return [{ nombre: estado.crimen, total, puntos }];
-      }
-
-      return subNombres.map((sub) => {
-        const filas = filtradosConSubcrimen.filter((d: FilaCsv) => d.Nombre_Sub_Codigo === sub);
-        const puntos = lista.map((t) => {
-          const set = new Set(
-            filas
-              .filter((d: FilaCsv) => d.decada === t)
-              .map((d: FilaCsv) => `${d.ID_Documento}|${d.Sub_Código}`),
-          );
-          const cantidad = set.size;
-          return { tiempo: t, cantidad, etiqueta: `${sub}\n${formatoDecada(t)}: ${cantidad} casos` };
-        });
-        const total = puntos.reduce((a, p) => a + p.cantidad, 0);
-        return { nombre: sub, total, puntos };
-      });
+      return [{ nombre: nombreSerie, total, puntos }];
     }
 
     function buildSeriesLugaresFijados() {
@@ -1193,15 +1620,13 @@ export async function inicializarDashboard() {
       contenedorLineas!.appendChild(tooltipLineas);
 
       seleccionPuntoLinea = null;
+      serieResaltada = null;
       lineGroupsPorSerie = new Map();
       botonVerCasosLinea.ocultar();
+      renderizarInfoLugares();
 
       const enModoComparacion = estado.lugaresFijados.size > 0;
-      const series = enModoComparacion
-        ? buildSeriesLugaresFijados()
-        : estado.crimen === 'Todos'
-          ? buildSerieTotal()
-          : buildSeriesSubcrimen();
+      const series = enModoComparacion ? buildSeriesLugaresFijados() : buildSerieTotal();
       const lista = decadasSeleccionadas();
       const totalGeneral = series.reduce((a, s) => a + s.total, 0);
 
@@ -1210,34 +1635,38 @@ export async function inicializarDashboard() {
           irATablasFiltradas({ lugar: serie.nombre, fecha: tiempo });
         } else if (estado.crimen === 'Todos') {
           irATablasFiltradas({ fecha: tiempo });
-        } else if (serie.nombre === estado.crimen) {
-          irATablasFiltradas({
-            codigo: estado.crimen,
-            subcodigo: null,
-            fecha: tiempo,
-          });
         } else {
-          irATablasFiltradas({
-            codigo: estado.crimen,
-            subcodigo: serie.nombre,
-            fecha: tiempo,
-          });
+          irATablasFiltradas({ codigo: estado.crimen, subcodigo: null, fecha: tiempo });
         }
       }
 
       function aplicarResaltadoLinea() {
-        if (!seleccionPuntoLinea) {
+        if (!serieResaltada) {
           lineGroupsPorSerie.forEach((grp) => grp.style('opacity', 1));
           return;
         }
-        const nombreSerieActiva = seleccionPuntoLinea.split('||')[0];
         lineGroupsPorSerie.forEach((grp, nombre) => {
-          grp.style('opacity', nombre === nombreSerieActiva ? 1 : 0.2);
+          grp.style('opacity', nombre === serieResaltada ? 1 : 0.2);
         });
       }
 
       function limpiarSeleccionLinea() {
         seleccionPuntoLinea = null;
+        serieResaltada = null;
+        botonVerCasosLinea.ocultar();
+        aplicarResaltadoLinea();
+      }
+
+      // Clic directo en la línea o en su nombre (ver dibujarEtiquetasSeries):
+      // resalta esa serie sola, sin fijar un punto/fecha concreto (por eso no
+      // muestra el botón "Ver casos", que necesita una fecha).
+      function seleccionarSerie(serie: NodoMutable) {
+        if (serieResaltada === serie.nombre && !seleccionPuntoLinea) {
+          limpiarSeleccionLinea();
+          return;
+        }
+        seleccionPuntoLinea = null;
+        serieResaltada = serie.nombre;
         botonVerCasosLinea.ocultar();
         aplicarResaltadoLinea();
       }
@@ -1249,6 +1678,7 @@ export async function inicializarDashboard() {
           return;
         }
         seleccionPuntoLinea = clave;
+        serieResaltada = serie.nombre;
         aplicarResaltadoLinea();
         botonVerCasosLinea.mostrar(`${serie.nombre} · ${tiempo}`, () =>
           irDesdeLineaSerie(serie, tiempo),
@@ -1351,10 +1781,22 @@ export async function inicializarDashboard() {
         const color = colorScaleLine(serie.nombre);
         const lineGroup = g.append('g');
         lineGroupsPorSerie.set(serie.nombre, lineGroup);
-        if (seleccionPuntoLinea) {
-          const nombreSerieActiva = seleccionPuntoLinea.split('||')[0];
-          lineGroup.style('opacity', serie.nombre === nombreSerieActiva ? 1 : 0.2);
+        if (serieResaltada) {
+          lineGroup.style('opacity', serie.nombre === serieResaltada ? 1 : 0.2);
         }
+
+        // Corredor invisible más ancho que el trazo visible, para poder
+        // hacer clic en la línea (no solo en sus puntos) y resaltarla; ver
+        // seleccionarSerie más arriba.
+        lineGroup
+          .append('path')
+          .datum(serie.puntos as any)
+          .attr('class', 'mapa-linea-trazo-hit')
+          .attr('d', lineGen as any)
+          .on('click', (event: MouseEvent) => {
+            event.stopPropagation();
+            seleccionarSerie(serie);
+          });
 
         lineGroup
           .append('path')
@@ -1392,21 +1834,77 @@ export async function inicializarDashboard() {
               seleccionarPuntoLinea(serie, p.tiempo);
             });
         });
+      }
 
-        const ultimoPunto: NodoMutable =
-          [...serie.puntos].reverse().find((p) => p.cantidad > 0) ||
-          serie.puntos[serie.puntos.length - 1];
-        lineGroup
-          .append('text')
-          .attr('x', (x(ultimoPunto!.tiempo)! + 8) as any)
-          .attr('y', (y(ultimoPunto!.cantidad) + 4) as any)
-          .attr('class', 'mapa-linea-etiqueta-serie')
-          .style('fill', color as string)
-          .text(serie.nombre.length > 22 ? serie.nombre.slice(0, 20) + '…' : serie.nombre);
+      function ultimoPuntoDeSerie(serie: NodoMutable) {
+        return (
+          [...serie.puntos].reverse().find((p: NodoMutable) => p.cantidad > 0) ||
+          serie.puntos[serie.puntos.length - 1]
+        );
+      }
+
+      // Pasada final, una vez dibujadas todas las series: coloca los nombres
+      // más a la derecha (fuera del área de trazado, en el margen reservado)
+      // y los reparte verticalmente para que no se superpongan, con una
+      // línea guía delgada hasta el último punto real de cada serie. Cada
+      // etiqueta entra al mismo grupo que ya tiene su línea y sus puntos
+      // (lineGroupsPorSerie), así que el resaltado/atenuado los afecta a
+      // todos juntos.
+      function dibujarEtiquetasSeries() {
+        // Debe ser mayor que el alto real del texto (11px de fuente ronda
+        // ~14.5px de bounding box entre ascendentes y descendentes) — con
+        // menos que eso, dos etiquetas vecinas se siguen tocando aunque la
+        // línea base quede bien separada.
+        const GAP_MINIMO_ETIQUETA = 16;
+        const X_ETIQUETA = IW + 26;
+
+        const posicionesNaturales = series.map((serie) => {
+          const ultimo = ultimoPuntoDeSerie(serie);
+          return { nombre: serie.nombre, y: y(ultimo.cantidad) as number };
+        });
+        const yPorSerie = repartirEtiquetasSinSuperposicion(
+          posicionesNaturales,
+          GAP_MINIMO_ETIQUETA,
+          IH,
+        );
+
+        series.forEach((serie) => {
+          const lineGroup = lineGroupsPorSerie.get(serie.nombre);
+          if (!lineGroup) return;
+          const color = colorScaleLine(serie.nombre);
+          const ultimo = ultimoPuntoDeSerie(serie);
+          const xUltimo = x(ultimo.tiempo) as number;
+          const yNatural = y(ultimo.cantidad) as number;
+          const yEtiqueta = yPorSerie.get(serie.nombre) as number;
+
+          lineGroup
+            .append('path')
+            .attr(
+              'd',
+              `M${xUltimo},${yNatural} L${X_ETIQUETA - 6},${yEtiqueta}`,
+            )
+            .attr('class', 'mapa-linea-guia-etiqueta')
+            .attr('stroke', color as string);
+
+          lineGroup
+            .append('text')
+            .attr('x', X_ETIQUETA)
+            .attr('y', yEtiqueta + 4)
+            .attr('class', 'mapa-linea-etiqueta-serie')
+            .style('fill', color as string)
+            .text(serie.nombre.length > 22 ? serie.nombre.slice(0, 20) + '…' : serie.nombre)
+            .on('click', (event: MouseEvent) => {
+              event.stopPropagation();
+              seleccionarSerie(serie);
+            });
+        });
       }
 
       function revelarSecuencial(idx: number) {
-        if (idx >= series.length) return;
+        if (idx >= series.length) {
+          dibujarEtiquetasSeries();
+          return;
+        }
         const color = colorScaleLine(series[idx].nombre);
         const lineGroup = g.append('g');
         const pathLine = lineGroup
@@ -1434,6 +1932,7 @@ export async function inicializarDashboard() {
         timerRef = d3.timeout(() => revelarSecuencial(0), 100);
       } else {
         series.forEach((_, idx) => dibujarSerieInstante(idx));
+        dibujarEtiquetasSeries();
       }
 
       contenedorLineas!.append(svgLine.node()!);

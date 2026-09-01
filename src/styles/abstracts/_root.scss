@@ -56,6 +56,11 @@
     --mapa-serie-#{$n}: #{$color};
   }
 
+  // Genera --mapa-provincia-1 … --mapa-provincia-4, mismo patrón que arriba.
+  @each $n, $color in v.$mapa-provincias {
+    --mapa-provincia-#{$n}: #{$color};
+  }
+
   --genero-mujer: #{v.$genero-mujer};
   --genero-hombre: #{v.$genero-hombre};
   --genero-sin-info: #{v.$genero-sin-info};

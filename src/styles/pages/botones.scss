@@ -65,6 +65,23 @@
   color: var(--mapa-tinta-oscura);
 }
 
+/* Mismo aspecto que .btn-mapa-escalar, con separación a su izquierda: en la
+   vista "Lugar" los dos botones quedan uno junto al otro sobre el mapa. */
+.btn-mapa-base-topografico {
+  align-self: flex-start;
+  margin-bottom: 8px;
+  margin-left: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: 1px solid var(--mapa-borde);
+  cursor: pointer;
+  font-family: var(--mapa-font);
+  font-weight: 600;
+  background: var(--mapa-fondo-pergamino);
+  color: var(--mapa-tinta-oscura);
+}
+
 /* Estados compartidos por varios botones de arriba */
 .btn-mapa--activo {
   background: var(--mapa-acento-linea);

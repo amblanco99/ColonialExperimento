@@ -1,18 +1,230 @@
+@use 'abstracts/variables' as v;
+
 /* =====================================================
-   BARRAS HORIZONTALES: CRÍMENES POR TIPO (CrimenesPorTipo.ts)
-   Ranking de linajes de crimen (Código) por cantidad total de registros,
-   sin desglose por fecha.
+   CRÍMENES POR TIPO (CrimenesPorTipo.ts)
+   Todos los delitos criminales del corpus, de mayor a menor, en la misma
+   presentación de embudo que tenía el "Top 5" (ahora fusionado aquí). Al
+   hacer clic en uno o más delitos se fijan para comparar su tendencia por
+   década en la tarjeta "Evolución del crimen" (independiente, a la derecha).
 ===================================================== */
-.barra-crimenes-tipo-wrapper {
-  position: relative;
+.crimenes-tipo-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.crimenes-tipo-fila {
+  border-top: 1px solid var(--mapa-tierra);
+}
+
+.crimenes-tipo-fila:last-child {
+  border-bottom: 1px solid var(--mapa-tierra);
+}
+
+.crimenes-tipo-fila--seleccionada {
+  background: var(--mapa-panel);
+}
+
+/* Panel de definición inline, debajo de cada barra: mismo lugar donde antes
+   vivía el mini-spike de ese delito (misma técnica display:none/block que
+   usaba .crimenes-tipo-fila--expandida), como si la barra "abriera" su
+   definición. */
+.crimenes-tipo-definicion {
+  display: none;
+  padding: 4px 10px 12px;
+}
+
+.crimenes-tipo-fila--seleccionada .crimenes-tipo-definicion {
+  display: block;
+}
+
+.crimenes-tipo-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 auto;
+  min-width: 0;
+  height: 42px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    width 0.3s ease,
+    background 0.3s ease;
+}
+
+.crimenes-tipo-nombre {
+  font-family: var(--mapa-font);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--mapa-tinta-oscura);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tilde que marca un delito fijado para comparar (ver
+   crimenesSeleccionados/marcarSeleccionEnBarras en CrimenesPorTipo.ts). */
+.crimenes-tipo-marca {
+  display: inline-block;
+  width: 12px;
+}
+
+.crimenes-tipo-fila--seleccionada .crimenes-tipo-marca::before {
+  content: '✓';
+  font-weight: 700;
+}
+
+.crimenes-tipo-numero {
+  font-family: v.$font-sistema;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--mapa-tinta-oscura);
+  white-space: nowrap;
+  flex: none;
+}
+
+.crimenes-tipo-nota {
+  font-size: 11px;
+  font-style: italic;
+  font-family: var(--mapa-font);
+  color: var(--mapa-borde);
+  opacity: 0.85;
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* Tarjeta "Evolución del crimen": un trazo por delito fijado, color
+   asignado en CrimenesPorTipo.ts (mismos --mapa-serie-N que el resto del
+   sitio) — acá solo el grosor/estructura, no el color. */
+.crimenes-tipo-spike-svg {
   max-width: 100%;
+  height: auto;
+  overflow: visible;
+  display: block;
+  font-family: v.$font-sistema;
 }
 
-.barra-crimenes-tipo__barra {
-  fill: var(--accent);
-  transition: fill 0.1s;
+.crimenes-tipo-spike-trazo {
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
-.barra-crimenes-tipo__barra--hover {
-  fill: var(--accent-dim, #a0622f);
+.crimenes-tipo-spike-punto {
+  stroke: none;
+}
+
+.crimenes-tipo-spike-punto-hit {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.crimenes-tipo-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 10px;
+}
+
+.crimenes-tipo-leyenda-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: var(--mapa-font);
+  font-size: 11.5px;
+  color: var(--mapa-tinta-oscura);
+  cursor: pointer;
+}
+
+.crimenes-tipo-leyenda-chip:hover {
+  text-decoration: underline;
+}
+
+/* Leyenda del donut (ver renderizarDonut): no quita nada al hacer clic, a
+   diferencia de la del spike — sin cursor ni subrayado. */
+.crimenes-tipo-leyenda-chip--estatico {
+  cursor: default;
+}
+
+.crimenes-tipo-leyenda-chip--estatico:hover {
+  text-decoration: none;
+}
+
+.crimenes-tipo-leyenda-punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Texto de la columna Explicación de Linaje.csv, en el panel inline de cada
+   delito (ver .crimenes-tipo-definicion arriba). */
+.crimenes-tipo-definicion-texto {
+  font-family: var(--mapa-font);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--mapa-tinta-oscura);
+  margin: 0;
+}
+
+/* Tarjeta "Subcrímenes": selector de pestañas cuando hay más de un crimen
+   fijado (ver renderizarDonut en CrimenesPorTipo.ts) y el donut en sí. */
+.crimenes-tipo-donut-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.crimenes-tipo-donut-tab {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--mapa-borde);
+  background: var(--mapa-fondo-pergamino);
+  color: var(--mapa-tinta-oscura);
+  font-family: var(--mapa-font);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.crimenes-tipo-donut-tab--activo {
+  background: var(--mapa-acento-linea);
+  border-color: var(--mapa-acento-linea);
+  color: #fff;
+}
+
+.crimenes-tipo-donut-svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 220px;
+  height: auto;
+  font-family: v.$font-sistema;
+}
+
+.crimenes-tipo-donut-porcion {
+  stroke: var(--mapa-tarjeta-fondo);
+  stroke-width: 1.5;
+  cursor: default;
+}
+
+.crimenes-tipo-donut-total-num {
+  font-family: v.$font-sistema;
+  font-size: 22px;
+  font-weight: 800;
+  fill: var(--mapa-tinta-oscura);
+}
+
+.crimenes-tipo-donut-total-label {
+  font-family: var(--mapa-font);
+  font-size: 10.5px;
+  fill: var(--mapa-borde);
 }
