@@ -1,46 +1,159 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/pages/botones.scss';
+import '../../styles/pages/mapa.scss';
+import '../../styles/pages/linaje.scss';
+import '../../styles/pages/tooltips.scss';
+import '../../styles/pages/faq.scss';
+import '../../styles/pages/historiaMetodologia.scss';
+import '../../styles/pages/preguntasTarjetas.scss';
 
-// Igual que documentacion-tecnica: cargaba aboutmain.js pero no tiene ninguno
-// de los tres contenedores de gráficos (#conteoCrimenes, #tipoCaso,
-// #chartLinaje), así que no lleva script.
-
-// Los enlaces de las tarjetas eran relativos entre hermanos ("fuentes.html").
-const base = import.meta.env.BASE_URL;
 ---
 
-<BaseLayout title="Fuentes y metodología" active="about">
-  <main class="container">
-    <h1 class="section-mainTitle">Fuentes y metodología</h1>
+<BaseLayout title="Sobre el proyecto" active="about">
+  <main class="container linaje-main-ancho">
+    <h1 class="section-mainTitle">Sobre el proyecto</h1>
 
-    <p>
-      El proyecto se propone cuantificar y sistematizar los juicios criminales tramitados durante el
-      periodo colonial en el Nuevo Reino de Granada con el fin de construir bases de datos
-      relacionales que permitan analizar, en perspectiva agregada, las prácticas judiciales, las
-      tipologías delictivas y las configuraciones sociales que emergen de la justicia penal de la
-      época.
-      <br />
-      Estas bases de datos permiten registrar información básica de cada expediente y clasificar los casos
-      según variables sustantivas relevantes para el análisis socio-jurídico, como el tipo de delito,
-      el perfil de las personas procesadas, la identidad de las víctimas y otras categorías analíticas.
-      A continuación se describen las bases, sus metadatos y sus reglas para alimentarlas.
-    </p>
-
-    <div class="cards-container">
-      <a href={`${base}about/fuentes.html`} class="card">
-        <h3>Fuentes</h3>
-        <p>Archivos y repositorios documentales que alimentan las bases de datos.</p>
-      </a>
-
-      <a href={`${base}about/delitos.html`} class="card">
-        <h3>Delitos</h3>
-        <p>Tipología delictiva y criterios de clasificación de los casos.</p>
-      </a>
-
-      <a href={`${base}about/documentacion-tecnica.html`} class="card">
-        <h3>Documentación técnica</h3>
-        <p>Metodología de codificación y estructura de las bases de datos.</p>
-      </a>
+    <div class="mapa-selector-vista">
+      <div class="mapa-selector-vista-grupo">
+        <button type="button" id="btn-vista-fuentes" class="btn-mapa-vista btn-mapa--activo">
+          Metodología
+        </button>
+        <button type="button" id="btn-vista-delitos" class="btn-mapa-vista">Delitos</button>
+        <button type="button" id="btn-vista-documentacion" class="btn-mapa-vista">
+          Documentación técnica
+        </button>
+      </div>
     </div>
+
+    <div id="vista-fuentes">
+
+      <section class="linaje-seccion-ancha">
+        <h2>Historia de un caso</h2>
+        <div id="historiaMetodologia"></div>
+      </section>
+
+      <section class="linaje-seccion-ancha">
+        <h2>Sobre la base de datos</h2>
+        <div id="preguntasMetodologicas"></div>
+      </section>
+
+    </div>
+
+    <div id="vista-delitos" class="mapa-vista--oculta">
+      <section class="linaje-seccion-ancha">
+        <h2>Preguntas metodológicas</h2>
+        <div id="preguntasFrecuentes"></div>
+      </section>
+
+      <section class="linaje-seccion-ancha">
+        <h2>Clasificación de delitos criminales</h2>
+        <p>
+          Esta gráfica muestra la clasificación metodológica de los delitos criminales. Para ver la
+          definición de las categorías haz clic en los circulos y para leer la descripción de
+          subcategorías haz clic en los rectangulos
+        </p>
+        <div id="chartLinajeCriminal" class="chart-linaje"></div>
+      </section>
+
+      <section class="linaje-seccion-ancha">
+        <h2>Clasificación de casos no criminales</h2>
+        <p>
+          Esta gráfica muestra la clasificación metodológica de los documentos que no son delitos
+          criminales
+        </p>
+        <div id="chartLinajeNoCriminal" class="chart-linaje"></div>
+      </section>
+    </div>
+
+    <div id="vista-documentacion" class="mapa-vista--oculta">
+      <p>
+        Esta guía está dirigida a investigadores o personas externas que quieran utilizar, citar o
+        analizar las bases de datos del proyecto con otro tipo de herramientas. Aquí se explica cómo
+        están construidas las tablas, qué precauciones metodológicas se deben tener y cómo
+        interpretar correctamente las variables, para evitar lecturas falsas de la información.
+      </p>
+
+      <section class="linaje-seccion-ancha">
+        <h2>Para considerar</h2>
+        <div id="documentacionPreguntas"></div>
+        <button type="button" class="btn-descargar-datos btn-descargar-datos--grande" disabled>
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path
+              d="M8 1.5v8.25m0 0L4.75 6.5M8 9.75l3.25-3.25M2.5 12.5v1a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-1"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+          Descargar datos
+        </button>
+      </section>
+    </div>
+
+    <script>
+      import { crearTiposCasos } from '../../scripts/charts/TiposCasos.js';
+      import { crearLinaje } from '../../scripts/charts/Linaje.js';
+      import { crearPreguntasFrecuentes } from '../../scripts/charts/PreguntasFrecuentes.js';
+      import { crearHistoriaMetodologia } from '../../scripts/charts/HistoriaMetodologia.js';
+      import { crearPreguntasTarjetas } from '../../scripts/charts/PreguntasTarjetas.js';
+
+      type Vista = 'fuentes' | 'delitos' | 'documentacion';
+
+      const vistas: Record<Vista, { boton: HTMLElement; contenedor: HTMLElement }> = {
+        fuentes: {
+          boton: document.getElementById('btn-vista-fuentes')!,
+          contenedor: document.getElementById('vista-fuentes')!,
+        },
+        delitos: {
+          boton: document.getElementById('btn-vista-delitos')!,
+          contenedor: document.getElementById('vista-delitos')!,
+        },
+        documentacion: {
+          boton: document.getElementById('btn-vista-documentacion')!,
+          contenedor: document.getElementById('vista-documentacion')!,
+        },
+      };
+
+      // Cada vista, salvo "Fuentes" (visible desde la carga inicial de la
+      // página), crea sus widgets recién la primera vez que el usuario entra
+      // a ella, no antes — mismo patrón que tiempo/index.astro.
+      let vistaDelitosInicializada = false;
+      let vistaDocumentacionInicializada = false;
+
+      function mostrarVista(vista: Vista) {
+        (Object.keys(vistas) as Vista[]).forEach((clave) => {
+          const activa = clave === vista;
+          vistas[clave].contenedor.classList.toggle('mapa-vista--oculta', !activa);
+          vistas[clave].boton.classList.toggle('btn-mapa--activo', activa);
+        });
+
+        if (vista === 'delitos' && !vistaDelitosInicializada) {
+          vistaDelitosInicializada = true;
+          crearLinaje('chartLinajeCriminal', true);
+          crearLinaje('chartLinajeNoCriminal', false);
+          crearPreguntasFrecuentes('preguntasFrecuentes');
+        }
+        if (vista === 'documentacion' && !vistaDocumentacionInicializada) {
+          vistaDocumentacionInicializada = true;
+          crearPreguntasFrecuentes(
+            'documentacionPreguntas',
+            `${import.meta.env.BASE_URL}data/DocumentacionTecnicaPreguntas.csv`,
+          );
+        }
+      }
+
+      vistas.fuentes.boton.addEventListener('click', () => mostrarVista('fuentes'));
+      vistas.delitos.boton.addEventListener('click', () => mostrarVista('delitos'));
+      vistas.documentacion.boton.addEventListener('click', () => mostrarVista('documentacion'));
+
+      crearTiposCasos();
+      crearHistoriaMetodologia('historiaMetodologia');
+      crearPreguntasTarjetas('preguntasMetodologicas', undefined, (vista) =>
+        mostrarVista(vista as Vista),
+      );
+    </script>
   </main>
 </BaseLayout>

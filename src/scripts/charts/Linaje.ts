@@ -2,12 +2,8 @@ import * as d3 from 'd3';
 import { irATablasFiltradas } from './verCasos.js';
 import { esLinajeCriminal } from './linajeComun.js';
 
-// TODO: type — nodo de jerarquía de d3 (d3.HierarchyPointNode). Ver MIGRATION.md.
 type NodoMutable = any;
 
-// Sinónimos usa "/" como separador cuando hay más de uno (mismo carácter que
-// Path, pero en un campo de texto libre), y "null" literal cuando no hay
-// ninguno.
 function formatearSinonimos(crudo: string | undefined): string {
   if (!crudo || crudo.trim() === '' || crudo.trim().toLowerCase() === 'null') {
     return 'Sin sinónimos.';
@@ -20,9 +16,6 @@ function formatearSinonimos(crudo: string | undefined): string {
     .join(', ');
 }
 
-// Código/Sub_Código en crimenes.csv apuntan a ID_Código de Linaje.csv: el
-// linaje (crimen, nivel 1) va en `codigo`, el subcrimen (nivel 2) en
-// `subcodigo`. Ver irATablasFiltradas en verCasos.ts.
 function overridesDeNodo(d: NodoMutable) {
   if (d.depth === 1) return { codigo: d.data.Nombre };
 
@@ -35,9 +28,6 @@ function leerVariableCss(nombre: string, fallback: string): string {
   return valor || fallback;
 }
 
-// Blanco o tinta oscura según la luminancia del color de fondo (fórmula WCAG
-// simplificada), para que el texto de cada círculo de categoría sea siempre
-// legible sin tener que elegir el contraste a mano color por color.
 function colorTextoContraste(hex: string): string {
   const limpio = hex.replace('#', '');
   const r = parseInt(limpio.substring(0, 2), 16) / 255;
@@ -49,36 +39,81 @@ function colorTextoContraste(hex: string): string {
   return luminancia > 0.4 ? '#1a1410' : '#fff';
 }
 
-// Diez series ya validadas del dashboard "Tiempo y Crímenes" (--mapa-serie-1…10,
-// ver _variables.scss): se reciclan acá para no inventar una paleta nueva. Con
-// más de 10 categorías (hasta 27 en el árbol criminal) el color se repite —
-// aceptable porque lo que importa es distinguir una rama de sus vecinas
-// inmediatas, no leer las 27 a la vez como una leyenda.
 const NUM_SERIES = 10;
-const COLOR_RAIZ = '#6b4f2a';
 
-// Mismo árbol jerárquico de siempre (root → categoría → subcrimen, izquierda
-// a derecha, un solo lienzo), pero con los nodos rediseñados: círculos de
-// color para la raíz y las categorías, cajas redondeadas para los
-// subcrímenes — en HTML, no texto en SVG, para que el nombre envuelva con
-// las reglas normales de CSS. El SVG de abajo solo dibuja las curvas.
 const RADIO_CIRCULO = 34;
-const RADIO_RAIZ = 26;
-const GAP_HORIZONTAL = 30;
-const ANCHO_CAJA = 158;
-const ALTO_CAJA = 44;
-// Separación mínima entre nodos vecinos en el eje vertical (nodeSize de
-// d3.tree): con nodos tan grandes hace falta mucho más que los 18px del
-// árbol original de puntos+texto.
-const DX = 56;
-const MARGEN = 40;
+const RADIO_AGRANDADO = 58;
+const ANCHO_CAJA_SATELITE = 112;
+const ALTO_CAJA_SATELITE = 30;
+const GAP_RADIAL = 22;
+const DURACION_GIRO_MS = 700;
 
-// Distancia centro a centro por nivel: 0→1 (raíz a categoría) y 1→2
-// (categoría a subcrimen). d3.tree() no soporta un `dy` distinto por nivel,
-// así que se pisa `d.y` a mano después de calcular el layout.
-const COL_RAIZ_A_CATEGORIA = RADIO_RAIZ + GAP_HORIZONTAL + RADIO_CIRCULO;
-const COL_CATEGORIA_A_SUBCRIMEN = RADIO_CIRCULO + GAP_HORIZONTAL + ANCHO_CAJA / 2;
-const COLUMNAS_X = [0, COL_RAIZ_A_CATEGORIA, COL_RAIZ_A_CATEGORIA + COL_CATEGORIA_A_SUBCRIMEN];
+function polarACartesiano(angulo: number, radio: number) {
+  return { x: radio * Math.sin(angulo), y: -radio * Math.cos(angulo) };
+}
+
+function calcularRadioPrincipal(n: number): number {
+  const cuerdaNecesaria = RADIO_AGRANDADO + RADIO_CIRCULO + GAP_RADIAL;
+  if (n < 2) return cuerdaNecesaria;
+
+  const anguloEntreVecinos = (2 * Math.PI) / n;
+
+  return cuerdaNecesaria / (2 * Math.sin(anguloEntreVecinos / 2));
+}
+
+function calcularRadioSubrueda(cantidadHijos: number): number {
+  const radioMinimo =
+    RADIO_AGRANDADO + GAP_RADIAL + Math.hypot(ANCHO_CAJA_SATELITE / 2, ALTO_CAJA_SATELITE / 2);
+  if (cantidadHijos <= 1) return radioMinimo;
+
+  const anguloEntreHijos = (2 * Math.PI) / cantidadHijos;
+  const cuerdaNecesaria = ANCHO_CAJA_SATELITE + GAP_RADIAL;
+  const radioPorEmpaquetado = cuerdaNecesaria / (2 * Math.sin(anguloEntreHijos / 2));
+
+  return Math.max(radioMinimo, radioPorEmpaquetado);
+}
+
+function crearHub() {
+  const hub = document.createElement('div');
+  hub.className = 'linaje-hub';
+  hub.innerHTML = `
+    <div class="linaje-panel">
+      <h3 class="linaje-panel-titulo"></h3>
+      <p class="linaje-panel-definicion"></p>
+      <p class="linaje-panel-sinonimos"></p>
+      <button type="button" class="linaje-panel-boton">Ver casos</button>
+    </div>
+  `;
+
+  const panel = hub.querySelector<HTMLElement>('.linaje-panel')!;
+  const titulo = panel.querySelector<HTMLElement>('.linaje-panel-titulo')!;
+  const definicion = panel.querySelector<HTMLElement>('.linaje-panel-definicion')!;
+  const sinonimos = panel.querySelector<HTMLElement>('.linaje-panel-sinonimos')!;
+  const botonVerCasos = panel.querySelector<HTMLButtonElement>('.linaje-panel-boton')!;
+
+  let nodoActivo: HTMLElement | null = null;
+
+  function seleccionar(
+    d: NodoMutable,
+    elemento: HTMLElement,
+    colorDeNodo: (d: NodoMutable) => string,
+  ) {
+    nodoActivo?.classList.remove('linaje-nodo--activo');
+    elemento.classList.add('linaje-nodo--activo');
+    nodoActivo = elemento;
+
+    const color = colorDeNodo(d);
+    panel.style.setProperty('--categoria-color', color);
+    panel.style.setProperty('--categoria-color-texto', colorTextoContraste(color));
+
+    titulo.textContent = d.data.Nombre;
+    definicion.textContent = d.data['Explicación']?.trim() || 'Sin definición disponible.';
+    sinonimos.textContent = `Sinónimos: ${formatearSinonimos(d.data['Sinónimos'])}`;
+    botonVerCasos.onclick = () => irATablasFiltradas(overridesDeNodo(d));
+  }
+
+  return { elemento: hub, seleccionar };
+}
 
 export async function crearLinaje(containerId: string, esCriminal: boolean) {
   const datos = (await d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`)).filter((d: any) => {
@@ -100,6 +135,7 @@ export async function crearLinaje(containerId: string, esCriminal: boolean) {
 
   const root: NodoMutable = stratifier(datos);
   const categorias: NodoMutable[] = root.children ?? [];
+  const n = categorias.length;
 
   const colorPorCategoria = new Map<string, string>();
   categorias.forEach((categoria: NodoMutable, indice: number) => {
@@ -110,176 +146,363 @@ export async function crearLinaje(containerId: string, esCriminal: boolean) {
   });
 
   function colorDeNodo(d: NodoMutable): string {
-    if (d.depth === 0) return COLOR_RAIZ;
     if (d.depth === 1) return colorPorCategoria.get(d.data.Path)!;
 
     return colorPorCategoria.get(d.parent.data.Path)!;
   }
 
-  const tree = d3.tree().nodeSize([DX, 1]);
-
-  tree(root);
-  root.each((d: NodoMutable) => {
-    d.y = COLUMNAS_X[d.depth];
+  const r1 = calcularRadioPrincipal(n);
+  categorias.forEach((categoria: NodoMutable, indice: number) => {
+    categoria.anguloBase = (indice * 2 * Math.PI) / n;
+    const pos = polarACartesiano(categoria.anguloBase, r1);
+    categoria.baseX = pos.x;
+    categoria.baseY = pos.y;
   });
 
-  let x0 = Infinity;
-  let x1 = -Infinity;
+  const svgNs = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNs, 'svg') as SVGSVGElement;
+  svg.setAttribute('class', 'linaje-radial-svg');
+  if (!esCriminal) svg.classList.add('linaje-radial-svg--achicada');
+  svg.style.setProperty('--angulo-rueda', '0deg');
+  svg.style.setProperty('--duracion-giro', `${DURACION_GIRO_MS}ms`);
+  const extentoAnillo = r1 + RADIO_AGRANDADO;
+  const padAnillo = 24;
+  svg.setAttribute(
+    'viewBox',
+    `${-extentoAnillo - padAnillo} ${-extentoAnillo - padAnillo} ${(extentoAnillo + padAnillo) * 2} ${(extentoAnillo + padAnillo) * 2}`,
+  );
 
-  root.each((d: NodoMutable) => {
-    if (d.x > x1) x1 = d.x;
+  function crearLineaSvg(x1: number, y1: number, x2: number, y2: number, color: string) {
+    const linea = document.createElementNS(svgNs, 'line');
+    linea.setAttribute('x1', String(x1));
+    linea.setAttribute('y1', String(y1));
+    linea.setAttribute('x2', String(x2));
+    linea.setAttribute('y2', String(y2));
+    linea.setAttribute('class', 'linaje-arbol-linea');
+    linea.style.setProperty('--categoria-color', color);
 
-    if (d.x < x0) x0 = d.x;
+    return linea;
+  }
+
+  function crearForeignObject(x: number, y: number, ancho: number, alto: number) {
+    const fo = document.createElementNS(svgNs, 'foreignObject');
+    fo.setAttribute('x', String(x));
+    fo.setAttribute('y', String(y));
+    fo.setAttribute('width', String(ancho));
+    fo.setAttribute('height', String(alto));
+
+    return fo;
+  }
+
+  const ruedaPrincipal = document.createElementNS(svgNs, 'g');
+  ruedaPrincipal.setAttribute('class', 'linaje-rueda-principal');
+  svg.append(ruedaPrincipal);
+
+  categorias.forEach((categoria: NodoMutable) => {
+    const color = colorDeNodo(categoria);
+
+    ruedaPrincipal.append(crearLineaSvg(0, 0, categoria.baseX, categoria.baseY, color));
+
+    const posG = document.createElementNS(svgNs, 'g');
+    posG.setAttribute('transform', `translate(${categoria.baseX}, ${categoria.baseY})`);
+
+    const contraG = document.createElementNS(svgNs, 'g');
+    contraG.setAttribute('class', 'linaje-categoria-contrarrotacion');
+
+
+    const foCategoria = crearForeignObject(
+      -RADIO_AGRANDADO,
+      -RADIO_AGRANDADO,
+      RADIO_AGRANDADO * 2,
+      RADIO_AGRANDADO * 2,
+    );
+
+    const hueco = document.createElement('div');
+    hueco.className = 'linaje-nodo-hueco';
+
+    const circulo = document.createElement('button');
+    circulo.type = 'button';
+    circulo.className = 'linaje-nodo linaje-nodo-circulo';
+    circulo.style.setProperty('--categoria-color', color);
+    circulo.style.setProperty('--categoria-color-texto', colorTextoContraste(color));
+
+    const texto = document.createElement('span');
+    texto.className = 'linaje-nodo-circulo-texto';
+    texto.textContent = categoria.data.Nombre;
+    circulo.append(texto);
+    circulo.addEventListener('click', () => activarCategoria(categoria));
+    conectarTooltip(circulo, categoria);
+
+    hueco.append(circulo);
+    foCategoria.append(hueco);
+    contraG.append(foCategoria);
+    posG.append(contraG);
+    ruedaPrincipal.append(posG);
+
+    categoria.elementoCirculo = circulo;
   });
 
-  const alto = x1 - x0 + MARGEN * 2;
-  const ancho = COLUMNAS_X[2] + ANCHO_CAJA / 2 + MARGEN * 2;
+  const { elemento: hubElemento, seleccionar: seleccionarBase } = crearHub();
+
+  // Selector: solo categorías (nivel 1) en un <select> nativo, para saltar
+  // directo a cualquiera sin tener que ubicarla primero en la rueda. Cada
+  // <option> usa el Path de la categoría (único en Linaje.csv) como value.
+  const selectorCrimen = document.createElement('select');
+  selectorCrimen.className = 'linaje-selector-crimen';
+  selectorCrimen.setAttribute('aria-label', 'Ir directo a una categoría');
+
+  const opcionInicial = document.createElement('option');
+  opcionInicial.value = '';
+  opcionInicial.textContent = 'Ir a una categoría…';
+  opcionInicial.disabled = true;
+  opcionInicial.hidden = true;
+  opcionInicial.selected = true;
+  selectorCrimen.append(opcionInicial);
+
+  const categoriasPorPath = new Map<string, NodoMutable>();
+  categorias.forEach((categoria: NodoMutable) => {
+    categoriasPorPath.set(categoria.data.Path, categoria);
+
+    const opcion = document.createElement('option');
+    opcion.value = categoria.data.Path;
+    opcion.textContent = categoria.data.Nombre;
+    selectorCrimen.append(opcion);
+  });
+
+  selectorCrimen.addEventListener('change', () => {
+    const categoria = categoriasPorPath.get(selectorCrimen.value);
+    if (categoria) activarCategoria(categoria);
+    selectorCrimen.blur();
+  });
+
+  function seleccionar(
+    d: NodoMutable,
+    elemento: HTMLElement,
+    colorFn: (d: NodoMutable) => string,
+  ) {
+    seleccionarBase(d, elemento, colorFn);
+    selectorCrimen.value = d.depth === 1 ? d.data.Path : d.parent.data.Path;
+  }
+
+  hubElemento.querySelector('.linaje-panel-titulo')?.insertAdjacentElement('afterend', selectorCrimen);
+
+  const tituloNivel2 = document.createElement('h4');
+  tituloNivel2.className = 'linaje-nivel-titulo';
+  tituloNivel2.textContent = 'Nivel 2';
+
+  const subruedaContenedor = document.createElement('div');
+  subruedaContenedor.className = 'linaje-subrueda-col';
+
+  const conectorSvg = document.createElementNS(svgNs, 'svg') as SVGSVGElement;
+  conectorSvg.setAttribute('class', 'linaje-conector-svg');
+
+  const tooltip = document.createElement('div');
+  tooltip.className = 'tooltip-grafico tooltip-grafico--neutro tooltip-grafico--grande';
+  function moverTooltip(event: MouseEvent) {
+    const rect = wrapper.getBoundingClientRect();
+    const relX = event.clientX - rect.left;
+    const relY = event.clientY - rect.top;
+    const margen = 14;
+    const anchoTooltip = tooltip.offsetWidth;
+    const altoTooltip = tooltip.offsetHeight;
+
+    let left = relX + margen;
+    if (left + anchoTooltip > rect.width) left = relX - margen - anchoTooltip;
+    left = Math.max(0, Math.min(left, rect.width - anchoTooltip));
+
+    let top = relY + margen;
+    if (top + altoTooltip > rect.height) top = relY - margen - altoTooltip;
+    top = Math.max(0, Math.min(top, rect.height - altoTooltip));
+
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+  }
+  function conectarTooltip(elemento: HTMLElement, d: NodoMutable) {
+    elemento.addEventListener('mouseenter', (event) => {
+      tooltip.textContent = d.data.Nombre;
+      tooltip.classList.add('tooltip-grafico--visible');
+      moverTooltip(event as MouseEvent);
+    });
+    elemento.addEventListener('mousemove', moverTooltip);
+    elemento.addEventListener('mouseleave', () => tooltip.classList.remove('tooltip-grafico--visible'));
+  }
+
+  let anguloRuedaActual = 0; // grados, acumulado (no normalizado) para que el giro siempre tome el camino corto
+  let categoriaActiva: NodoMutable | null = null;
+  const ANGULO_OBJETIVO_GRADOS = 90;
+
+  function activarCategoria(categoria: NodoMutable) {
+    const mostradoActual =
+      ((((categoria.anguloBase * 180) / Math.PI + anguloRuedaActual) % 360) + 360) % 360;
+    let delta = ANGULO_OBJETIVO_GRADOS - mostradoActual;
+    if (delta < -180) delta += 360;
+    if (delta > 180) delta -= 360;
+    anguloRuedaActual += delta;
+
+    svg.style.setProperty('--angulo-rueda', `${anguloRuedaActual}deg`);
+
+    categoriaActiva?.elementoCirculo.classList.remove('linaje-nodo-circulo--agrandada');
+    categoria.elementoCirculo.classList.add('linaje-nodo-circulo--agrandada');
+    categoriaActiva = categoria;
+
+    seleccionar(categoria, categoria.elementoCirculo, colorDeNodo);
+    reconstruirSubrueda(categoria);
+    actualizarConector();
+  }
+
+  function reconstruirSubrueda(categoria: NodoMutable) {
+    subruedaContenedor.replaceChildren();
+
+    const hijos: NodoMutable[] = categoria.children ?? [];
+    tituloNivel2.hidden = hijos.length === 0;
+    if (hijos.length === 0) return;
+
+    const colorCategoria = colorDeNodo(categoria);
+    const radioSubrueda = calcularRadioSubrueda(hijos.length);
+    const extento = radioSubrueda + Math.max(ANCHO_CAJA_SATELITE, ALTO_CAJA_SATELITE) / 2;
+    const pad = 16;
+
+    const svgSub = document.createElementNS(svgNs, 'svg') as SVGSVGElement;
+    svgSub.setAttribute('class', 'linaje-subrueda-svg');
+    svgSub.setAttribute(
+      'viewBox',
+      `${-extento - pad} ${-extento - pad} ${(extento + pad) * 2} ${(extento + pad) * 2}`,
+    );
+
+    hijos.forEach((hijo: NodoMutable, indice: number) => {
+      const pos = polarACartesiano((indice * 2 * Math.PI) / hijos.length, radioSubrueda);
+
+      svgSub.append(crearLineaSvg(0, 0, pos.x, pos.y, colorCategoria));
+
+      const caja = document.createElement('button');
+      caja.type = 'button';
+      caja.className = 'linaje-nodo linaje-nodo-caja';
+      caja.style.setProperty('--categoria-color', colorCategoria);
+      caja.style.setProperty('--categoria-color-texto', colorTextoContraste(colorCategoria));
+      caja.textContent = hijo.data.Nombre;
+      caja.addEventListener('click', () => seleccionar(hijo, caja, colorDeNodo));
+      conectarTooltip(caja, hijo);
+
+      const foHijo = crearForeignObject(
+        pos.x - ANCHO_CAJA_SATELITE / 2,
+        pos.y - ALTO_CAJA_SATELITE / 2,
+        ANCHO_CAJA_SATELITE,
+        ALTO_CAJA_SATELITE,
+      );
+      foHijo.append(caja);
+      svgSub.append(foHijo);
+    });
+
+    const foCentro = crearForeignObject(
+      -RADIO_AGRANDADO,
+      -RADIO_AGRANDADO,
+      RADIO_AGRANDADO * 2,
+      RADIO_AGRANDADO * 2,
+    );
+    const centro = document.createElement('div');
+    centro.className = 'linaje-subrueda-centro';
+    centro.style.setProperty('--categoria-color', colorCategoria);
+    centro.style.setProperty('--categoria-color-texto', colorTextoContraste(colorCategoria));
+    const centroTexto = document.createElement('span');
+    centroTexto.className = 'linaje-nodo-circulo-texto';
+    centroTexto.textContent = categoria.data.Nombre;
+    centro.append(centroTexto);
+    conectarTooltip(centro, categoria);
+    foCentro.append(centro);
+    svgSub.append(foCentro);
+
+    subruedaContenedor.append(svgSub);
+  }
+
+  let montado = false;
+
+  function actualizarConector() {
+    const subSvg = subruedaContenedor.querySelector('svg');
+    if (!montado || !subSvg || !categoriaActiva) {
+      conectorSvg.replaceChildren();
+      return;
+    }
+
+    const wrapperRect = wrapper.getBoundingClientRect();
+    if (wrapperRect.width === 0 || wrapperRect.height === 0) return; // aún no tiene layout
+
+    conectorSvg.setAttribute('viewBox', `0 0 ${wrapperRect.width} ${wrapperRect.height}`);
+
+    const svgRect = svg.getBoundingClientRect();
+    const cajaPrincipal = svg.viewBox.baseVal;
+    const escalaPrincipal = svgRect.width / cajaPrincipal.width;
+    const x1 = svgRect.left - wrapperRect.left + (r1 + RADIO_AGRANDADO - cajaPrincipal.x) * escalaPrincipal;
+    const y1 = svgRect.top - wrapperRect.top + (0 - cajaPrincipal.y) * escalaPrincipal;
+
+    const subRect = subSvg.getBoundingClientRect();
+    const cajaSub = subSvg.viewBox.baseVal;
+    const escalaSub = subRect.width / cajaSub.width;
+    const centroX = subRect.left - wrapperRect.left + (0 - cajaSub.x) * escalaSub;
+    const centroY = subRect.top - wrapperRect.top + (0 - cajaSub.y) * escalaSub;
+
+    const anguloLlegada = Math.atan2(x1 - centroX, -(y1 - centroY));
+    const totalHijos = subSvg.querySelectorAll('.linaje-nodo-caja').length;
+    let anguloHueco = anguloLlegada;
+    let mejorDistancia = Infinity;
+    for (let i = 0; i < totalHijos; i++) {
+      const candidato = (i + 0.5) * ((2 * Math.PI) / totalHijos);
+      const distancia = Math.abs(
+        ((((candidato - anguloLlegada + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) -
+          Math.PI,
+      );
+      if (distancia < mejorDistancia) {
+        mejorDistancia = distancia;
+        anguloHueco = candidato;
+      }
+    }
+
+    const radioExterno = cajaSub.width / 2; // mitad del viewBox: por fuera de toda caja, con margen.
+    const control = polarACartesiano(anguloHueco, radioExterno);
+    const final = polarACartesiano(anguloHueco, RADIO_AGRANDADO);
+    const cx = centroX + control.x * escalaSub;
+    const cy = centroY + control.y * escalaSub;
+    const fx = centroX + final.x * escalaSub;
+    const fy = centroY + final.y * escalaSub;
+
+    const path = document.createElementNS(svgNs, 'path');
+    path.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${fx} ${fy}`);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('class', 'linaje-arbol-linea linaje-conector-linea');
+    path.style.setProperty('--categoria-color', colorDeNodo(categoriaActiva));
+
+    conectorSvg.replaceChildren(path);
+  }
+
+  window.addEventListener('resize', actualizarConector);
+
+  // Categoría que arranca activa: "Concubinato" en el árbol criminal,
+  // "Separación" en el no criminal — a pedido, en vez de la primera del
+  // recorrido. Si algún día no aparece con ese nombre exacto en Linaje.csv,
+  // cae de nuevo a la primera categoría en vez de romper el gráfico.
+  const NOMBRE_CATEGORIA_INICIAL = esCriminal ? 'Concubinato' : 'Separación';
+  const categoriaInicial =
+    categorias.find((categoria: NodoMutable) => categoria.data.Nombre === NOMBRE_CATEGORIA_INICIAL) ??
+    categorias[0];
+  activarCategoria(categoriaInicial);
+
+  const tituloNivel1 = document.createElement('h4');
+  tituloNivel1.className = 'linaje-nivel-titulo';
+  tituloNivel1.textContent = 'Nivel 1';
+
+  const columnaRueda = document.createElement('div');
+  columnaRueda.className = 'linaje-rueda-col';
+  columnaRueda.append(tituloNivel1, svg);
+
+  const columnaHub = document.createElement('div');
+  columnaHub.className = 'linaje-hub-col';
+  columnaHub.append(hubElemento, tituloNivel2, subruedaContenedor);
 
   const wrapper = document.createElement('div');
   wrapper.className = 'linaje-wrapper';
-
-  const arbol = document.createElement('div');
-  arbol.className = 'linaje-arbol';
-  arbol.style.width = `${ancho}px`;
-  arbol.style.height = `${alto}px`;
-
-  function px(d: NodoMutable): number {
-    return d.y + MARGEN;
-  }
-  function py(d: NodoMutable): number {
-    return d.x - x0 + MARGEN;
-  }
-
-  const svgNs = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(svgNs, 'svg');
-  svg.setAttribute('class', 'linaje-arbol-lineas');
-  svg.setAttribute('width', String(ancho));
-  svg.setAttribute('height', String(alto));
-
-  root.links().forEach((link: NodoMutable) => {
-    const xOrigen = px(link.source);
-    const yOrigen = py(link.source);
-    const xDestino = px(link.target);
-    const yDestino = py(link.target);
-    const xMedio = (xOrigen + xDestino) / 2;
-
-    const path = document.createElementNS(svgNs, 'path');
-    path.setAttribute(
-      'd',
-      `M${xOrigen},${yOrigen} C${xMedio},${yOrigen} ${xMedio},${yDestino} ${xDestino},${yDestino}`,
-    );
-    path.setAttribute('class', 'linaje-arbol-linea');
-    path.style.setProperty('--categoria-color', colorDeNodo(link.target));
-    svg.append(path);
-  });
-
-  arbol.append(svg);
-
-  // Las definiciones y sinónimos solo tienen contenido útil en el árbol de
-  // delitos criminales; en el de no-criminales casi todos los campos de
-  // Explicación/Sinónimos están vacíos, así que ese árbol se muestra sin
-  // interacción (sin panel, sin clic).
-  let seleccionar: ((d: NodoMutable, elemento: HTMLElement) => void) | null = null;
-
-  if (esCriminal) {
-    const layout = document.createElement('div');
-    layout.className = 'linaje-layout';
-    layout.append(arbol);
-    wrapper.append(layout);
-
-    const panel = document.createElement('div');
-    panel.className = 'linaje-panel';
-    panel.innerHTML = `
-      <p class="linaje-panel-vacio">Selecciona una categoría o un subcrimen para ver su definición.</p>
-      <div class="linaje-panel-contenido">
-        <h3 class="linaje-panel-titulo"></h3>
-        <p class="linaje-panel-definicion"></p>
-        <p class="linaje-panel-sinonimos"></p>
-        <button type="button" class="linaje-panel-boton">Ver casos</button>
-      </div>
-    `;
-    layout.append(panel);
-
-    const titulo = panel.querySelector<HTMLElement>('.linaje-panel-titulo')!;
-    const definicion = panel.querySelector<HTMLElement>('.linaje-panel-definicion')!;
-    const sinonimos = panel.querySelector<HTMLElement>('.linaje-panel-sinonimos')!;
-    const botonVerCasos = panel.querySelector<HTMLButtonElement>('.linaje-panel-boton')!;
-
-    let nodoActivo: HTMLElement | null = null;
-
-    seleccionar = (d: NodoMutable, elemento: HTMLElement) => {
-      nodoActivo?.classList.remove('linaje-nodo--activo');
-      elemento.classList.add('linaje-nodo--activo');
-      nodoActivo = elemento;
-
-      // Mismo color de la categoría que ya llevan el nodo y sus líneas: el
-      // panel queda con el mismo diseño que el árbol en vez de un acento fijo.
-      const color = colorDeNodo(d);
-      panel.style.setProperty('--categoria-color', color);
-      panel.style.setProperty('--categoria-color-texto', colorTextoContraste(color));
-
-      titulo.textContent = d.data.Nombre;
-      definicion.textContent = d.data['Explicación']?.trim() || 'Sin definición disponible.';
-      sinonimos.textContent = `Sinónimos: ${formatearSinonimos(d.data['Sinónimos'])}`;
-      botonVerCasos.onclick = () => irATablasFiltradas(overridesDeNodo(d));
-
-      panel.classList.add('linaje-panel--con-seleccion');
-    };
-  } else {
-    wrapper.append(arbol);
-  }
-
-  // Solo la raíz (depth 0, el tronco "Delitos") queda sin clic; categorías y
-  // subcrímenes se comportan igual.
-  root.descendants().forEach((d: NodoMutable) => {
-    const clicable = esCriminal && d.depth > 0;
-    const color = colorDeNodo(d);
-
-    if (d.depth < 2) {
-      const radio = d.depth === 0 ? RADIO_RAIZ : RADIO_CIRCULO;
-      const circulo = document.createElement(clicable ? 'button' : 'div');
-      circulo.className = 'linaje-nodo linaje-nodo-circulo';
-      if (d.depth === 0) circulo.classList.add('linaje-nodo-circulo--raiz');
-      circulo.style.width = `${radio * 2}px`;
-      circulo.style.height = `${radio * 2}px`;
-      circulo.style.left = `${px(d) - radio}px`;
-      circulo.style.top = `${py(d) - radio}px`;
-      circulo.style.setProperty('--categoria-color', color);
-      circulo.style.setProperty('--categoria-color-texto', colorTextoContraste(color));
-
-      // El nombre va en un span aparte: el círculo se centra con flex, y el
-      // span recorta con line-clamp — no se pueden combinar display:flex y
-      // display:-webkit-box en el mismo elemento.
-      const texto = document.createElement('span');
-      texto.className = 'linaje-nodo-circulo-texto';
-      texto.textContent = d.data.Nombre;
-      circulo.append(texto);
-
-      if (clicable) {
-        (circulo as HTMLButtonElement).type = 'button';
-        circulo.addEventListener('click', () => seleccionar?.(d, circulo));
-      }
-
-      arbol.append(circulo);
-    } else {
-      const caja = document.createElement(clicable ? 'button' : 'div');
-      caja.className = 'linaje-nodo linaje-nodo-caja';
-      caja.style.width = `${ANCHO_CAJA}px`;
-      caja.style.height = `${ALTO_CAJA}px`;
-      caja.style.left = `${px(d) - ANCHO_CAJA / 2}px`;
-      caja.style.top = `${py(d) - ALTO_CAJA / 2}px`;
-      caja.style.setProperty('--categoria-color', color);
-      caja.style.setProperty('--categoria-color-texto', colorTextoContraste(color));
-      caja.textContent = d.data.Nombre;
-
-      if (clicable) {
-        (caja as HTMLButtonElement).type = 'button';
-        caja.addEventListener('click', () => seleccionar?.(d, caja));
-      }
-
-      arbol.append(caja);
-    }
-  });
+  wrapper.append(conectorSvg, columnaRueda, columnaHub, tooltip);
 
   document.getElementById(containerId)!.append(wrapper);
+
+  montado = true;
+  actualizarConector();
 }

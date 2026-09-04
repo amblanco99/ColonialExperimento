@@ -1,0 +1,176 @@
+@use 'abstracts/variables' as v;
+
+/* =====================================================
+   PREGUNTAS EN TARJETAS (PreguntasTarjetas.ts)
+   Referencia: lista de píldoras rosa (preguntas) a la izquierda + tarjeta de
+   respuesta a la derecha — clic en una píldora activa esa pregunta. La
+   columna rosa se desborda y hace scroll con Lenis (mismo wrapper/content
+   que la rueda de años de LineaTiempoCasos.ts), sin scrollbar nativo
+   visible.
+===================================================== */
+.preguntas-tarjetas {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  width: 100%;
+}
+
+.preguntas-tarjetas-pista {
+  // Al menos un tercio del ancho total (antes eran 280px fijos, que en una
+  // sección ancha quedaban chicos frente al panel de respuesta).
+  flex: 0 0 34%;
+  min-width: 240px;
+  max-width: 100%;
+  max-height: 380px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // Edge/IE viejos
+  border-radius: 22px;
+  padding: 14px;
+  background: rgba(187, 78, 153, 0.08); // tinte del mismo rosa de las píldoras
+}
+
+.preguntas-tarjetas-pista::-webkit-scrollbar {
+  display: none; // Chrome/Safari/Edge nuevos
+}
+
+.preguntas-tarjetas-pildoras {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.preguntas-tarjetas-pildora {
+  text-align: left;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #fff;
+  background: var(--mapa-acento-linea, #bb4e99);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.preguntas-tarjetas-pildora:hover {
+  background: #a13f80;
+}
+
+.preguntas-tarjetas-pildora--activa,
+.preguntas-tarjetas-pildora--activa:hover {
+  background: #fff;
+  color: var(--mapa-acento-linea, #bb4e99);
+}
+
+.preguntas-tarjetas-pildora--volver {
+  background: transparent;
+  border: 1.5px solid #fff;
+  color: #fff;
+}
+
+.preguntas-tarjetas-pildora--volver:hover {
+  background: #fff;
+  color: var(--mapa-acento-linea, #bb4e99);
+}
+
+.preguntas-tarjetas-panel {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: 24px 26px;
+  border: 1.5px solid var(--rule, #c8b89a);
+  border-radius: 12px;
+  background: var(--parchment, #f7f2e8);
+}
+
+// Dos bordes asomando detrás del panel, como el mazo de tarjetas apiladas de
+// la referencia — puramente decorativo, sin contenido.
+.preguntas-tarjetas-panel::before,
+.preguntas-tarjetas-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 1.5px solid var(--rule, #c8b89a);
+  border-radius: 12px;
+  background: var(--parchment, #f7f2e8);
+}
+
+.preguntas-tarjetas-panel::before {
+  transform: translate(6px, 6px);
+  opacity: 0.6;
+}
+
+.preguntas-tarjetas-panel::after {
+  transform: translate(12px, 12px);
+  opacity: 0.35;
+}
+
+.preguntas-tarjetas-chip {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--mapa-acento-linea, #bb4e99);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.preguntas-tarjetas-respuesta {
+  // El panel se ensancha junto con la sección; el párrafo se queda en un
+  // ancho de lectura cómodo en vez de estirarse línea a línea, y se centra
+  // dentro del panel (igual que el chip de arriba) en vez de quedar pegado
+  // al padding izquierdo.
+  max-width: 640px;
+  margin: 0 auto;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--ink, #1a1410);
+  white-space: pre-line;
+}
+
+.preguntas-tarjetas-respuesta strong {
+  color: var(--accent);
+}
+
+.preguntas-tarjetas-respuesta a {
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.preguntas-tarjetas-respuesta a:hover {
+  filter: brightness(0.85);
+}
+
+.preguntas-tarjetas-grafica {
+  margin-top: 16px;
+}
+
+// El gráfico de Observable Plot fija un width en px (ver TiposCasos.ts);
+// como acá vive dentro de una tarjeta angosta, se reescala por CSS en vez
+// de dejarlo desbordar con scroll.
+.preguntas-tarjetas-grafica svg {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: v.$bp-movil) {
+  .preguntas-tarjetas {
+    flex-direction: column;
+  }
+
+  .preguntas-tarjetas-pista {
+    flex: none;
+    width: 100%;
+    max-height: 220px;
+  }
+}

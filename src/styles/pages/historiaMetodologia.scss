@@ -1,0 +1,172 @@
+@use 'abstracts/variables' as v;
+
+/* =====================================================
+   HISTORIA EN DIAPOSITIVAS (HistoriaMetodologia.ts)
+   Carrusel tipo PowerPoint: avanzar anima .historia-contenido con
+   transform: translateX() sobre una transición CSS (ver la regla de
+   .historia-contenido más abajo), en vez de hacer scroll — así la
+   diapositiva completa se desliza de un solo golpe, sin frames intermedios
+   con dos diapositivas a la vista. Cada .historia-slide mide 100% de
+   .historia-pista por flex-basis (no por JS), así que el índice activo
+   siempre cae exacto sin tener que remedir en resize.
+===================================================== */
+.historia-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+}
+
+.historia-pista {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  // Alto fijado a mano en cada render() (ver el .ts) con la altura real de
+  // la diapositiva activa; la transición lo acompaña cuando cambia entre
+  // diapositivas de largo distinto.
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.historia-contenido {
+  display: flex;
+  // flex-start, no stretch: cada .historia-slide debe medir solo lo que
+  // pide su propio contenido (ver medición en el .ts) — con stretch, todas
+  // quedarían tan altas como la más larga del carrusel.
+  align-items: flex-start;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Diapositiva editorial: imagen de época + texto, en vez de la tarjeta de
+// solo texto de antes. Los pares alternan el lado de la imagen (nth-child)
+// para que el carrusel completo se sienta como una maqueta de revista y no
+// una fila de tarjetas idénticas.
+.historia-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 28px 32px;
+  border: 1.5px solid var(--rule, #c8b89a);
+  border-radius: 8px;
+  background: var(--parchment, #f7f2e8);
+  min-height: 320px;
+}
+
+.historia-slide:nth-child(even) {
+  flex-direction: row-reverse;
+}
+
+.historia-slide-imagen {
+  flex: 0 0 260px;
+  width: 260px;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1.5px solid var(--rule, #c8b89a);
+}
+
+.historia-slide-imagen img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.historia-slide-cuerpo {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+}
+
+.historia-slide-texto {
+  margin: 0;
+  max-width: 560px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink, #1a1410);
+  text-align: left;
+}
+
+// Diapositivas de ambiente (Puerta/Casas, no protagonistas): la ilustración
+// cubre toda la tarjeta detrás del texto, atenuada con un velo del color de
+// --parchment para que el texto siga leyéndose. --historia-fondo la fija el
+// .ts por diapositiva. El texto se centra: sin una imagen a un costado que
+// lo justifique, alinearlo a la izquierda se veía descolgado.
+.historia-slide--fondo {
+  justify-content: center;
+  background-image: linear-gradient(rgba(247, 242, 232, 0.87), rgba(247, 242, 232, 0.87)),
+    var(--historia-fondo);
+  background-size: cover;
+  background-position: center;
+}
+
+.historia-slide--fondo .historia-slide-cuerpo {
+  align-items: center;
+  text-align: center;
+}
+
+.historia-slide--fondo .historia-slide-texto {
+  margin: 0 auto;
+  text-align: center;
+}
+
+@media (max-width: v.$bp-movil) {
+  .historia-slide,
+  .historia-slide:nth-child(even) {
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 0;
+  }
+
+  .historia-slide-imagen {
+    width: 100%;
+    flex-basis: auto;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+.historia-flecha {
+  flex: none;
+  align-self: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--rule, #c8b89a);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--accent);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.historia-flecha:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.historia-puntos {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+  padding-left: 44px;
+}
+
+.historia-punto {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--rule, #c8b89a);
+  cursor: pointer;
+}
+
+.historia-punto--activo {
+  background: var(--accent);
+}

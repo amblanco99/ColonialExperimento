@@ -172,6 +172,12 @@
   font-size: 12.5px;
   line-height: 1.5;
   color: var(--mapa-tinta-oscura);
+  margin: 0 0 10px;
+}
+
+// Mismo botón que el resto del dashboard (.btn-mapa-ver-casos en
+// botones.scss); acá solo el espacio respecto del texto de la definición.
+.crimenes-tipo-boton-ver-casos {
   margin: 0;
 }
 

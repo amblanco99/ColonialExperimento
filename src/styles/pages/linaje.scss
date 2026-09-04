@@ -1,68 +1,211 @@
 @use 'abstracts/variables' as v;
 
-/* =====================================================
-   ÁRBOL DE LINAJES DE DELITOS (Linaje.ts)
-   Mismo árbol jerárquico de siempre (raíz "Delitos" → categoría → subcrimen,
-   izquierda a derecha, un único lienzo con d3.tree) pero con los nodos
-   rediseñados: círculos de color para la raíz y las categorías, cajas
-   redondeadas para los subcrímenes, conectados por curvas — en vez de los
-   puntos + texto plano de antes.
-
-   En el árbol de delitos criminales, clic en un círculo o una caja llena el
-   panel de definición fijo a la derecha (sticky, sin oscurecer el resto de
-   la página, a diferencia del popup con fondo oscuro que había antes); en el
-   de no-criminales no hay clic (ver el comentario en Linaje.ts sobre por
-   qué). La raíz nunca es clicable, en ningún árbol.
-===================================================== */
-
-// global.scss le pone `overflow-x: auto` a .chart-linaje (para que tablas u
-// otros gráficos anchos no rompan el layout en pantallas angostas). Por el
-// spec de CSS, si un eje de overflow no es "visible" el otro pasa de
-// "visible" a "auto" solo — eso convierte a .chart-linaje en el contenedor
-// de scroll del panel sticky, y como .chart-linaje en sí nunca scrollea
-// (crece con el contenido, no tiene alto fijo), el sticky deja de reaccionar
-// al scroll real de la página y el panel se pierde apenas se baja. Se anula
-// solo desde el punto en que el layout pasa a ser lado a lado (ver el media
-// query de $bp-movil más abajo): en móvil, con todo apilado en una columna y
-// el panel ya no sticky, sigue haciendo falta por si el árbol (ancho fijo)
-// no entra en la pantalla.
-@media (min-width: v.$bp-movil) {
-  .chart-linaje {
-    overflow: visible;
-  }
+/* Ensancha .container solo en esta página (misma idea que
+   .mapa-main-ancho / .personas-main-ancho): la rueda + el abanico + la
+   tarjeta necesitan mucho más ancho que la columna de lectura de 900px. */
+.linaje-main-ancho {
+  max-width: 1700px;
+  width: 96%;
+  align-items: stretch;
 }
+
+/* style.css define `section { max-width: 750px; }` para toda sección del
+   sitio; sin este override las dos secciones de la rueda quedarían
+   encajonadas sin importar cuánto se ensanche .container. */
+.linaje-seccion-ancha {
+  width: 100%;
+  max-width: none;
+}
+
+/* =====================================================
+   NORIA DE LINAJES DE DELITOS (Linaje.ts)
+   Las categorías (nivel 1) son las "cabinas" de una rueda principal que gira,
+   dibujada a la izquierda: clic en cualquiera anima la rueda para traerla al
+   punto derecho del anillo, donde se agranda (se rompe la igualdad de
+   tamaños a propósito, para que el nombre se lea con claridad). La tarjeta
+   de definición/sinónimos/"Ver casos" (el hub) es una columna aparte, de
+   ancho fijo, al lado derecho de la rueda. Cuando la categoría activa tiene
+   subcrímenes (nivel 2), debajo de esa tarjeta aparece la "subrueda": un
+   segundo <svg>, chico y propio, con esa misma categoría en el centro y sus
+   subcrímenes repartidos en círculo completo alrededor — mismo lenguaje
+   visual que la rueda principal, pero sin competir por espacio con ella. Sin
+   subcrímenes, la subrueda queda vacía y se colapsa (ver
+   .linaje-subrueda-col:empty), y la tarjeta ocupa sola la columna.
+
+   Ambas ruedas viven en un <svg viewBox="…">, con cada nodo dibujado como
+   <foreignObject> — así los botones conservan su HTML de siempre
+   (line-clamp, centrado flex, :hover) pero escalan solo con CSS (width:100%)
+   igual que el resto de los gráficos del proyecto, sin scrollbar en
+   pantallas angostas. El hub, en cambio, es HTML normal fuera de todo SVG.
+===================================================== */
 
 .linaje-wrapper {
   position: relative;
-}
-
-.linaje-layout {
   display: flex;
-  align-items: flex-start;
-  gap: 28px;
+  align-items: stretch;
+  gap: 32px;
+  width: 100%;
 }
 
-.linaje-arbol {
-  position: relative;
-  flex: none;
+.linaje-rueda-col {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
-.linaje-arbol-lineas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;
+.linaje-hub-col {
+  flex: 0 0 440px;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+// "Nivel 1" (rueda principal) / "Nivel 2" (subrueda), ver crearLinaje en
+// Linaje.ts: mismo rótulo chico para las dos, así queda claro qué nivel de
+// Linaje.csv dibuja cada visualización. tituloNivel2 se oculta a mano junto
+// con la subrueda cuando la categoría activa no tiene subcrímenes.
+.linaje-nivel-titulo {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-light, #4a3f35);
+}
+
+@media (max-width: 900px) {
+  .linaje-wrapper {
+    flex-direction: column;
+  }
+
+  .linaje-hub-col {
+    flex-basis: auto;
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+.linaje-radial-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+// Gráfico no criminal (ver crearLinaje en Linaje.ts): 20% más chico que el
+// criminal, a pedido — mismos radios internos, ancho renderizado más
+// angosto. .linaje-rueda-col centra lo que sobra en vez de dejarlo pegado al
+// borde izquierdo.
+.linaje-radial-svg--achicada {
+  max-width: 80%;
+}
+
+// Contenedor de la subrueda (ver reconstruirSubrueda en Linaje.ts): sin
+// subcrímenes queda sin hijos y :empty la colapsa, así el gap de
+// .linaje-hub-col no deja un hueco vacío arriba de la tarjeta.
+.linaje-subrueda-col {
+  width: 100%;
+}
+
+.linaje-subrueda-col:empty {
+  display: none;
+}
+
+.linaje-subrueda-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  // 320px de base × ESCALA_SUBRUEDA (1.2, ver crearLinaje en Linaje.ts): el
+  // límite crece con el gráfico en vez de recortarlo a un tamaño fijo, que
+  // hubiera anulado el aumento (el viewBox interno igual se reescala a lo
+  // que entre en este ancho).
+  max-width: 384px;
+  margin: 0 auto;
+}
+
+// Centro de la subrueda: la categoría activa, mismo tamaño que su versión
+// agrandada en la rueda principal, pero sin afordancia de botón (no es
+// clicable — ya está seleccionada) y con texto más grande para leer el
+// nombre completo sin acercarse.
+.linaje-subrueda-centro {
+  width: 116px;
+  height: 116px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--categoria-color);
+  color: var(--categoria-color-texto);
+  box-shadow: 0 0 0 3px var(--ink, #1a1410);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+
+.linaje-subrueda-centro .linaje-nodo-circulo-texto {
+  font-size: 15px;
+  -webkit-line-clamp: 4;
 }
 
 .linaje-arbol-linea {
-  fill: none;
   stroke: var(--categoria-color);
   stroke-opacity: 0.55;
   stroke-width: 1.5px;
 }
 
-.linaje-nodo {
+// Conector entre la rueda principal y la subrueda (ver actualizarConector en
+// Linaje.ts): vive suelto sobre las dos columnas, como una curva continua
+// (no punteada) para leerse como un enlace y no como parte del árbol de
+// líneas de cada rueda.
+.linaje-conector-svg {
   position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.linaje-conector-linea {
+  stroke-width: 2px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+// La rueda entera gira como un solo bloque (clic en una categoría la anima
+// hasta la posición de arriba); cada categoría cancela ese giro en su propio
+// grupo de contra-rotación para que su texto nunca quede de cabeza — mismo
+// truco que un carrusel real. Las dos transiciones comparten duración y
+// timing function para que el giro y la cancelación queden sincronizados
+// cuadro a cuadro.
+.linaje-rueda-principal {
+  transform: rotate(var(--angulo-rueda));
+  transition: transform var(--duracion-giro) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.linaje-categoria-contrarrotacion {
+  transform: rotate(calc(-1 * var(--angulo-rueda)));
+  transition: transform var(--duracion-giro) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// El foreignObject de cada categoría es más grande que el círculo visible
+// (para que este pueda agrandarse sin recortarse); este contenedor centra el
+// botón real dentro de ese espacio de sobra.
+.linaje-nodo-hueco {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.linaje-nodo {
   box-sizing: border-box;
   font-family: var(--font-body);
   text-align: center;
@@ -70,6 +213,8 @@
 }
 
 .linaje-nodo-circulo {
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   border: none;
   background: var(--categoria-color);
@@ -79,15 +224,33 @@
   justify-content: center;
   padding: 6px;
   overflow: hidden;
+  cursor: pointer;
+  transition:
+    width var(--duracion-giro) cubic-bezier(0.4, 0, 0.2, 1),
+    height var(--duracion-giro) cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.15s ease;
 }
 
-.linaje-nodo-circulo--raiz {
-  font-style: italic;
+.linaje-nodo-circulo:hover {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.12);
+}
+
+// La categoría que está arriba de la rueda: más grande y con más lugar para
+// el nombre, a propósito distinta de las demás (ver comentario del bloque).
+.linaje-nodo-circulo--agrandada {
+  width: 116px;
+  height: 116px;
+  box-shadow: 0 0 0 3px var(--ink, #1a1410);
+}
+
+.linaje-nodo-circulo--agrandada .linaje-nodo-circulo-texto {
+  font-size: 15px;
+  -webkit-line-clamp: 4;
 }
 
 .linaje-nodo-circulo-texto {
   font-family: var(--font-body);
-  font-size: 11.5px;
+  font-size: 10.5px;
   font-weight: 700;
   line-height: 1.15;
   overflow-wrap: anywhere;
@@ -96,16 +259,19 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   overflow: hidden;
+  transition: font-size var(--duracion-giro) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .linaje-nodo-caja {
+  width: 100%;
+  height: 100%;
   border-radius: 8px;
   border: 1.5px solid var(--categoria-color);
   background: var(--parchment, #f7f2e8);
   color: var(--ink, #1a1410);
-  font-size: 11px;
-  line-height: 1.2;
-  padding: 4px 10px;
+  font-size: 10.5px;
+  line-height: 1.15;
+  padding: 3px 8px;
   overflow-wrap: anywhere;
   word-break: break-word;
   display: -webkit-box;
@@ -116,29 +282,12 @@
   // align-items lo centra igual que haría flex.
   align-items: center;
   justify-content: center;
-}
-
-button.linaje-nodo {
   cursor: pointer;
-  transition:
-    transform 0.1s ease,
-    box-shadow 0.15s ease;
+  transition: background 0.15s ease;
 }
 
-button.linaje-nodo:hover {
-  transform: scale(1.04);
-}
-
-button.linaje-nodo-circulo:hover {
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.12);
-}
-
-button.linaje-nodo-caja:hover {
+.linaje-nodo-caja:hover {
   background: var(--badge-bg, #f0e6d0);
-}
-
-.linaje-nodo--activo.linaje-nodo-circulo {
-  box-shadow: 0 0 0 3px var(--ink, #1a1410);
 }
 
 .linaje-nodo--activo.linaje-nodo-caja {
@@ -148,78 +297,77 @@ button.linaje-nodo-caja:hover {
   font-weight: 600;
 }
 
-/* Panel de definición: sticky junto al árbol — baja con el scroll (no se
-   queda clavado siempre en el mismo punto de la página, ni desaparece hacia
-   arriba cuando el nodo clickeado está lejos, en un árbol de miles de
-   píxeles de alto) y se mantiene a la vista mientras el árbol sigue
-   scrolleando al lado, para poder ver la definición de cualquier nodo sin
-   tener que volver arriba. Mismo diseño que las cajas del árbol (radio de
-   8px, borde de 1.5px) y el color de la categoría del nodo elegido
-   (--categoria-color, lo fija seleccionar() en Linaje.ts), en vez de un
-   acento fijo — nunca tapa ni oscurece el resto de la página. */
+/* Hub: tarjeta grande y fija a la derecha de la rueda (ver .linaje-hub-col).
+   overflow-y:auto es una red de seguridad de contenido (no "scroll del
+   gráfico") por si una definición es inusualmente larga. */
+.linaje-hub {
+  width: 100%;
+  max-height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
 .linaje-panel {
-  position: sticky;
-  // .topnav mide 65px y también es sticky (top:0, ver global.scss); sin este
-  // offset el panel queda pegado justo debajo de su borde y el título se
-  // esconde detrás. Mismo valor que .personas-filtros-top en dashboard.scss.
-  top: 75px;
-  align-self: flex-start;
-  flex: none;
-  width: 300px;
-  max-width: 100%;
+  width: 100%;
+  min-height: 340px;
+  box-sizing: border-box;
   background: var(--parchment, #f7f2e8);
   border: 1.5px solid var(--categoria-color, var(--rule, #c8b89a));
-  border-radius: 8px;
-  padding: 20px 22px;
+  border-radius: 14px;
+  padding: 30px 34px;
   font-family: var(--font-body);
-}
-
-.linaje-panel-vacio {
-  font-size: 13.5px;
-  font-style: italic;
-  color: var(--ink-light, #4a3f35);
-  margin: 0;
-}
-
-.linaje-panel-contenido {
-  display: none;
-}
-
-.linaje-panel--con-seleccion .linaje-panel-vacio {
-  display: none;
-}
-
-.linaje-panel--con-seleccion .linaje-panel-contenido {
-  display: block;
 }
 
 .linaje-panel-titulo {
   font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   color: var(--categoria-color, var(--accent));
-  margin: 0 0 12px;
+  margin: 0 0 16px;
+}
+
+// Selector "ir directo a un crimen" (ver Linaje.ts): discreto a propósito —
+// texto chico, fondo transparente, borde apenas visible — para que no
+// compita con el título ni con el resto de la tarjeta.
+.linaje-selector-crimen {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 18px;
+  padding: 5px 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--ink-light, #4a3f35);
+  background: transparent;
+  border: 1px solid var(--rule, #c8b89a);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.linaje-selector-crimen:hover,
+.linaje-selector-crimen:focus-visible {
+  border-color: var(--categoria-color, var(--rule, #c8b89a));
 }
 
 .linaje-panel-definicion {
-  font-size: 14.5px;
-  line-height: 1.55;
-  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 16px;
 }
 
 .linaje-panel-sinonimos {
-  font-size: 13px;
+  font-size: 13.5px;
   font-style: italic;
   color: var(--ink-light, #4a3f35);
-  margin: 0 0 18px;
+  margin: 0 0 20px;
 }
 
 .linaje-panel-boton {
-  padding: 7px 16px;
+  padding: 10px 22px;
   border-radius: 6px;
   border: 1px solid var(--categoria-color, var(--accent));
   background: var(--categoria-color, var(--accent));
   color: var(--categoria-color-texto, #fff);
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-family: var(--font-body);
   font-weight: 600;
   cursor: pointer;
@@ -227,15 +375,4 @@ button.linaje-nodo-caja:hover {
 
 .linaje-panel-boton:hover {
   filter: brightness(0.92);
-}
-
-@media (max-width: v.$bp-movil) {
-  .linaje-layout {
-    flex-direction: column;
-  }
-
-  .linaje-panel {
-    position: static;
-    width: 100%;
-  }
 }

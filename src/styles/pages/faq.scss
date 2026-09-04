@@ -1,0 +1,144 @@
+/* =====================================================
+   PREGUNTAS FRECUENTES (PreguntasFrecuentes.ts)
+   Acordeón simple: cada pregunta abre/cierra su respuesta de forma
+   independiente (no exclusivo entre sí). grid-template-rows 0fr→1fr anima el
+   alto sin medir nada por JS. Reutilizado por delitos.astro (metodología de
+   los delitos) y documentacion-tecnica.astro (guía de reutilización de
+   datos) — cada uno le pasa un CSV distinto a crearPreguntasFrecuentes.
+===================================================== */
+.btn-descargar-datos {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-size: 12.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-descargar-datos svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-descargar-datos:hover:not(:disabled) {
+  background: var(--accent-dim);
+  border-color: var(--accent-dim);
+}
+
+.btn-descargar-datos:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+// Debajo del acordeón de preguntas en vez de junto al título (ver
+// about/index.astro): más grande y centrado, como cierre de la sección en
+// vez de una acción secundaria escondida arriba. width: fit-content porque
+// .btn-descargar-datos ya es display: flex — sin eso, al ser hijo directo de
+// <section> (bloque normal, no flex), se estiraría a todo el ancho en vez de
+// quedar como una píldora centrada.
+.btn-descargar-datos--grande {
+  width: fit-content;
+  margin: 22px auto 0;
+  padding: 13px 26px;
+  font-size: 15px;
+}
+
+.btn-descargar-datos--grande svg {
+  width: 18px;
+  height: 18px;
+}
+
+.linaje-faq {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.linaje-faq-item {
+  border: 1.5px solid var(--rule, #c8b89a);
+  border-radius: 8px;
+  background: var(--parchment, #f7f2e8);
+}
+
+.linaje-faq-pregunta {
+  // Texto a la izquierda, pero con el mínimo margen posible para que use
+  // casi todo el ancho de la tarjeta en vez de quedar recortado por el
+  // padding; el ícono +/- se saca del flujo con position: absolute (en vez
+  // de flex + space-between) para que no le robe espacio horizontal al
+  // texto cuando la pregunta es larga y ocupa varias líneas.
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+  background: none;
+  border: none;
+  padding: 12px 34px 12px 14px;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink, #1a1410);
+  text-align: left;
+  cursor: pointer;
+}
+
+.linaje-faq-pregunta::after {
+  content: '+';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  font-weight: 400;
+  transition: transform 0.2s ease;
+}
+
+.linaje-faq-item--abierto .linaje-faq-pregunta::after {
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.linaje-faq-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+}
+
+.linaje-faq-panel-inner {
+  overflow: hidden;
+}
+
+.linaje-faq-item--abierto .linaje-faq-panel {
+  grid-template-rows: 1fr;
+}
+
+.linaje-faq-respuesta {
+  // La barra de pregunta ocupa todo el ancho de la sección; la respuesta se
+  // queda en un ancho de lectura cómodo en vez de estirarse línea a línea, y
+  // se centra dentro del panel en vez de quedar pegada al padding izquierdo.
+  max-width: 720px;
+  margin: 0 auto 14px;
+  text-align: center;
+  font-size: 13.5px;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.linaje-faq-respuesta + .linaje-faq-respuesta {
+  margin-top: -6px;
+}
+
+.linaje-faq-respuesta a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.linaje-faq-respuesta a:hover {
+  filter: brightness(0.85);
+}

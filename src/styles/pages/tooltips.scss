@@ -42,3 +42,12 @@
 .tooltip-grafico--ancho {
   max-width: 240px;
 }
+
+/* Nombre completo del nodo bien legible (ver Linaje.ts): las cajas del
+   gráfico son chicas y recortan textos largos con line-clamp. */
+.tooltip-grafico--grande {
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px 14px;
+  max-width: 280px;
+}

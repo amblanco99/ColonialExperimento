@@ -1,0 +1,60 @@
+Pregunta,Respuesta
+1. Antes de empezar: comprenda la lógica del proyecto,"Las bases de datos no son solo una transcripción literal de los índices del archivo, sino el resultado de un proceso de codificación e interpretación realizado por el equipo del proyecto. Esto significa que:
+
+Se ha creado la categoría de casos para identificar cuántos procesos se encuentran en el archivo. Esto quiere decir que el caso es una reclasificación de los documentos, ya que muchos procesos sobreviven fragmentados en múltiples documentos, dispersos en distintos fondos y legajos, sin ninguna indicación de que pertenecen al mismo proceso. Por lo que este proyecto crea el caso para agrupar los documentos de un proceso.
+
+La clasificación de los delitos, los lugares, los agentes y sus atributos es una decisión metodológica, no una etiqueta extraída directamente del archivo."
+2. Cómo se relacionan las tablas entre sí,"El proyecto está organizado en siete tablas relacionales: Crímenes, Fuentes, Casos, Conteo de agentes, Linaje crímenes, Lugar y Metadatos. Para reutilizar los datos correctamente es indispensable entender qué ID conecta cada tabla:
+
+ID_Caso es el identificador que agrupa todo lo que pertenece a un mismo proceso judicial. Aparece en Crímenes, Fuentes, Casos y Conteo de agentes. Úselo cuando quiera reconstruir toda la información disponible sobre un proceso completo (sus delitos, sus agentes, sus fechas y su fuente archivística).
+
+ID_Crímen es el identificador de cada delito individual dentro de un caso (por ejemplo, 20A, 20B, 20C). Úselo cuando el análisis sea a nivel de delito y no de proceso, por ejemplo, para contar crímenes o para saber en qué delito específico participó un agente.
+
+Código y Sub_Código conectan la tabla Crímenes con Linaje crímenes, que contiene la jerarquía, la definición jurídica y los sinónimos de cada delito. Consulte siempre esta tabla antes de agrupar o reclasificar crímenes, ya que allí está la definición original en la que se basó la codificación (a partir de las Siete Partidas y la Recopilación de Leyes de Indias).
+
+ID_Lugar conecta Crímenes con la tabla Lugar, que contiene las coordenadas geográficas. Tenga en cuenta que el nombre del lugar debe coincidir exactamente entre ambas tablas; si va a cruzar los datos, verifique que no haya variaciones de escritura.
+
+Fuente conecta Crímenes con Fuentes y permite rastrear la ubicación archivística exacta de cada documento (archivo, sección, fondo, legajo, documento y folios).
+
+Recomendación práctica: dado que un caso puede tener varios crímenes, y un crimen puede tener varios agentes, cualquier cruce entre tablas debe hacerse siempre al nivel de ID_Caso o ID_Crímen según corresponda, y no asumir que una fila equivale a un proceso judicial completo. Sumar filas sin distinguir el nivel de análisis puede inflar artificialmente el número de casos o de delitos."
+3. Cómo interpretar las variables sobre los agentes,"Para contar personas e interpretar la tabla Conteo de agentes se recomienda tener en cuenta lo siguiente:
+
+Conteo_mínimo: cuando este campo está marcado como verdadero, el número de personas registradas es una estimación mínima, no una cifra exacta. Tenga en cuenta este marcador para su análisis.
+
+Agente (Persona / Institución / Población Completa / Población Indígena Completa): esta distinción existe justamente para evitar inflar el número de personas involucradas cuando el documento se refiere a un colectivo y no a individuos identificables. No sume ""poblaciones completas"" como si fueran personas individuales en un conteo demográfico.
+
+Calidad: esta variable depende enteramente de lo que el documento menciona explícitamente. La ausencia de una calidad especificada (columna marcada como ""Sin especificar"") no significa que la persona no tuviera una condición social identificable, sino que no se registra en el índice. Evite inferir calidad étnico-social a partir del nombre o de otros datos no explícitos.
+
+Doble_Atributo y RCDA: permiten identificar a un mismo agente cuando actúa como víctima en un delito y como perpetrador en otro dentro del mismo caso. Si su unidad de análisis son los agentes (y no las relaciones agente-delito), recuerde que esa persona aparece una sola vez en la tabla, con su atributo predominante, y que el atributo secundario está registrado por separado. No la cuente dos veces al calcular totales de víctimas o perpetradores."
+4. Consideraciones sobre los lugares,"Las coordenadas de la tabla Lugar corresponden en su mayoría a la plaza principal del lugar mencionado, sino se toma el lugar exacto que referencia (un fuerte o un río) o un punto central. Esto tiene dos implicaciones para quien reutilice los datos:
+
+La ubicación geográfica es una aproximación al centro poblado, no necesariamente el lugar exacto donde ocurrió el hecho.
+
+No siempre es posible determinar con certeza si el lugar registrado corresponde al sitio de los hechos o al lugar donde se llevó a cabo el proceso judicial. Si su análisis depende de esta distinción, revise el documento original antes de asumir una interpretación."
+5. Buenas prácticas generales para el análisis,"Distinga siempre el nivel de análisis (caso, crimen o agente) antes de calcular proporciones o totales. Un mismo caso puede tener varios crímenes y varios agentes, por lo que un conteo simple de filas puede no corresponder al número real de procesos judiciales o de personas.
+
+Consulte la tabla Linaje crímenes antes de agrupar delitos para su propio análisis, ya que allí se explican los sinónimos y la jerarquía (Nivel 1 y Nivel 2) utilizada por el equipo, lo cual evita reclasificaciones incorrectas.
+
+Revise la columna Tipo_delito en Linaje crímenes si su interés es exclusivamente la justicia penal, ya que la base también documenta procesos no criminales (civiles, peticiones, etc.) que no deben incluirse en conteos de criminalidad.
+
+No modifique los ID_Caso o ID_Crímen originales al reutilizar o fusionar los datos con otras fuentes; en su lugar, agregue una columna adicional propia para no romper la trazabilidad con las tablas Fuentes y Conteo de agentes."
+6. Citación y atribución,"Citar como: Crimen y justicia en el Nuevo Reino de Granada: un proyecto de Humanidades Digitales, editado por XXXX, Universidad de los Andes, 2026.
+
+Derechos de autor: Esta obra está bajo una <a href=""https://creativecommons.org/licenses/by-nc-sa/4.0/"" target=""_blank"" rel=""noopener noreferrer"">Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional</a>.
+
+Tener en cuenta que:
+
+Cuando cite el proyecto coloque la versión o fecha de consulta de las bases de datos, ya que estas pueden actualizarse a medida que avanza el proceso de codificación.
+
+Cuando cite un caso o documento específico, use el identificador de la tabla Fuentes (Archivo, Sección, Fondo, Legajo, Documento y Folios) además del ID_Caso o ID_Crímen, para que la referencia sea verificable por otros.
+
+Si su trabajo depende de una interpretación distinta a la del proyecto, aclare explícitamente ese cambio en su propia investigación, para no atribuir al proyecto original una lectura que usted modificó."
+7. Reutilización con herramientas de análisis de datos,"Independientemente de la herramienta que utilice, el reto principal no es técnico sino conceptual: respetar la estructura relacional de las siete tablas y el nivel de análisis correcto (caso, crimen o agente) al momento de cruzarlas.
+
+Consideraciones comunes a cualquier herramienta:
+
+Antes de cruzar tablas, decida el nivel de análisis. Si va a unir Crímenes con Conteo de agentes usando ID_Caso, tenga presente que un mismo caso puede tener varios crímenes y varios agentes: el cruce generará varias filas por caso (una combinación por cada crimen-agente), lo cual es normal, pero no debe interpretarse como si cada fila resultante fuera un caso o crimen distinto.
+
+Trate el campo Relación_crímenes con cuidado. Como este campo puede contener más de un ID_Crímen por agente (separados en la descripción original), no siempre corresponde a una relación uno a uno; si su herramienta hace un cruce automático por ID_Crímen, verifique que estos valores múltiples se interpreten o se separen correctamente antes de contar.
+
+Los valores ""null"" deben importarse como valores vacíos o faltantes, no como texto literal ni como cero, para que las herramientas de análisis los reconozcan como datos ausentes y no los incluyan por error en sumas o promedios."

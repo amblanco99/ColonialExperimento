@@ -57,7 +57,19 @@ export async function crearTabla() {
       )
     : null;
 
-  if (!idCasosPermitidos && vieneDeFiltro) {
+  // genero/atributo/agente solo existen en Visualizaciones.csv (vive a nivel
+  // de agente/persona, no de documento) — sin ninguno de los tres no hace
+  // falta pasar por ahí. Es más que una optimización: Visualizaciones.csv
+  // solo cubre 28 nombres de crimen (nombres de agentes documentados), le
+  // faltan varios que sí existen en Linaje/crimenes.csv ("Delitos de
+  // violencia sexual", "Fuga (e intento)", "Relaciones unisexuales") — filtrar
+  // por código/lugar/fecha a través de ese archivo los deja siempre en cero
+  // casos aunque sí tengan expedientes. Por eso ese trío de filtros se aplica
+  // más abajo directamente sobre dataCrimenes (crimen/subcrimen/Lugar/Año, ya
+  // resueltos contra Linaje.csv), igual que hace CrimenesPorTipo.ts.
+  const hayFiltroAgente = !!(genero || atributo || agente);
+
+  if (!idCasosPermitidos && vieneDeFiltro && hayFiltroAgente) {
     const vizFiltrada = dataViz.filter((d) => {
       const cumpleGenero =
         !genero ||
@@ -103,7 +115,19 @@ export async function crearTabla() {
     ? dataCrimenes.filter((d) => idCasosPermitidos.has(d.ID_Caso))
     : idDocumentosPermitidos
       ? dataCrimenes.filter((d) => idDocumentosPermitidos.has(d['ID_Crímen']))
-      : dataCrimenes;
+      : vieneDeFiltro && !hayFiltroAgente
+        ? dataCrimenes.filter((d) => {
+            const cumpleCodigo = !codigo || d.crimen === codigo;
+            const cumpleSubcodigo = !subcodigo || d.subcrimen === subcodigo;
+            const cumpleLugar = !lugarParam || d.Lugar?.trim() === lugarParam;
+            const cumpleFecha = fecha
+              ? getDecada(+d.Año) === +fecha
+              : fechaDesde && fechaHasta
+                ? getDecada(+d.Año) >= +fechaDesde && getDecada(+d.Año) <= +fechaHasta
+                : true;
+            return cumpleCodigo && cumpleSubcodigo && cumpleLugar && cumpleFecha;
+          })
+        : dataCrimenes;
 
   const lugares = [...new Set(datosFiltradosPorViz.map((d) => d.Lugar))].filter(Boolean).sort();
 

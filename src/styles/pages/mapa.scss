@@ -256,6 +256,13 @@
   margin-top: 14px;
 }
 
+// Sin lugares fijados (solo una provincia elegida), renderizarInfoLugares()
+// no le agrega contenido — sin esto, quedaría una tarjeta vacía (fondo +
+// borde) debajo del gráfico de líneas.
+.mapa-info-lugares:empty {
+  display: none;
+}
+
 .mapa-info-lugar-fila {
   display: flex;
   justify-content: space-between;
@@ -515,7 +522,14 @@
 /* Marcador "estás aquí" dejado por LineaTiempoCasos.ts al ir de un caso al
    mapa — deliberadamente rojo, distinto de la paleta magenta/azul del resto
    del mapa, para que no se confunda con un punto normal ni con una cápsula
-   fijada. */
+   fijada. Se dibuja en la última capa (capa-marcador-caso, ver
+   TiempoCrimenesMapa.ts), encima del punto real de ese lugar — sin
+   pointer-events: none acá, ese círculo relleno tapaba el punto de abajo y
+   no dejaba volver a hacer clic para fijarlo/quitarlo. */
+.capa-marcador-caso {
+  pointer-events: none;
+}
+
 .mapa-marcador-caso-halo {
   fill: none;
   stroke: #d62828;

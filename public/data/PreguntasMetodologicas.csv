@@ -1,0 +1,22 @@
+Pregunta,Respuesta,Desglose
+¿A partir de qué se construyó la base de datos?,"La base de datos se construyó <strong>a partir de las descripciones archivísticas</strong> de la colección Juicios Criminales del Archivo General de la Nación (AGN). No se ha realizado una lectura completa de cada expediente original.",
+¿Cómo se construyó la base de datos?,"Se transcribieron y organizaron sistemáticamente todas las descripciones archivísticas; luego se cotejaron manualmente los nombres personales recurrentes y se verificaron las posibles correspondencias entre documentos mediante evidencia contextual (fechas, lugares y otra información de cada entrada), con el fin de identificar qué documentos, dispersos en distintos fondos y legajos, pertenecían a un mismo proceso judicial.",
+¿Cuáles son las unidades de análisis?,"<strong>Documento</strong>: un único registro archivístico identificado por su signatura del AGN.
+
+<strong>Casos</strong>: uno o más documentos que se refieren al mismo proceso judicial; unidad más amplia de análisis.
+
+<strong>Delitos</strong>: cada delito constituye una observación analítica separada, vinculada al caso correspondiente y a los actores involucrados en él; tiene su propio identificador único. Para más información <a href=""#"" data-ir-vista=""delitos"">entre aquí</a>.
+
+<strong>Agentes</strong>: individuos (u ocasionalmente instituciones o actores colectivos) vinculados a cada delito según su rol procesal.",
+¿Cuáles son las categorías utilizadas?,"<strong>Atributo</strong>: Víctima, cómplice y perpetrador.
+
+<strong>Mujeres mencionadas</strong>: Se resaltan las mujeres que fueron testigas, pero no participantes directas del proceso.
+
+<strong>Otros agentes</strong>: como instituciones y poblaciones, para evitar el sobreconteo de las personas.
+
+<strong>Género</strong>: Restrictiva.
+
+<strong>Calidad</strong>: Social/Racial.
+
+<strong>Ocupación</strong>: Restrictiva.",
+¿Cuáles fueron las decisiones metodológicas?,,data/DecisionesMetodologicas.csv

@@ -640,8 +640,12 @@ export async function inicializarDashboard() {
     layoutLugar.appendChild(columnaSpike);
   }
 
+  // También se revela con una provincia elegida (sin necesidad de fijar un
+  // lugar puntual): buildSerieTotal() ya respeta estado.provincia a través
+  // de datosFiltradosBase(), así que alcanza con mostrar la columna — el
+  // contenido sale solo.
   function actualizarVisibilidadSpike() {
-    const hayLugarSeleccionado = estado.lugaresFijados.size > 0;
+    const hayLugarSeleccionado = estado.lugaresFijados.size > 0 || estado.provincia !== 'Todos';
     layoutLugar!.classList.toggle('mapa-lugar-layout--con-spike', hayLugarSeleccionado);
     columnaSpike?.classList.toggle('mapa-lugar-col-spike--oculta', !hayLugarSeleccionado);
   }
@@ -898,6 +902,7 @@ export async function inicializarDashboard() {
       comboLugar.actualizarOpciones(lugaresDeProvincia(valor));
       actualizarMapa();
       actualizarPanelSecundario(true);
+      actualizarVisibilidadSpike();
       actualizarCrimenesPorTipo();
       actualizarResaltadoProvincia();
       zoomAProvincia(valor);
@@ -925,12 +930,27 @@ export async function inicializarDashboard() {
   btnLimpiarPines.className = 'btn-mapa-limpiar';
   btnLimpiarPines.addEventListener('click', () => {
     estado.lugaresFijados.clear();
-    btnLimpiarPines.classList.remove('btn-mapa--visible');
+    limpiarMarcadorCaso();
+    actualizarVisibilidadBotonLimpiar();
     actualizarMapa();
     actualizarPanelSecundario(true);
     actualizarVisibilidadSpike();
   });
   panelFiltros!.appendChild(btnLimpiarPines);
+
+  // Además de los lugares fijados (comparación), este botón también limpia
+  // el marcador rojo "estás aquí" que deja __resaltarCasoEnMapa (ver más
+  // abajo) — sin esto, el marcador podía quedar pegado sobre su punto sin
+  // ninguna forma de sacarlo. hayMarcadorCaso y limpiarMarcadorCaso se
+  // definen junto a gMarcadorCaso más abajo; se pueden referenciar acá porque
+  // esta función solo se ejecuta al hacer clic, después de que todo el
+  // dashboard ya se inicializó.
+  function actualizarVisibilidadBotonLimpiar() {
+    btnLimpiarPines.classList.toggle(
+      'btn-mapa--visible',
+      estado.lugaresFijados.size > 0 || hayMarcadorCaso,
+    );
+  }
 
   const avisoSinDatos = document.createElement('div');
   avisoSinDatos.className = 'filtro-aviso-sin-datos';
@@ -1073,6 +1093,16 @@ export async function inicializarDashboard() {
   const gCapsulas = gZoom.append('g').attr('class', 'capa-capsulas');
   const gMarcadorCaso = gZoom.append('g').attr('class', 'capa-marcador-caso');
 
+  // Refleja si __resaltarCasoEnMapa dejó el marcador rojo puesto; controla,
+  // junto con estado.lugaresFijados, si "Quitar comparaciones" debe mostrarse
+  // (ver actualizarVisibilidadBotonLimpiar más arriba) y qué limpia al
+  // hacerle clic.
+  let hayMarcadorCaso = false;
+  function limpiarMarcadorCaso() {
+    gMarcadorCaso.selectAll('*').remove();
+    hayMarcadorCaso = false;
+  }
+
   let lugarHoverActivo: NodoMutable = null;
 
   // Mapa base de OpenLayers (tiles de OpenTopoMap): opcional, oculto por
@@ -1198,6 +1228,9 @@ export async function inicializarDashboard() {
       .attr('cy', py)
       .attr('r', 4 / escala)
       .attr('class', 'mapa-marcador-caso-punto');
+
+    hayMarcadorCaso = true;
+    actualizarVisibilidadBotonLimpiar();
   };
 
   let seleccionFilaMapa: NodoMutable = null;
@@ -1451,7 +1484,7 @@ export async function inicializarDashboard() {
     } else {
       estado.lugaresFijados.add(lugar);
     }
-    btnLimpiarPines.classList.toggle('btn-mapa--visible', estado.lugaresFijados.size > 0);
+    actualizarVisibilidadBotonLimpiar();
     dibujarCapsulasFijadas();
     actualizarPanelSecundario(true);
     actualizarVisibilidadSpike();
@@ -1749,11 +1782,17 @@ export async function inicializarDashboard() {
           gg.selectAll('text').attr('class', 'mapa-linea-eje-y-texto');
         });
 
-      const tituloTexto = enModoComparacion
-        ? `Comparando ${series.length} lugar(es) fijado(s)`
-        : estado.crimen === 'Todos'
-          ? 'Todos los crímenes'
-          : estado.crimen;
+      // Sin lugares fijados pero con una provincia elegida, el título deja
+      // claro que la serie está acotada a ese territorio (el filtro mismo ya
+      // lo aplica vía datosFiltradosBase(), acá solo se refleja en el rótulo).
+      const sufijoProvincia =
+        !enModoComparacion && estado.provincia !== 'Todos' ? ` · ${estado.provincia}` : '';
+      const tituloTexto =
+        (enModoComparacion
+          ? `Comparando ${series.length} lugar(es) fijado(s)`
+          : estado.crimen === 'Todos'
+            ? 'Todos los crímenes'
+            : estado.crimen) + sufijoProvincia;
 
       svgLine
         .append('text')

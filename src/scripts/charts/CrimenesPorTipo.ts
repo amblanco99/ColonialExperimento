@@ -36,6 +36,22 @@ interface FiltrosCrimenesPorTipo {
   lugar: string | null;
 }
 
+// Reconstruye exactamente los mismos filtros que ya se usaron para contar
+// las barras (ver pasaFiltrosBase en contar()): el crimen de la fila más el
+// subcrimen/lugar/rango de década compartidos, para que "Ver casos" lleve a
+// la tabla general con precisión, no solo con el nombre del crimen.
+function irATablasFiltradas(nombre: string, filtros: FiltrosCrimenesPorTipo | null) {
+  const params = new URLSearchParams();
+  params.set('codigo', nombre);
+  if (filtros?.subcodigo) params.set('subcodigo', filtros.subcodigo);
+  if (filtros?.lugar) params.set('lugar', filtros.lugar);
+  if (filtros) {
+    params.set('fechaDesde', String(filtros.decadaDesde));
+    params.set('fechaHasta', String(filtros.decadaHasta));
+  }
+  window.location.href = `${import.meta.env.BASE_URL}base-de-datos/index.html?${params.toString()}`;
+}
+
 // TiempoCrimenesMapa.ts expone los filtros del panel compartido (década,
 // crimen, subcrimen, lugar) por este hook y llama al segundo cada vez que
 // cambian, para que este módulo — cargado aparte — se pueda re-renderizar
@@ -232,7 +248,11 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
       .sort((a, b) => b.total - a.total);
   }
 
-  function dibujarBarras(barras: ConteoCrimen[], alternarSeleccion: (nombre: string) => void) {
+  function dibujarBarras(
+    barras: ConteoCrimen[],
+    alternarSeleccion: (nombre: string) => void,
+    filtros: FiltrosCrimenesPorTipo | null,
+  ) {
     contenedorBarras!.innerHTML = '';
 
     if (barras.length === 0) {
@@ -287,6 +307,20 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
       cuerpo.className = explicacion ? 'crimenes-tipo-definicion-texto' : 'mapa-info-lugar-vacio';
       cuerpo.textContent = explicacion || 'Sin definición registrada en la tabla de linaje.';
       panelDefinicion.appendChild(cuerpo);
+
+      // Solo tiene sentido mientras la fila está seleccionada (el panel que
+      // la contiene arranca oculto, ver .crimenes-tipo-definicion en el
+      // .scss) — no hace falta un mostrar/ocultar aparte, se recrea entera
+      // en cada render().
+      const botonVerCasos = document.createElement('button');
+      botonVerCasos.type = 'button';
+      botonVerCasos.className = 'btn-mapa-ver-casos btn-mapa--visible crimenes-tipo-boton-ver-casos';
+      botonVerCasos.textContent = `Ver casos: ${delito.nombre}`;
+      botonVerCasos.addEventListener('click', (evento) => {
+        evento.stopPropagation();
+        irATablasFiltradas(delito.nombre, filtros);
+      });
+      panelDefinicion.appendChild(botonVerCasos);
 
       fila.append(barra, panelDefinicion);
       wrapper.appendChild(fila);
@@ -586,7 +620,7 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
     }
     ultimoCodigoFiltro = codigoActual;
 
-    dibujarBarras(barras, alternarSeleccion);
+    dibujarBarras(barras, alternarSeleccion, filtros);
     actualizarVisibilidadSpike();
     renderizarSpike(porDecadaPorNombre, alternarSeleccion);
     renderizarDonut(filtrados);

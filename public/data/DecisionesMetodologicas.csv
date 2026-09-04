@@ -1,0 +1,11 @@
+Decision,Explicacion,Grafica
+Usar las descripciones archivísticas como fuente principal,"Aceptando el sacrificio del análisis detallado de casos individuales a cambio de poder analizar patrones a gran escala (lectura distante).",
+Distinguir entre documento y caso,"Reconstruyendo los procesos judiciales dispersos en múltiples registros archivísticos.",
+Distinguir entre caso y delito,"Para no perder la variedad de delitos que podían coexistir en un mismo proceso judicial.",
+Redefinir el contenido del archivo,"Clasificando los registros de Juicios Criminales en procesos penales, procesos no penales (inspecciones, peticiones administrativas, etc.) y registros ambiguos pendientes de verificación.",tipoCaso
+Definir las variables de tiempo y lugar,"Usando el año de los metadatos como fecha de referencia y la provincia como unidad territorial más confiable ante la ambigüedad de las localidades específicas.",
+Clasificar a los actores judiciales según su rol procesal,"Perpetrador, víctima o cómplice, sin forzar la asignación de roles no respaldados por la evidencia archivística.",
+Separar las observaciones a nivel de delito y a nivel de caso,"Para evitar el doble conteo de individuos.",
+Adoptar un enfoque conservador para las características sociales,"Género, calidad y ocupación: se registra solo lo explícitamente indicado y se deja sin codificar los casos ambiguos, con la única excepción parcial de los honoríficos Don/Doña.",
+Incluir actores no individuales,"Instituciones y actores colectivos se registran como tales, en lugar de asignarles un número arbitrario de personas.",
+"Reconocer la ""agencia dual""","De individuos que ocupan distintos roles procesales (por ejemplo, víctima en un delito y acusada en otro) dentro de un mismo caso, preservando sus roles distintos a nivel de cada delito individual.",

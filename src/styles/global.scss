@@ -133,6 +133,50 @@ a.card p {
   max-width: none;
 }
 
+/* =====================================================
+   PESTAÑAS DE "SOBRE EL PROYECTO" (AboutTabs.astro)
+   Barra de 3 botones (Fuentes / Delitos / Documentación técnica) que
+   aparece en las tres páginas de la sección para poder saltar de una a otra
+   sin volver antes al índice — son enlaces reales entre páginas, no un
+   cambio de contenido por JS.
+===================================================== */
+.about-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 2.5rem;
+}
+
+.about-tab {
+  padding: 10px 22px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.about-tab:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.about-tab[aria-current='page'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
 .chart-linaje,
 #tablaContainer,
 #tablaMetadatos {

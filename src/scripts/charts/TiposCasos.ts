@@ -1,8 +1,26 @@
 import * as d3 from 'd3';
 import * as Plot from '@observablehq/plot';
 
-export async function crearTiposCasos() {
-  const MujeresMencionadas = await d3.csv(`${import.meta.env.BASE_URL}data/Casos.csv`);
+interface FilaCaso {
+  FechaInicial: string;
+  TipoProceso: string;
+}
+
+// Cacheado: crearTiposCasos() se llama tanto para la sección "Tipos de Caso"
+// como, con otro containerId, para el desglose de decisiones metodológicas
+// (ver PreguntasTarjetas.ts) — no tiene sentido pedir el CSV dos veces.
+let promesaCasos: Promise<FilaCaso[]> | null = null;
+function cargarCasos(): Promise<FilaCaso[]> {
+  if (!promesaCasos) {
+    promesaCasos = d3
+      .csv(`${import.meta.env.BASE_URL}data/Casos.csv`)
+      .then((filas) => filas as unknown as FilaCaso[]);
+  }
+  return promesaCasos;
+}
+
+export async function crearTiposCasos(containerId: string = 'tipoCaso') {
+  const MujeresMencionadas = await cargarCasos();
 
   const tipoCaso = Plot.plot({
     width: 600,
@@ -55,5 +73,5 @@ export async function crearTiposCasos() {
     ],
   });
 
-  document.getElementById('tipoCaso')!.append(tipoCaso);
+  document.getElementById(containerId)!.append(tipoCaso);
 }
