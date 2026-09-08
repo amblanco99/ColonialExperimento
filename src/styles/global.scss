@@ -53,15 +53,6 @@ section {
   z-index: v.$z-topnav;
 }
 
-.logo {
-  /* WATCH OUT: both of these are overridden by the shared rule below, which
-     comes later at the same specificity (font-size: 0.9rem, font-weight: 600).
-     That was already true before the hamburger; it is left alone because fixing
-     it would change the title's size, which is a separate decision. */
-  font-size: var(--fs-lg);
-  font-weight: normal;
-}
-
 /* The hamburger button. It is shown at every width: there is no breakpoint and
    no horizontal-links layout to fall back to. */
 .nav-toggle {
@@ -321,30 +312,6 @@ a.card p {
 }
 .rosa {
   background: #bc5090;
-}
-
-.filters {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 2rem;
-}
-
-.filters select,
-.filters input {
-  padding: 0.6rem;
-  font-family: var(--font-ui);
-  font-size: var(--fs-md);
-  color: var(--ink);
-  background: #ffffff;
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  outline: none;
-}
-
-.filters select:focus,
-.filters input:focus {
-  border-color: var(--accent);
 }
 
 .filtros-tabla select,
