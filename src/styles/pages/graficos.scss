@@ -20,7 +20,7 @@
 }
 
 .grafico-svg {
-  font-family: v.$font-sistema;
+  font-family: var(--font-ui);
 }
 
 .grafico-vacio {
@@ -37,7 +37,7 @@
 }
 
 .grafico-eje-texto {
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   fill: #555;
 }
 
@@ -47,7 +47,7 @@
 }
 
 .grafico-etiqueta-serie {
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   font-weight: 600;
 }
 

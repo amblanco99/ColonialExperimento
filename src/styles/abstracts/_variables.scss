@@ -41,17 +41,28 @@ $verde: #535844;
 
 // ── Tipografías ──────────────────────────────────────────
 $font-display: 'IM Fell English', Georgia, serif;
-$font-body: 'Source Sans 3', system-ui, sans-serif;
+$font-body: 'Crimson Pro', Georgia, serif;
+$font-ui: 'Source Sans 3', system-ui, sans-serif;
 $font-mono: 'Source Code Pro', monospace;
-$font-mapa: Georgia, serif;
 
-// Las declaraciones que estaban sin tokenizar. Son DOS valores distintos, no
-// uno: cuatro usaban `system-ui, sans-serif` y la de sunburst solo `sans-serif`.
-// Se mantienen separados a propósito: unificarlas metería `system-ui` delante en
-// el sunburst y ahí cambia la fuente que se acaba dibujando, que es un cambio
-// visual y no un port.
-$font-sistema: system-ui, sans-serif;
-$font-sans: sans-serif;
+// ── Escala tipográfica ───────────────────────────────────
+$fs-3xs: 0.625rem;
+$fs-2xs: 0.6875rem;
+$fs-xs: 0.75rem;
+$fs-sm: 0.8125rem;
+$fs-md: 0.9375rem;
+$fs-base: 1rem;
+$fs-lg: 1.125rem;
+$fs-xl: 1.5rem;
+$fs-2xl: 2rem;
+$fs-3xl: 2.75rem;
+$fs-4xl: 3.5rem;
+
+// ── Interlineado ─────────────────────────────────────────
+$lh-tight: 1;
+$lh-snug: 1.25;
+$lh-normal: 1.5;
+$lh-relaxed: 1.7;
 
 // ── Paleta del dashboard "Tiempo y Crímenes" ─────────────
 // Identidad propia (pergamino más cálido, acentos magenta/azul), distinta de

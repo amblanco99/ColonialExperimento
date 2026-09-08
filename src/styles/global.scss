@@ -58,7 +58,7 @@ section {
      comes later at the same specificity (font-size: 0.9rem, font-weight: 600).
      That was already true before the hamburger; it is left alone because fixing
      it would change the title's size, which is a separate decision. */
-  font-size: 1.2rem;
+  font-size: var(--fs-lg);
   font-weight: normal;
 }
 
@@ -155,10 +155,10 @@ section {
   font-style: italic;
   color: var(--vinotinto);
   text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: var(--fs-md);
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   transition: color 0.15s;
 }
 
@@ -224,7 +224,7 @@ a.card {
 
 a.card h3 {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: var(--fs-lg);
   color: var(--accent);
   margin-bottom: 0.5rem;
 }
@@ -255,8 +255,8 @@ a.card p {
   border-radius: 6px;
   background: #ffffff;
   color: var(--ink);
-  font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -304,7 +304,8 @@ a.card p {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
   color: var(--ink-light);
 }
 
@@ -332,8 +333,8 @@ a.card p {
 .filters select,
 .filters input {
   padding: 0.6rem;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
   color: var(--ink);
   background: #ffffff;
   border: 1px solid var(--rule);
@@ -346,14 +347,62 @@ a.card p {
   border-color: var(--accent);
 }
 
+.filtros-tabla select,
+.filtros-tabla input[type='text'] {
+  padding: 0.6rem;
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  color: var(--vinotinto);
+  background: var(--crema);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  outline: none;
+}
+
+.filtros-tabla select:focus,
+.filtros-tabla input[type='text']:focus {
+  border-color: var(--accent);
+}
+
+@supports (appearance: base-select) {
+  .filtros-tabla select,
+  .filtros-tabla select::picker(select) {
+    appearance: base-select;
+  }
+
+  .filtros-tabla select::picker(select) {
+    background: var(--crema);
+    color: var(--vinotinto);
+    font-family: var(--font-body);
+    font-size: var(--fs-md);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+
+  .filtros-tabla option {
+    padding: 0.6rem;
+    background: var(--crema);
+    color: var(--vinotinto);
+    font-family: var(--font-body);
+    font-size: var(--fs-md);
+  }
+
+  .filtros-tabla option:hover,
+  .filtros-tabla option:focus,
+  .filtros-tabla option:checked {
+    background: var(--vinotinto);
+    color: var(--crema);
+  }
+}
+
 .filtro-checkbox {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  color: var(--crema);
   cursor: pointer;
 }
 
@@ -371,9 +420,9 @@ a.card p {
   width: 100px;
   padding: 0.6rem;
   font-family: var(--font-body);
-  font-size: 0.95rem;
-  color: var(--ink);
-  background: #ffffff;
+  font-size: var(--fs-md);
+  color: var(--vinotinto);
+  background: var(--crema);
   border: 1px solid var(--rule);
   border-radius: 4px;
   outline: none;
@@ -384,7 +433,7 @@ a.card p {
 }
 
 .filtro-rango-separador {
-  color: var(--ink-light);
+  color: var(--crema);
 }
 
 /* =====================================================
@@ -404,7 +453,7 @@ a.card p {
   background: var(--parchment-dark);
   color: var(--ink);
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 1rem;
@@ -415,7 +464,7 @@ a.card p {
 .tabla-datos td,
 .tabla-metadatos td {
   padding: 0.8rem;
-  font-size: 0.9rem;
+  font-size: var(--fs-md);
   color: var(--ink-light);
   border-bottom: 1px solid var(--rule);
 }
@@ -430,7 +479,7 @@ a.card p {
 }
 
 .cargando {
-  font-family: var(--font-body);
+  font-family: var(--font-ui);
   font-style: italic;
   color: var(--ink-light);
   text-align: center;
@@ -461,8 +510,8 @@ a.card p {
 .btn-descarga {
   background: var(--accent);
   color: var(--parchment);
-  font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -495,9 +544,9 @@ a.card p {
   border: 1px solid var(--accent);
   background: #ffffff;
   color: var(--accent);
-  font-family: var(--font-body);
+  font-family: var(--font-ui);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: var(--fs-md);
   letter-spacing: 0.02em;
   cursor: pointer;
   transition:

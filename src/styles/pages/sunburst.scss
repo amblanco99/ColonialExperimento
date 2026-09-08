@@ -7,7 +7,7 @@
    SUNBURST "INSTITUCIONES/POBLACIONES POR ATRIBUTO" (SVG)
 ===================================================== */
 .sunburst-svg {
-  font-family: v.$font-sans;
+  font-family: var(--font-ui);
 }
 
 .sunburst-arco--clicable {
@@ -21,12 +21,12 @@
 }
 
 .sunburst-etiqueta {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   fill: #222;
 }
 
 .sunburst-etiqueta-pct {
-  font-size: 10px;
+  font-size: var(--fs-3xs);
   fill: #555;
 }
 
@@ -37,7 +37,7 @@
 }
 
 .sunburst-texto-central {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   fill: #555;
   pointer-events: none;
 }

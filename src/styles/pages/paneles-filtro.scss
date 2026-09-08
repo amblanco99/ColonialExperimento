@@ -26,7 +26,7 @@
 }
 
 .panel-filtros-titulo {
-  font-size: 14px;
+  font-size: var(--fs-md);
   font-weight: 700;
   color: var(--mapa-tinta-oscura);
   align-self: center;
@@ -37,14 +37,14 @@
 }
 
 .filtro-label {
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   color: var(--mapa-borde);
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
 .filtro-label--chico {
-  font-size: 10px;
+  font-size: var(--fs-3xs);
 }
 
 .filtro-wrap {
@@ -85,9 +85,9 @@
   border-radius: 4px;
   background: var(--mapa-fondo-pergamino);
   color: var(--mapa-tinta-oscura);
-  font-size: 13px;
+  font-size: var(--fs-sm);
   cursor: pointer;
-  font-family: var(--mapa-font);
+  font-family: var(--font-ui);
 }
 
 .filtro-combo-input--oculto {
@@ -118,7 +118,7 @@
 
 .filtro-combo-item {
   padding: 6px 10px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   cursor: pointer;
 }
 
@@ -127,7 +127,7 @@
 }
 
 .filtro-combo-nota {
-  font-size: 11.5px;
+  font-size: var(--fs-2xs);
   font-style: italic;
   color: var(--mapa-borde);
   opacity: 0.85;
@@ -144,13 +144,13 @@
   border-radius: 4px;
   background: var(--mapa-fondo-pergamino);
   color: var(--mapa-tinta-oscura);
-  font-size: 13px;
-  font-family: var(--mapa-font);
+  font-size: var(--fs-sm);
+  font-family: var(--font-ui);
 }
 
 .filtro-select--compacto {
   padding: 5px 8px;
-  font-size: 12px;
+  font-size: var(--fs-xs);
 }
 
 .filtro-aviso-sin-datos {
@@ -163,7 +163,7 @@
   background: #f7dede;
   color: #7a1f1f;
   font-family: var(--mapa-font);
-  font-size: 12px;
+  font-size: var(--fs-xs);
 }
 
 .filtro-aviso-sin-datos--visible {

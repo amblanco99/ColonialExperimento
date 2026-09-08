@@ -12,8 +12,8 @@ body {
   background: var(--vinotinto);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: 1rem;
-  line-height: 1.7;
+  font-size: var(--fs-base);
+  line-height: var(--lh-relaxed);
   min-height: 100vh;
   overflow-x: hidden;
 }

@@ -16,8 +16,8 @@
   color: #fff;
   padding: 6px 10px;
   border-radius: 4px;
-  font-size: 12px;
-  font-family: var(--mapa-font);
+  font-size: var(--fs-xs);
+  font-family: var(--font-ui);
   opacity: 0;
   transition: opacity 0.1s;
   z-index: v.$z-tooltip;
@@ -29,14 +29,14 @@
 }
 
 .tooltip-grafico--sans {
-  font-family: v.$font-sistema;
+  font-family: var(--font-ui);
 }
 
 /* Variante neutra (fondo negro semitransparente) usada por los gráficos
    de personas/agentes fuera del dashboard de mapa. */
 .tooltip-grafico--neutro {
   background: rgba(0, 0, 0, 0.85);
-  font-family: v.$font-sistema;
+  font-family: var(--font-ui);
 }
 
 .tooltip-grafico--ancho {
@@ -46,7 +46,7 @@
 /* Nombre completo del nodo bien legible (ver Linaje.ts): las cajas del
    gráfico son chicas y recortan textos largos con line-clamp. */
 .tooltip-grafico--grande {
-  font-size: 16px;
+  font-size: var(--fs-base);
   font-weight: 600;
   padding: 8px 14px;
   max-width: 280px;

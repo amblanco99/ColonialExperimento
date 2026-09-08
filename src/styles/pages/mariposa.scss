@@ -11,7 +11,7 @@
 }
 
 .mariposa-eje-tick-texto {
-  font-size: 10px;
+  font-size: var(--fs-3xs);
   fill: #999;
 }
 
@@ -20,17 +20,17 @@
 }
 
 .mariposa-etiqueta-fila {
-  font-size: 10.5px;
+  font-size: var(--fs-3xs);
   fill: var(--ink-light, #4a3f35);
 }
 
 .mariposa-valor-texto {
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   fill: var(--ink-light, #4a3f35);
 }
 
 .mariposa-encabezado-lado {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 700;
 }
 
@@ -51,6 +51,6 @@
   color: var(--accent, #7a3b1e);
   text-decoration: underline;
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   padding: 0;
 }

@@ -86,8 +86,8 @@
 .historia-slide-texto {
   margin: 0;
   max-width: 560px;
-  font-size: 14.5px;
-  line-height: 1.6;
+  font-size: var(--fs-md);
+  line-height: var(--lh-relaxed);
   color: var(--ink, #1a1410);
   text-align: left;
 }
@@ -139,8 +139,8 @@
   border-radius: 50%;
   background: #fff;
   color: var(--accent);
-  font-size: 1.2rem;
-  line-height: 1;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-tight);
   cursor: pointer;
   transition: all 0.15s;
 }

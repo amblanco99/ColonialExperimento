@@ -1,8 +1,18 @@
 // Tipografía. Portado de style.css (líneas 95-131).
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+
 .section-mainTitle {
   font-family: var(--font-display);
-  font-size: 2rem;
+  font-size: var(--fs-2xl);
   color: var(--crema);
   border-bottom: 1px solid var(--rule);
   padding-bottom: 0.4rem;
@@ -16,7 +26,7 @@
 section h2,
 .section-title {
   font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-size: var(--fs-xl);
   color: var(--crema);
   border-bottom: 1px solid var(--rule);
   padding-bottom: 0.4rem;
@@ -27,8 +37,8 @@ section h2,
 }
 
 p {
-  font-size: 0.95rem;
-  line-height: 1.7;
+  font-size: var(--fs-md);
+  line-height: var(--lh-relaxed);
   max-width: 650px;
   color: var(--ink-light);
   margin: 0.5rem auto 1.5rem auto;

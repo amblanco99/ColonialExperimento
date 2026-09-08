@@ -1,24 +1,4 @@
 ---
-<<<<<<< HEAD
-// El ÚNICO sitio del repo donde vive el marcado del nav. Antes estaba copiado a
-// mano en 10 páginas y había derivado en orden, indentación y espacios.
-//
-// Orden: el mayoritario de las 9 páginas, con "Sobre el proyecto" al final.
-// index.html lo tenía en tercer lugar; al haber un solo componente hay que elegir
-// uno, y eso reordena visiblemente el menú de la portada (ver MIGRATION.md).
-//
-// The link text is copied verbatim, including "Composicion social" without its
-// accent. This is a port, not a content fix.
-//
-// The links live behind a hamburger at every width -- no breakpoint, one nav
-// layout everywhere. The button is a real <button>: role, focus and
-// Enter/Space activation come with it, and none of that is true of a <div>.
-// The icon is decorative, so it is aria-hidden; the accessible name comes from
-// the button's aria-label, which navMenu.ts keeps in sync with the open state.
-// The aria-label and the link text are UI copy, so they stay in Spanish.
-
-=======
->>>>>>> 36c8db6 (🚜 estilo iniciales)
 export type SeccionActiva = 'inicio' | 'base-de-datos' | 'tiempo' | 'personas' | 'about';
 
 interface Props {

@@ -16,8 +16,8 @@
   border: 1px solid var(--accent);
   background: var(--accent);
   color: #fff;
-  font-size: 12.5px;
-  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-family: var(--font-ui);
   font-weight: 600;
   cursor: pointer;
 }
@@ -47,7 +47,7 @@
   width: fit-content;
   margin: 22px auto 0;
   padding: 13px 26px;
-  font-size: 15px;
+  font-size: var(--fs-md);
 }
 
 .btn-descargar-datos--grande svg {
@@ -81,8 +81,8 @@
   background: none;
   border: none;
   padding: 12px 34px 12px 14px;
-  font-family: var(--font-body);
-  font-size: 14.5px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
   font-weight: 600;
   color: var(--ink, #1a1410);
   text-align: left;
@@ -95,7 +95,7 @@
   right: 16px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 1.1rem;
+  font-size: var(--fs-lg);
   font-weight: 400;
   transition: transform 0.2s ease;
 }
@@ -125,8 +125,8 @@
   max-width: 720px;
   margin: 0 auto 14px;
   text-align: center;
-  font-size: 13.5px;
-  line-height: 1.55;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
   white-space: pre-line;
 }
 

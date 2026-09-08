@@ -1770,8 +1770,12 @@ export async function inicializarDashboard() {
         .call((gg) => {
           gg.select('.domain').attr('class', 'mapa-linea-eje-dominio');
           gg.selectAll('text')
-            .attr('class', 'mapa-linea-eje-x-texto')
-            .style('font-size', lista.length > 6 ? '9px' : '12px')
+            .attr(
+              'class',
+              lista.length > 6
+                ? 'mapa-linea-eje-x-texto mapa-linea-eje-x-texto--compacto'
+                : 'mapa-linea-eje-x-texto',
+            )
             .attr('dy', '1.4em');
         });
 
