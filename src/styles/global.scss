@@ -53,8 +53,37 @@ section {
   z-index: v.$z-topnav;
 }
 
+/* Dims the page behind the open drawer. It is fixed to the viewport but lives
+   inside .topnav, whose z-index makes a stacking context, so it paints above all
+   page content without a z-index of its own competing with the page's panels. */
+.nav-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: color-mix(in srgb, var(--vinotinto) 55%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.25s ease,
+    visibility 0s linear 0.25s;
+}
+
+.topnav--abierto .nav-fondo {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.25s ease,
+    visibility 0s;
+}
+
+.logo {
+  position: relative;
+  z-index: 1;
+}
+
 /* The hamburger button. It is shown at every width: there is no breakpoint and
-   no horizontal-links layout to fall back to. */
+   no horizontal-links layout to fall back to. z-index 2 keeps it above the open
+   drawer, which is full-height and would otherwise cover the close control. */
 .nav-toggle {
   display: flex;
   align-items: center;
@@ -66,6 +95,8 @@ section {
   background: none;
   color: var(--vinotinto);
   cursor: pointer;
+  position: relative;
+  z-index: 2;
 }
 
 /* Three bars drawn in CSS: the span is the middle one and its two
@@ -112,29 +143,53 @@ section {
   }
 }
 
-/* The panel hangs off .topnav, which is already position: sticky and therefore
-   a positioned element, so it is the containing block. It sits inside the nav's
-   stacking context too, so it overlays the page without a z-index of its own. */
+/* A drawer pinned to the right edge of the viewport. position: sticky on .topnav
+   does not create a containing block for fixed children, so this positions
+   against the viewport; the nav's stacking context is what keeps it over the
+   page. padding-top clears the bar so the first link is not under the X. */
 .nav-links {
-  position: absolute;
-  top: 100%;
-  left: 0;
+  position: fixed;
+  top: 0;
   right: 0;
-  display: none;
+  z-index: 1;
+  width: min(85vw, 320px);
+  height: 100vh;
+  height: 100dvh;
+  padding-top: 65px;
+  display: flex;
   flex-direction: column;
   background: var(--crema);
-  border-bottom: 2px solid var(--vinotinto);
-
-  /* Keeps the panel inside the viewport on short screens. */
-  max-height: calc(100vh - 65px);
   overflow-y: auto;
+  transform: translateX(100%);
+  visibility: hidden;
+  transition:
+    transform 0.25s ease,
+    visibility 0s linear 0.25s;
 }
 
-/* display: none is what keeps the links out of the tab order and out of the
-   accessibility tree while the menu is closed. Hiding by opacity or height
-   would leave them reachable by Tab and still read out. */
+/* visibility: hidden, not display: none -- display cannot be transitioned, and
+   the closed panel still has to leave the tab order and the accessibility tree,
+   which hiding by opacity or transform alone would not do. The zero-length
+   visibility transition is delayed on close so the slide finishes first. */
 .topnav--abierto .nav-links {
-  display: flex;
+  transform: translateX(0);
+  visibility: visible;
+  transition:
+    transform 0.25s ease,
+    visibility 0s;
+}
+
+body.nav-abierto {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-fondo,
+  .topnav--abierto .nav-fondo,
+  .nav-links,
+  .topnav--abierto .nav-links {
+    transition: none;
+  }
 }
 
 /* The title and the panel links share a typeface: the display face in italic.
