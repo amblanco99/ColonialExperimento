@@ -229,6 +229,22 @@ body.nav-abierto {
 }
 
 /* =====================================================
+   PIE DE PÁGINA
+   Barra vacía por ahora. Deliberadamente más alta que el topnav (65px), y sin
+   borde: el fondo de la página ya es vinotinto, así que un borde vinotinto no
+   se vería contra él. La altura la da min-height porque no hay contenido.
+===================================================== */
+.site-footer {
+  width: 100%;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+  box-sizing: border-box;
+  background: var(--crema);
+}
+
+/* =====================================================
    VISUALIZACIONES Y TARJETAS
 ===================================================== */
 .col-root {
@@ -603,6 +619,9 @@ a.card p {
 ===================================================== */
 @media (max-width: v.$bp-movil) {
   .topnav {
+    padding: 0 20px;
+  }
+  .site-footer {
     padding: 0 20px;
   }
   .nav-links a {
