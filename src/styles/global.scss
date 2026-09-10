@@ -53,17 +53,37 @@ section {
   z-index: v.$z-topnav;
 }
 
+/* Dims the page behind the open drawer. It is fixed to the viewport but lives
+   inside .topnav, whose z-index makes a stacking context, so it paints above all
+   page content without a z-index of its own competing with the page's panels. */
+.nav-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: color-mix(in srgb, var(--vinotinto) 55%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.25s ease,
+    visibility 0s linear 0.25s;
+}
+
+.topnav--abierto .nav-fondo {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.25s ease,
+    visibility 0s;
+}
+
 .logo {
-  /* WATCH OUT: both of these are overridden by the shared rule below, which
-     comes later at the same specificity (font-size: 0.9rem, font-weight: 600).
-     That was already true before the hamburger; it is left alone because fixing
-     it would change the title's size, which is a separate decision. */
-  font-size: var(--fs-lg);
-  font-weight: normal;
+  position: relative;
+  z-index: 1;
 }
 
 /* The hamburger button. It is shown at every width: there is no breakpoint and
-   no horizontal-links layout to fall back to. */
+   no horizontal-links layout to fall back to. z-index 2 keeps it above the open
+   drawer, which is full-height and would otherwise cover the close control. */
 .nav-toggle {
   display: flex;
   align-items: center;
@@ -75,6 +95,8 @@ section {
   background: none;
   color: var(--vinotinto);
   cursor: pointer;
+  position: relative;
+  z-index: 2;
 }
 
 /* Three bars drawn in CSS: the span is the middle one and its two
@@ -121,29 +143,53 @@ section {
   }
 }
 
-/* The panel hangs off .topnav, which is already position: sticky and therefore
-   a positioned element, so it is the containing block. It sits inside the nav's
-   stacking context too, so it overlays the page without a z-index of its own. */
+/* A drawer pinned to the right edge of the viewport. position: sticky on .topnav
+   does not create a containing block for fixed children, so this positions
+   against the viewport; the nav's stacking context is what keeps it over the
+   page. padding-top clears the bar so the first link is not under the X. */
 .nav-links {
-  position: absolute;
-  top: 100%;
-  left: 0;
+  position: fixed;
+  top: 0;
   right: 0;
-  display: none;
+  z-index: 1;
+  width: min(85vw, 320px);
+  height: 100vh;
+  height: 100dvh;
+  padding-top: 65px;
+  display: flex;
   flex-direction: column;
   background: var(--crema);
-  border-bottom: 2px solid var(--vinotinto);
-
-  /* Keeps the panel inside the viewport on short screens. */
-  max-height: calc(100vh - 65px);
   overflow-y: auto;
+  transform: translateX(100%);
+  visibility: hidden;
+  transition:
+    transform 0.25s ease,
+    visibility 0s linear 0.25s;
 }
 
-/* display: none is what keeps the links out of the tab order and out of the
-   accessibility tree while the menu is closed. Hiding by opacity or height
-   would leave them reachable by Tab and still read out. */
+/* visibility: hidden, not display: none -- display cannot be transitioned, and
+   the closed panel still has to leave the tab order and the accessibility tree,
+   which hiding by opacity or transform alone would not do. The zero-length
+   visibility transition is delayed on close so the slide finishes first. */
 .topnav--abierto .nav-links {
-  display: flex;
+  transform: translateX(0);
+  visibility: visible;
+  transition:
+    transform 0.25s ease,
+    visibility 0s;
+}
+
+body.nav-abierto {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-fondo,
+  .topnav--abierto .nav-fondo,
+  .nav-links,
+  .topnav--abierto .nav-links {
+    transition: none;
+  }
 }
 
 /* The title and the panel links share a typeface: the display face in italic.
@@ -180,6 +226,22 @@ section {
 .nav-links a:focus-visible {
   outline: 2px solid var(--vinotinto);
   outline-offset: 2px;
+}
+
+/* =====================================================
+   PIE DE PÁGINA
+   Barra vacía por ahora. Deliberadamente más alta que el topnav (65px), y sin
+   borde: el fondo de la página ya es vinotinto, así que un borde vinotinto no
+   se vería contra él. La altura la da min-height porque no hay contenido.
+===================================================== */
+.site-footer {
+  width: 100%;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+  box-sizing: border-box;
+  background: var(--crema);
 }
 
 /* =====================================================
@@ -321,30 +383,6 @@ a.card p {
 }
 .rosa {
   background: #bc5090;
-}
-
-.filters {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 2rem;
-}
-
-.filters select,
-.filters input {
-  padding: 0.6rem;
-  font-family: var(--font-ui);
-  font-size: var(--fs-md);
-  color: var(--ink);
-  background: #ffffff;
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  outline: none;
-}
-
-.filters select:focus,
-.filters input:focus {
-  border-color: var(--accent);
 }
 
 .filtros-tabla select,
@@ -581,6 +619,9 @@ a.card p {
 ===================================================== */
 @media (max-width: v.$bp-movil) {
   .topnav {
+    padding: 0 20px;
+  }
+  .site-footer {
     padding: 0 20px;
   }
   .nav-links a {

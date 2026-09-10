@@ -13,14 +13,16 @@ const base = import.meta.env.BASE_URL;
 
 const enlaces = [
   { id: 'inicio', texto: 'Inicio', href: `${base}index.html` },
-  { id: 'base-de-datos', texto: 'Tablas y filtros', href: `${base}base-de-datos/index.html` },
-  { id: 'tiempo', texto: 'Tiempo', href: `${base}tiempo/index.html` },
-  { id: 'personas', texto: 'Composicion social', href: `${base}personas/index.html` },
-  { id: 'about', texto: 'Sobre el proyecto', href: `${base}about/index.html` },
+  { id: 'tiempo', texto: 'Cambio en el tiempo', href: `${base}tiempo/index.html` },
+  { id: 'personas', texto: 'Composición social', href: `${base}personas/index.html` },
+  { id: 'base-de-datos', texto: 'Base de datos', href: `${base}base-de-datos/index.html` },
+  { id: 'about', texto: 'Fuentes y metodología', href: `${base}about/index.html` },
 ] as const satisfies ReadonlyArray<{ id: SeccionActiva; texto: string; href: string }>;
 ---
 
 <nav class="topnav">
+  <div class="nav-fondo"></div>
+
   <a href={`${base}index.html`} class="logo">Crimen y Justicia en el nuevo reino de granada</a>
 
   <button
