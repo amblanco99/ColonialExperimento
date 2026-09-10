@@ -15,7 +15,7 @@
 }
 
 .filtros-grupo-titulo {
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -35,8 +35,8 @@
   border: 1px solid var(--rule);
   background: #fff;
   color: var(--ink-light);
-  font-size: 12.5px;
-  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-family: var(--font-ui);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -54,7 +54,7 @@
 .filtro-chip--genero {
   font-weight: 700;
   padding: 8px 20px;
-  font-size: 13.5px;
+  font-size: var(--fs-sm);
 }
 
 /* El color de fondo activo de un chip de género se fija por elemento vía
@@ -99,8 +99,8 @@
   border-radius: 4px;
   background: #fff;
   color: var(--ink-light);
-  font-size: 12.5px;
-  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-family: var(--font-ui);
   cursor: pointer;
 }
 
@@ -110,7 +110,7 @@
 }
 
 .filtro-nota {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-style: italic;
   color: var(--ink-light);
   opacity: 0.8;
@@ -133,7 +133,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--ink-light);
 }
 
@@ -150,9 +150,9 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  font-size: 12.5px;
+  font-size: var(--fs-xs);
   color: var(--ink-light);
-  font-family: var(--font-body);
+  font-family: var(--font-ui);
 }
 
 .filtro-switch input {

@@ -23,14 +23,18 @@ import '../styles/global.scss';
 interface Props {
   title: string;
   active?: SeccionActiva;
-  // base-de-datos/caso.html es la única página sin nav: en su lugar lleva un
-  // <header class="site-header"> con un enlace de vuelta a la tabla. Ponerle el
-  // nav sería añadir algo que hoy no está, o sea un cambio visual, así que la
-  // página pide que se omita y pone su propia cabecera.
+  // Class for the <body>. The home page uses it to paint a background of its own
+  // without depending on the cascade order between stylesheets. With no value no
+  // attribute is emitted, so the other 10 pages come out byte for byte as before.
+  bodyClass?: string;
+  // base-de-datos/caso.html is the only page with no nav: instead it carries a
+  // <header class="site-header"> with a link back to the table. Giving it the nav
+  // would add something that is not there today, i.e. a visual change, so the
+  // page opts out and supplies its own header.
   conNav?: boolean;
 }
 
-const { title, active, conNav = true } = Astro.props;
+const { title, active, conNav = true, bodyClass } = Astro.props;
 ---
 
 <!doctype html>
@@ -42,12 +46,12 @@ const { title, active, conNav = true } = Astro.props;
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Source+Sans+3:wght@300;400;600&family=Source+Code+Pro:wght@400;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=IM+Fell+English:ital@0;1&family=Source+Code+Pro:wght@400;600&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap"
       rel="stylesheet"
     />
   </head>
 
-  <body>
+  <body class={bodyClass}>
     {
       /*
       Solo en desarrollo: comprueba que las 27 custom properties del contrato

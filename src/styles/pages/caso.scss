@@ -3,21 +3,6 @@
 // lo emite solo abstracts/_root.scss desde global.scss.
 @use 'abstracts/variables' as v;
 
-/* ── Tokens ──────────────────────────────────────────────── */
-:root {
-  --ink: #1a1410;
-  --ink-light: #4a3f35;
-  --parchment: #f7f2e8;
-  --parchment-dark: #ede5d0;
-  --rule: #c8b89a;
-  --accent: #7a3b1e;
-  --accent-dim: #a0622f;
-  --badge-bg: #f0e6d0;
-  --font-display: 'IM Fell English', Georgia, serif;
-  --font-body: 'Source Sans 3', system-ui, sans-serif;
-  --font-mono: 'Source Code Pro', monospace;
-}
-
 /* ── Reset ───────────────────────────────────────────────── */
 *,
 *::before,
@@ -28,11 +13,11 @@
 }
 
 body {
-  background: var(--parchment);
+  background: var(--vinotinto);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: 1rem;
-  line-height: 1.7;
+  font-size: var(--fs-base);
+  line-height: var(--lh-relaxed);
   min-height: 100vh;
 }
 
@@ -47,8 +32,8 @@ body {
 }
 
 .back-link {
-  font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -64,7 +49,7 @@ body {
 }
 .back-link::before {
   content: '←';
-  font-size: 1rem;
+  font-size: var(--fs-base);
 }
 
 /* ── Page wrapper ────────────────────────────────────────── */
@@ -77,11 +62,11 @@ body {
 /* ── Case header ─────────────────────────────────────────── */
 .case-title {
   font-family: var(--font-display);
-  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-size: clamp(var(--fs-xl), 3vw, var(--fs-2xl));
   font-weight: normal;
   font-style: italic;
-  line-height: 1.35;
-  color: var(--ink);
+  line-height: var(--lh-snug);
+  color: var(--crema);
   margin-bottom: 1.5rem;
   max-width: 700px;
 }
@@ -99,7 +84,7 @@ body {
   border: 1px solid var(--rule);
   border-radius: 2px;
   padding: 0.25rem 0.75rem;
-  font-size: 0.8rem;
+  font-size: var(--fs-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--ink-light);
@@ -110,7 +95,7 @@ body {
 
 .meta-pill .label {
   text-transform: uppercase;
-  font-size: 0.65rem;
+  font-size: var(--fs-3xs);
   letter-spacing: 0.1em;
   color: var(--accent);
   font-family: var(--font-mono);
@@ -119,8 +104,8 @@ body {
 /* ── Section divider ─────────────────────────────────────── */
 .section-title {
   font-family: var(--font-display);
-  font-size: 1.1rem;
-  color: var(--accent);
+  font-size: var(--fs-lg);
+  color: var(--crema);
   border-bottom: 1px solid var(--rule);
   padding-bottom: 0.4rem;
   margin: 2.5rem 0 1.25rem;
@@ -173,7 +158,7 @@ body {
   padding: 0.15rem 0.5rem;
   border-radius: 3px;
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: var(--fs-3xs);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   white-space: nowrap;
@@ -188,14 +173,14 @@ body {
 
 .crime-name {
   font-weight: 700;
-  font-size: 1.35rem;
-  line-height: 0.5;
+  font-size: var(--fs-xl);
+  line-height: var(--lh-tight);
   color: var(--ink);
 }
 
 .crime-sub {
-  font-size: 0.88rem;
-  line-height: 0.5;
+  font-size: var(--fs-md);
+  line-height: var(--lh-tight);
   color: var(--ink-light);
 }
 
@@ -217,7 +202,7 @@ body {
 .agent-role {
   margin-bottom: 0.5rem;
 
-  font-size: 0.78rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
 
   text-transform: uppercase;
@@ -244,7 +229,7 @@ body {
 .agent-meta {
   margin-top: 0.15rem;
 
-  font-size: 0.9rem;
+  font-size: var(--fs-md);
   color: #666;
 }
 
@@ -259,12 +244,12 @@ body {
 }
 
 .source-field {
-  font-size: 0.78rem;
+  font-size: var(--fs-xs);
 }
 
 .sf-label {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: var(--fs-3xs);
   text-transform: uppercase;
   letter-spacing: 0.09em;
   color: var(--accent);
@@ -278,7 +263,7 @@ body {
 
 /* ── No source fallback ──────────────────────────────────── */
 .no-source {
-  font-size: 0.8rem;
+  font-size: var(--fs-xs);
   color: var(--ink-light);
   font-style: italic;
   margin-top: 0.7rem;
@@ -300,8 +285,8 @@ body {
   border-radius: 999px;
   background: #fff;
   color: var(--ink-light);
-  font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -351,7 +336,7 @@ body {
   display: flex;
   justify-content: space-between;
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: var(--fs-2xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--accent);
@@ -359,8 +344,8 @@ body {
 }
 
 .similar-card-desc {
-  font-size: 0.85rem;
-  line-height: 1.4;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
   color: var(--ink);
   display: -webkit-box;
   -webkit-line-clamp: 4;
@@ -370,13 +355,13 @@ body {
 }
 
 .similar-card-crimen {
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   font-weight: 600;
   color: var(--ink-light);
 }
 
 .similares-vacio {
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
   font-style: italic;
   color: var(--ink-light);
 }
@@ -389,8 +374,8 @@ body {
   border-radius: 50%;
   background: #fff;
   color: var(--accent);
-  font-size: 1.2rem;
-  line-height: 1;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-tight);
   cursor: pointer;
   transition: all 0.15s;
 }

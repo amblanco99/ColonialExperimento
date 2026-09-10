@@ -1,23 +1,50 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { Image } from 'astro:assets';
 
-// El enlace del párrafo era relativo desde la raíz ("about/index.html"). Ahora
-// se construye con BASE_URL, sin barra inicial en el segmento.
+import fotoArca from '../assets/images/foto-arca.jpg';
+
+import '../styles/pages/home.scss';
+
+// The paragraph's link used to be relative to the root ("about/index.html"). It
+// is now built with BASE_URL, with no leading slash on the segment.
 const base = import.meta.env.BASE_URL;
 ---
 
-<BaseLayout title="Crímenes Coloniales" active="inicio">
-  <main class="container">
-    <h1 class="section-mainTitle">
-      Crimen y justicia en el Nuevo Reino de Granada: un proyecto de humanidades digitales
-    </h1>
+<BaseLayout title="Crímenes Coloniales" active="inicio" bodyClass="home">
+  <main class="hero">
+    <div class="hero-texto">
+      <h1 class="section-mainTitle">
+        Crimen y justicia en el Nuevo Reino de Granada: un proyecto de humanidades digitales
+      </h1>
 
-    <p>
-      El proyecto se propone cuantificar y sistematizar los juicios criminales tramitados durante el
-      periodo colonial en el Nuevo Reino de Granada con el fin de construir bases de datos
-      relacionales que permitan analizar, en perspectiva agregada, las prácticas judiciales, las
-      tipologías delictivas y las configuraciones sociales que emergen de la justicia penal de la
-      época. <a href={`${base}about/index.html`}>Más sobre la metodología</a>
-    </p>
+      <p>
+        El proyecto se propone cuantificar y sistematizar los juicios criminales tramitados durante
+        el periodo colonial en el Nuevo Reino de Granada con el fin de construir bases de datos
+        relacionales que permitan analizar, en perspectiva agregada, las prácticas judiciales, las
+        tipologías delictivas y las configuraciones sociales que emergen de la justicia penal de la
+        época. <a href={`${base}about/index.html`}>Más sobre la metodología</a>
+      </p>
+    </div>
+
+    <figure class="hero-figura">
+      {
+        /* TODO: alt — the description of the image for screen readers. A different
+           job from the caption below: this one describes, that one credits. An
+           empty alt tells assistive tech the image is decorative. */
+      }
+      <Image
+        src={fotoArca}
+        alt=""
+        widths={[420, 520, 640, 800, 1047]}
+        sizes="(max-width: 768px) 100vw, 50vw"
+        loading="eager"
+        fetchpriority="high"
+        class="hero-imagen"
+      />
+
+      {/* TODO: figcaption — credit line (archive, collection, reference number). */}
+      <figcaption class="hero-credito"></figcaption>
+    </figure>
   </main>
 </BaseLayout>

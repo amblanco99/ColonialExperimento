@@ -25,6 +25,7 @@ export async function crearTiposCasos(containerId: string = 'tipoCaso') {
   const tipoCaso = Plot.plot({
     width: 600,
     marginLeft: 60,
+    style: { fontFamily: 'var(--font-ui)', fontSize: 'var(--fs-2xs)' },
     x: { label: 'Siglo', type: 'band', domain: ['XVI', 'XVII', 'XVIII', 'XIX'] },
     y: { label: 'Cantidad de Casos', grid: true },
     color: {

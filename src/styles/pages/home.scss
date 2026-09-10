@@ -1,0 +1,142 @@
+// The home page is the only one with a background of its own.
+//
+// The background goes on <body>: .container is 900px centred, so painting it
+// there would leave the sides in parchment. The hook is a class rather than a
+// bare `body` selector because a bare one would tie the result to the load order
+// between this sheet and global.scss -- the exact failure abstracts/_root.scss
+// documents. A class wins on specificity and does not care about order.
+//
+// The content rules hang off `body.home main`, which is not decoration either:
+// `body.home a` has the same specificity as `.nav-links a` (0,1,1) and would
+// leak into the nav. Anchoring them to main makes that impossible, because the
+// nav is not a descendant of main.
+//
+// Contrast against --vinotinto (#5f233d): --crema 9.83:1, --dorado 5.26:1.
+// Both pass AA. --rosado on the h1's rule is 3.89:1, which is fine for a
+// decorative 1px border but would not be for text.
+@use 'abstracts/variables' as v;
+
+body.home {
+  background: var(--vinotinto);
+  color: var(--crema);
+}
+
+body.home main {
+  .section-mainTitle {
+    color: var(--crema);
+    border-bottom-color: var(--rosado);
+  }
+
+  p {
+    color: var(--crema);
+  }
+
+  // <a> has no colour rule anywhere in the repo, so without this the link
+  // renders in the browser's default blue: 1.25:1 on vinotinto, unreadable.
+  a {
+    color: var(--dorado);
+    text-decoration: underline;
+  }
+}
+
+// =====================================================
+//   HERO
+// =====================================================
+//
+// Two columns above the breakpoint, text left and painting right; one stacked
+// column below it. Everything is scoped under .hero, so the body.home rules
+// above keep applying to the title, the paragraph and the link untouched.
+//
+// The page's <main> is .hero and not .container on purpose: .container is
+// max-width 900px, centred, with text-align: center, and a full-bleed two-column
+// hero cannot live inside that.
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  // The hero is exactly the viewport below the nav. It has to be a definite
+  // height and not a min-height: with an auto-sized row the image's intrinsic
+  // 1346px drives the row taller than the screen, and `height: 100%` on the
+  // figure and the img has nothing definite to resolve against, so they fall
+  // back to intrinsic size too. A definite height fixes both at once.
+  // The 65px matches .topnav's min-height and the calc .nav-links already uses.
+  height: calc(100vh - 65px);
+
+  // align-items is left at its `stretch` default deliberately: that is what
+  // makes the image column as tall as the row.
+}
+
+.hero-texto {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 2.5rem;
+
+  // The hero no longer grows, so on a short viewport long text has to stay
+  // reachable rather than being clipped.
+  min-height: 0;
+  overflow-y: auto;
+
+  // .container used to supply text-align: center. Without it the h1 keeps its
+  // own centring rule while the paragraph goes left, which reads as a mistake.
+  // Both are pinned left here, inside the hero only.
+  .section-mainTitle {
+    text-align: left;
+  }
+
+  // `p` carries margin: 0.5rem auto 1.5rem, and the auto centres it inside the
+  // column. Only the inline half is reset; the vertical rhythm stays.
+  p {
+    margin-inline: 0;
+  }
+}
+
+.hero-figura {
+  height: 100%;
+
+  // Grid items default to min-width/min-height: auto, which refuses to shrink
+  // below the image's intrinsic size. Without both of these the figure pushes
+  // the column wider and the row taller than the hero.
+  min-width: 0;
+  min-height: 0;
+}
+
+// object-fit: contain, not cover: the painting carries an inscription hard
+// against its left edge, and cropping it out would lose part of the artwork.
+// The letterboxing falls on the vinotinto ground, so it reads as background
+// rather than as bars.
+//
+// object-position pins the painting to the right edge, so all of that leftover
+// letterbox space collects on one side -- between the text and the image --
+// instead of being split either side of it.
+.hero-imagen {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: right center;
+}
+
+@media (max-width: v.$bp-movil) {
+  .hero {
+    grid-template-columns: 1fr;
+
+    // Stacked, the hero sizes to its content instead of being pinned to the
+    // viewport.
+    height: auto;
+  }
+
+  .hero-texto {
+    overflow-y: visible;
+  }
+
+  .hero-texto {
+    padding: 2rem 1.25rem;
+  }
+
+  // Text first, image second comes from source order, so no `order` is needed.
+  // The cap stops a portrait image from taking over the screen.
+  .hero-imagen {
+    max-height: 60vh;
+  }
+}

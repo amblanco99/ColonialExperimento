@@ -14,7 +14,7 @@
 }
 
 .ag-filtros-titulo {
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -34,9 +34,9 @@
   border: 1px solid var(--rule);
   background: #fff;
   color: var(--ink-light);
-  font-size: 12.5px;
+  font-size: var(--fs-xs);
   font-weight: 600;
-  font-family: var(--font-body);
+  font-family: var(--font-ui);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -62,7 +62,7 @@
 
 .ag-chip-small {
   padding: 5px 11px;
-  font-size: 11.5px;
+  font-size: var(--fs-2xs);
 }
 
 .ag-filtros-fila {
@@ -102,7 +102,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--ink-light);
 }
 
@@ -118,8 +118,8 @@
   border: 1px solid var(--rule);
   background: #fff;
   color: var(--ink-light);
-  font-size: 12px;
-  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-family: var(--font-ui);
   cursor: pointer;
 }
 

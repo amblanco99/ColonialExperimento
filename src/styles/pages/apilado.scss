@@ -16,13 +16,13 @@
 }
 
 .apilado-eje-atributo {
-  font-size: 12.5px;
+  font-size: var(--fs-xs);
   font-weight: 700;
   fill: var(--ink, #1a1410);
 }
 
 .apilado-eje-siglo {
-  font-size: 9.5px;
+  font-size: var(--fs-3xs);
   fill: var(--ink-light, #4a3f35);
 }
 
@@ -62,15 +62,15 @@
 
 .apilado-panel-titulo {
   font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: var(--fs-base);
   color: var(--accent);
 }
 
 .apilado-panel-cerrar {
   background: none;
   border: none;
-  font-size: 1.1rem;
-  line-height: 1;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-tight);
   color: var(--ink-light);
   cursor: pointer;
   padding: 2px 6px;
@@ -81,7 +81,7 @@
 }
 
 .apilado-panel-total {
-  font-size: 12.5px;
+  font-size: var(--fs-xs);
   color: var(--ink-light);
   margin-bottom: 10px;
 }
@@ -92,7 +92,7 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 5px;
-  font-size: 12.5px;
+  font-size: var(--fs-xs);
   color: var(--ink-light);
 }
 
@@ -118,7 +118,7 @@
 
 .apilado-sankey-titulo {
   font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: var(--fs-base);
   color: var(--accent);
   margin-bottom: 8px;
 }
@@ -129,6 +129,6 @@
 }
 
 .apilado-sankey-etiqueta {
-  font-size: 11.5px;
+  font-size: var(--fs-2xs);
   fill: var(--ink, #1a1410);
 }

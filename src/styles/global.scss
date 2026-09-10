@@ -39,14 +39,14 @@ section {
 ===================================================== */
 .topnav {
   width: 100%;
-  height: 65px;
+  min-height: 65px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 40px;
   box-sizing: border-box;
-  background: var(--parchment-dark);
-  border-bottom: 2px solid var(--rule);
+  background: var(--crema);
+  border-bottom: 2px solid var(--vinotinto);
 
   position: sticky;
   top: 0;
@@ -54,31 +54,132 @@ section {
 }
 
 .logo {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-style: italic;
+  /* WATCH OUT: both of these are overridden by the shared rule below, which
+     comes later at the same specificity (font-size: 0.9rem, font-weight: 600).
+     That was already true before the hamburger; it is left alone because fixing
+     it would change the title's size, which is a separate decision. */
+  font-size: var(--fs-lg);
   font-weight: normal;
 }
 
-.nav-links {
+/* The hamburger button. It is shown at every width: there is no breakpoint and
+   no horizontal-links layout to fall back to. */
+.nav-toggle {
   display: flex;
-  gap: 30px;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--vinotinto);
+  cursor: pointer;
 }
 
+/* Three bars drawn in CSS: the span is the middle one and its two
+   pseudo-elements are the outer ones. They paint with currentColor, so they
+   follow the button's colour without repeating the token. */
+.nav-toggle-icono {
+  position: relative;
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: currentColor;
+  transition: background 0.15s;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: currentColor;
+    transition: transform 0.15s;
+  }
+
+  &::before {
+    top: -7px;
+  }
+
+  &::after {
+    top: 7px;
+  }
+}
+
+/* Open: the middle bar goes transparent and the outer two cross into an X. */
+.topnav--abierto .nav-toggle-icono {
+  background: transparent;
+
+  &::before {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  &::after {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+}
+
+/* The panel hangs off .topnav, which is already position: sticky and therefore
+   a positioned element, so it is the containing block. It sits inside the nav's
+   stacking context too, so it overlays the page without a z-index of its own. */
+.nav-links {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  display: none;
+  flex-direction: column;
+  background: var(--crema);
+  border-bottom: 2px solid var(--vinotinto);
+
+  /* Keeps the panel inside the viewport on short screens. */
+  max-height: calc(100vh - 65px);
+  overflow-y: auto;
+}
+
+/* display: none is what keeps the links out of the tab order and out of the
+   accessibility tree while the menu is closed. Hiding by opacity or height
+   would leave them reachable by Tab and still read out. */
+.topnav--abierto .nav-links {
+  display: flex;
+}
+
+/* The title and the panel links share a typeface: the display face in italic.
+   font-family and font-style live here rather than on .logo so there is no way
+   for the two to drift apart. */
 .logo,
 .nav-links a {
-  color: var(--ink);
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--vinotinto);
   text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: var(--fs-md);
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   transition: color 0.15s;
+}
+
+/* Same horizontal padding as the bar, so the panel's text lines up under the
+   title. The mobile block below keeps the two in step. */
+.nav-links a {
+  padding: 0.9rem 40px;
 }
 
 .logo:hover,
 .nav-links a:hover {
-  color: var(--accent);
+  color: var(--cafe);
+}
+
+/* The repo had no focus styles on the nav at all. With the links behind a
+   button, keyboard users need to see where they are. */
+.logo:focus-visible,
+.nav-toggle:focus-visible,
+.nav-links a:focus-visible {
+  outline: 2px solid var(--vinotinto);
+  outline-offset: 2px;
 }
 
 /* =====================================================
@@ -123,7 +224,7 @@ a.card {
 
 a.card h3 {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: var(--fs-lg);
   color: var(--accent);
   margin-bottom: 0.5rem;
 }
@@ -154,8 +255,8 @@ a.card p {
   border-radius: 6px;
   background: #ffffff;
   color: var(--ink);
-  font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -203,7 +304,8 @@ a.card p {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
   color: var(--ink-light);
 }
 
@@ -231,8 +333,8 @@ a.card p {
 .filters select,
 .filters input {
   padding: 0.6rem;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
   color: var(--ink);
   background: #ffffff;
   border: 1px solid var(--rule);
@@ -245,14 +347,62 @@ a.card p {
   border-color: var(--accent);
 }
 
+.filtros-tabla select,
+.filtros-tabla input[type='text'] {
+  padding: 0.6rem;
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  color: var(--vinotinto);
+  background: var(--crema);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  outline: none;
+}
+
+.filtros-tabla select:focus,
+.filtros-tabla input[type='text']:focus {
+  border-color: var(--accent);
+}
+
+@supports (appearance: base-select) {
+  .filtros-tabla select,
+  .filtros-tabla select::picker(select) {
+    appearance: base-select;
+  }
+
+  .filtros-tabla select::picker(select) {
+    background: var(--crema);
+    color: var(--vinotinto);
+    font-family: var(--font-body);
+    font-size: var(--fs-md);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+
+  .filtros-tabla option {
+    padding: 0.6rem;
+    background: var(--crema);
+    color: var(--vinotinto);
+    font-family: var(--font-body);
+    font-size: var(--fs-md);
+  }
+
+  .filtros-tabla option:hover,
+  .filtros-tabla option:focus,
+  .filtros-tabla option:checked {
+    background: var(--vinotinto);
+    color: var(--crema);
+  }
+}
+
 .filtro-checkbox {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  color: var(--crema);
   cursor: pointer;
 }
 
@@ -270,9 +420,9 @@ a.card p {
   width: 100px;
   padding: 0.6rem;
   font-family: var(--font-body);
-  font-size: 0.95rem;
-  color: var(--ink);
-  background: #ffffff;
+  font-size: var(--fs-md);
+  color: var(--vinotinto);
+  background: var(--crema);
   border: 1px solid var(--rule);
   border-radius: 4px;
   outline: none;
@@ -283,7 +433,7 @@ a.card p {
 }
 
 .filtro-rango-separador {
-  color: var(--ink-light);
+  color: var(--crema);
 }
 
 /* =====================================================
@@ -303,7 +453,7 @@ a.card p {
   background: var(--parchment-dark);
   color: var(--ink);
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 1rem;
@@ -314,7 +464,7 @@ a.card p {
 .tabla-datos td,
 .tabla-metadatos td {
   padding: 0.8rem;
-  font-size: 0.9rem;
+  font-size: var(--fs-md);
   color: var(--ink-light);
   border-bottom: 1px solid var(--rule);
 }
@@ -329,7 +479,7 @@ a.card p {
 }
 
 .cargando {
-  font-family: var(--font-body);
+  font-family: var(--font-ui);
   font-style: italic;
   color: var(--ink-light);
   text-align: center;
@@ -360,8 +510,8 @@ a.card p {
 .btn-descarga {
   background: var(--accent);
   color: var(--parchment);
-  font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -394,9 +544,9 @@ a.card p {
   border: 1px solid var(--accent);
   background: #ffffff;
   color: var(--accent);
-  font-family: var(--font-body);
+  font-family: var(--font-ui);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: var(--fs-md);
   letter-spacing: 0.02em;
   cursor: pointer;
   transition:
@@ -432,6 +582,9 @@ a.card p {
 @media (max-width: v.$bp-movil) {
   .topnav {
     padding: 0 20px;
+  }
+  .nav-links a {
+    padding: 0.9rem 20px;
   }
   .col-root,
   .cards-container {

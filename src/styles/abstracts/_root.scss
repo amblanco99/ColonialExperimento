@@ -23,6 +23,7 @@
 // Vive en abstracts/ porque la configuración salta esa carpeta al inyectar, así
 // que aquí el @use va explícito.
 
+@use 'sass:meta';
 @use 'abstracts/variables' as v;
 
 :root {
@@ -35,10 +36,37 @@
   --accent-dim: #{v.$accent-dim};
   --badge-bg: #{v.$badge-bg};
 
-  --font-display: #{v.$font-display};
-  --font-body: #{v.$font-body};
-  --font-mono: #{v.$font-mono};
-  --mapa-font: #{v.$font-mapa};
+  // Paleta de identidad. No forma parte del contrato de runtime: ningún gráfico
+  // la lee, se emite para poder usarla como var(--…) desde el CSS.
+  --vinotinto: #{v.$vinotinto};
+  --crema: #{v.$crema};
+  --rosado: #{v.$rosado};
+  --dorado: #{v.$dorado};
+  --cafe: #{v.$cafe};
+  --verde: #{v.$verde};
+
+  --font-display: #{meta.inspect(v.$font-display)};
+  --font-body: #{meta.inspect(v.$font-body)};
+  --font-ui: #{meta.inspect(v.$font-ui)};
+  --font-mono: #{meta.inspect(v.$font-mono)};
+  --mapa-font: var(--font-body);
+
+  --fs-3xs: #{v.$fs-3xs};
+  --fs-2xs: #{v.$fs-2xs};
+  --fs-xs: #{v.$fs-xs};
+  --fs-sm: #{v.$fs-sm};
+  --fs-md: #{v.$fs-md};
+  --fs-base: #{v.$fs-base};
+  --fs-lg: #{v.$fs-lg};
+  --fs-xl: #{v.$fs-xl};
+  --fs-2xl: #{v.$fs-2xl};
+  --fs-3xl: #{v.$fs-3xl};
+  --fs-4xl: #{v.$fs-4xl};
+
+  --lh-tight: #{v.$lh-tight};
+  --lh-snug: #{v.$lh-snug};
+  --lh-normal: #{v.$lh-normal};
+  --lh-relaxed: #{v.$lh-relaxed};
 
   --mapa-fondo-pergamino: #{v.$mapa-fondo-pergamino};
   --mapa-panel: #{v.$mapa-panel};

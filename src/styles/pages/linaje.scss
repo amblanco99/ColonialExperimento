@@ -73,8 +73,8 @@
 // con la subrueda cuando la categoría activa no tiene subcrímenes.
 .linaje-nivel-titulo {
   margin: 0;
-  font-family: var(--font-body);
-  font-size: 12.5px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -149,7 +149,7 @@
 }
 
 .linaje-subrueda-centro .linaje-nodo-circulo-texto {
-  font-size: 15px;
+  font-size: var(--fs-md);
   -webkit-line-clamp: 4;
 }
 
@@ -207,7 +207,7 @@
 
 .linaje-nodo {
   box-sizing: border-box;
-  font-family: var(--font-body);
+  font-family: var(--font-ui);
   text-align: center;
   padding: 0;
 }
@@ -244,15 +244,15 @@
 }
 
 .linaje-nodo-circulo--agrandada .linaje-nodo-circulo-texto {
-  font-size: 15px;
+  font-size: var(--fs-md);
   -webkit-line-clamp: 4;
 }
 
 .linaje-nodo-circulo-texto {
-  font-family: var(--font-body);
-  font-size: 10.5px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-3xs);
   font-weight: 700;
-  line-height: 1.15;
+  line-height: var(--lh-snug);
   overflow-wrap: anywhere;
   word-break: break-word;
   display: -webkit-box;
@@ -269,8 +269,8 @@
   border: 1.5px solid var(--categoria-color);
   background: var(--parchment, #f7f2e8);
   color: var(--ink, #1a1410);
-  font-size: 10.5px;
-  line-height: 1.15;
+  font-size: var(--fs-3xs);
+  line-height: var(--lh-snug);
   padding: 3px 8px;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -320,7 +320,7 @@
 
 .linaje-panel-titulo {
   font-family: var(--font-display);
-  font-size: 1.6rem;
+  font-size: var(--fs-xl);
   color: var(--categoria-color, var(--accent));
   margin: 0 0 16px;
 }
@@ -334,8 +334,8 @@
   box-sizing: border-box;
   margin: 0 0 18px;
   padding: 5px 8px;
-  font-family: var(--font-body);
-  font-size: 12px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
   color: var(--ink-light, #4a3f35);
   background: transparent;
   border: 1px solid var(--rule, #c8b89a);
@@ -349,13 +349,13 @@
 }
 
 .linaje-panel-definicion {
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: var(--fs-md);
+  line-height: var(--lh-relaxed);
   margin: 0 0 16px;
 }
 
 .linaje-panel-sinonimos {
-  font-size: 13.5px;
+  font-size: var(--fs-sm);
   font-style: italic;
   color: var(--ink-light, #4a3f35);
   margin: 0 0 20px;
@@ -367,8 +367,8 @@
   border: 1px solid var(--categoria-color, var(--accent));
   background: var(--categoria-color, var(--accent));
   color: var(--categoria-color-texto, #fff);
-  font-size: 13.5px;
-  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-family: var(--font-ui);
   font-weight: 600;
   cursor: pointer;
 }

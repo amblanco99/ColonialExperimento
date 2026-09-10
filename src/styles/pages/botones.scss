@@ -9,13 +9,13 @@
 .btn-mapa-ver-casos {
   align-self: flex-start;
   padding: 6px 14px;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   border-radius: 4px;
   border: 1px solid var(--mapa-acento-linea);
   background: var(--mapa-acento-linea);
   color: #fff;
   cursor: pointer;
-  font-family: var(--mapa-font);
+  font-family: var(--font-ui);
   font-weight: 600;
   display: none;
 }
@@ -26,26 +26,26 @@
 
 .btn-mapa-vista {
   padding: 8px 22px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   border-radius: 6px;
   border: 1px solid var(--mapa-borde);
   background: var(--mapa-fondo-pergamino);
   color: var(--mapa-tinta-oscura);
   cursor: pointer;
-  font-family: var(--mapa-font);
+  font-family: var(--font-ui);
   font-weight: 600;
   letter-spacing: 0.02em;
 }
 
 .btn-mapa-limpiar {
   padding: 8px 14px;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   border-radius: 4px;
   border: 1px solid var(--mapa-borde);
   background: transparent;
   color: var(--mapa-borde);
   cursor: pointer;
-  font-family: var(--mapa-font);
+  font-family: var(--font-ui);
   align-self: center;
   white-space: nowrap;
   display: none;
@@ -55,11 +55,11 @@
   align-self: flex-start;
   margin-bottom: 8px;
   padding: 6px 14px;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   border-radius: 4px;
   border: 1px solid var(--mapa-borde);
   cursor: pointer;
-  font-family: var(--mapa-font);
+  font-family: var(--font-ui);
   font-weight: 600;
   background: var(--mapa-fondo-pergamino);
   color: var(--mapa-tinta-oscura);
@@ -72,11 +72,11 @@
   margin-bottom: 8px;
   margin-left: 8px;
   padding: 6px 14px;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   border-radius: 4px;
   border: 1px solid var(--mapa-borde);
   cursor: pointer;
-  font-family: var(--mapa-font);
+  font-family: var(--font-ui);
   font-weight: 600;
   background: var(--mapa-fondo-pergamino);
   color: var(--mapa-tinta-oscura);
@@ -103,8 +103,8 @@
   border: 1px solid var(--accent);
   background: var(--accent);
   color: #fff;
-  font-size: 12.5px;
-  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-family: var(--font-ui);
   font-weight: 600;
   cursor: pointer;
   display: none;

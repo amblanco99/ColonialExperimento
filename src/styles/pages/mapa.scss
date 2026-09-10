@@ -14,7 +14,7 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   margin-bottom: 14px;
-  font-family: var(--mapa-font);
+  font-family: var(--font-ui);
 }
 
 .mapa-selector-vista-grupo {
@@ -217,7 +217,7 @@
 
 .mapa-tarjeta-titulo {
   font-family: var(--mapa-font);
-  font-size: 15px;
+  font-size: var(--fs-md);
   font-weight: 700;
   color: var(--mapa-tinta-oscura);
   letter-spacing: 0.01em;
@@ -225,7 +225,7 @@
 
 .mapa-tarjeta-subtitulo {
   font-family: var(--mapa-font);
-  font-size: 11.5px;
+  font-size: var(--fs-2xs);
   color: var(--mapa-borde);
   opacity: 0.85;
 }
@@ -241,8 +241,8 @@
 // que el resto de las tarjetas.
 .mapa-tarjeta-parrafo {
   font-family: var(--mapa-font);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
   color: var(--mapa-tinta-oscura);
   margin: 0;
 }
@@ -268,7 +268,7 @@
   justify-content: space-between;
   gap: 10px;
   font-family: var(--mapa-font);
-  font-size: 12px;
+  font-size: var(--fs-xs);
 }
 
 .mapa-info-lugar-etiqueta {
@@ -284,7 +284,7 @@
 
 .mapa-info-lugar-subtitulo {
   font-family: var(--mapa-font);
-  font-size: 12.5px;
+  font-size: var(--fs-xs);
   font-weight: 700;
   color: var(--mapa-tinta-oscura);
   margin-top: 4px;
@@ -298,7 +298,7 @@
   flex-direction: column;
   gap: 5px;
   font-family: var(--mapa-font);
-  font-size: 11.5px;
+  font-size: var(--fs-2xs);
   color: var(--mapa-tinta-oscura);
 }
 
@@ -315,7 +315,7 @@
 
 .mapa-info-lugar-vacio {
   font-family: var(--mapa-font);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-style: italic;
   color: var(--mapa-borde);
 }
@@ -419,7 +419,7 @@
 
 .mapa-etiqueta-tiempo {
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   color: var(--mapa-tinta-oscura);
 }
@@ -559,7 +559,7 @@
   color: var(--mapa-borde);
   font-family: var(--mapa-font);
   font-style: italic;
-  font-size: 15px;
+  font-size: var(--fs-md);
   border: 1px dashed var(--mapa-borde);
   border-radius: 6px;
   background: var(--mapa-fondo-pergamino);
@@ -567,32 +567,32 @@
 
 .mapa-aviso-vacio--compacto {
   height: 220px;
-  font-size: 14px;
+  font-size: var(--fs-md);
 }
 
 /* Cápsula de información del mapa (dibujada en SVG) */
 .mapa-capsula-titulo {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 700;
   font-family: var(--mapa-font);
   fill: var(--mapa-fondo-pergamino);
 }
 
 .mapa-capsula-subtitulo {
-  font-size: 10px;
+  font-size: var(--fs-3xs);
   font-family: var(--mapa-font);
   fill: var(--mapa-acento-secundario);
 }
 
 .mapa-capsula-sin-casos {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-style: italic;
   font-family: var(--mapa-font);
   fill: var(--mapa-fondo-pergamino);
 }
 
 .mapa-capsula-fila-texto {
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   font-family: var(--mapa-font);
   fill: var(--mapa-fondo-pergamino);
   font-weight: 400;
@@ -603,7 +603,7 @@
 }
 
 .mapa-capsula-fila-conteo {
-  font-size: 10px;
+  font-size: var(--fs-3xs);
   font-family: var(--mapa-font);
   fill: var(--mapa-fondo-pergamino);
 }
@@ -641,28 +641,33 @@
 
 /* Gráfico de líneas "Evolución en el tiempo" (SVG) */
 .mapa-linea-titulo {
-  font-size: 14px;
+  font-size: var(--fs-md);
   font-weight: 700;
   fill: #222;
 }
 
 .mapa-linea-subtitulo {
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   fill: #999;
 }
 
 .mapa-linea-nota {
-  font-size: 10px;
+  font-size: var(--fs-3xs);
   font-style: italic;
   fill: #999;
 }
 
 .mapa-linea-eje-x-texto {
+  font-size: var(--fs-xs);
   fill: #555;
 }
 
+.mapa-linea-eje-x-texto--compacto {
+  font-size: var(--fs-3xs);
+}
+
 .mapa-linea-eje-y-texto {
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   fill: #666;
 }
 
@@ -675,7 +680,7 @@
 }
 
 .mapa-linea-etiqueta-serie {
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   font-weight: 600;
   cursor: pointer;
 }
@@ -699,7 +704,7 @@
   height: auto;
   overflow: visible;
   display: block;
-  font-family: v.$font-sistema;
+  font-family: var(--font-ui);
 }
 
 .mapa-linea-trazo {
@@ -734,7 +739,7 @@
 
 /* Grafo "Relación entre crímenes" (SVG) */
 .mapa-grafo-etiqueta {
-  font-size: 10px;
+  font-size: var(--fs-3xs);
   text-anchor: middle;
   pointer-events: none;
   fill: var(--mapa-tinta-oscura);
@@ -744,7 +749,7 @@
   max-width: 100%;
   height: auto;
   display: block;
-  font-family: var(--mapa-font);
+  font-family: var(--font-ui);
 }
 
 .mapa-grafo-link {

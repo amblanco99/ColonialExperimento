@@ -82,10 +82,10 @@
 .linea-tiempo-casos-anio-numero {
   flex: none;
   width: 120px;
-  font-family: v.$font-sistema;
-  font-size: 44px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-3xl);
   font-weight: 800;
-  line-height: 1;
+  line-height: var(--lh-tight);
   color: var(--mapa-tinta-oscura);
   transition:
     color 0.15s ease,
@@ -94,7 +94,7 @@
 
 .linea-tiempo-casos-anio--activo .linea-tiempo-casos-anio-numero {
   color: var(--mapa-acento-linea);
-  font-size: 56px;
+  font-size: var(--fs-4xl);
 }
 
 .linea-tiempo-casos-anio-circulos {
@@ -135,7 +135,7 @@
 }
 
 .linea-tiempo-casos-nota {
-  font-size: 11px;
+  font-size: var(--fs-2xs);
   font-style: italic;
   font-family: var(--mapa-font);
   color: var(--mapa-borde);
@@ -156,8 +156,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
-  font-family: var(--mapa-font);
+  font-size: var(--fs-2xs);
+  font-family: var(--font-ui);
   color: var(--mapa-borde);
 }
 
@@ -207,14 +207,14 @@
   right: 12px;
   border: none;
   background: none;
-  font-size: 20px;
-  line-height: 1;
+  font-size: var(--fs-xl);
+  line-height: var(--lh-tight);
   color: var(--mapa-borde);
   cursor: pointer;
 }
 
 .linea-tiempo-casos-panel-caso__fecha {
-  font-size: 16px;
+  font-size: var(--fs-base);
   font-weight: 700;
   color: var(--mapa-tinta-oscura);
   padding-right: 24px;
@@ -222,7 +222,7 @@
 }
 
 .linea-tiempo-casos-panel-caso__lugar {
-  font-size: 12.5px;
+  font-size: var(--fs-xs);
   color: var(--mapa-borde);
   margin-top: 2px;
   margin-bottom: 12px;
@@ -239,7 +239,7 @@
 }
 
 .linea-tiempo-casos-panel-caso__lista li {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--mapa-tinta-oscura);
   padding: 6px 10px;
   background: var(--mapa-panel);
@@ -253,8 +253,8 @@
   border-radius: 4px;
   background: var(--mapa-acento-linea);
   color: #fff;
-  font-family: var(--mapa-font);
-  font-size: 13px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
@@ -274,8 +274,8 @@
   border-radius: 4px;
   background: transparent;
   color: var(--mapa-tinta-oscura);
-  font-family: var(--mapa-font);
-  font-size: 13px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
