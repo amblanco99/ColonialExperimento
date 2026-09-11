@@ -512,6 +512,31 @@ a.card p {
   background: var(--parchment);
 }
 
+.th-ordenable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.th-ordenable:hover {
+  background: var(--parchment);
+}
+
+.th-ordenable--activo {
+  color: var(--accent);
+}
+
+.orden-icono {
+  display: inline-block;
+  margin-left: 0.4em;
+  font-size: 0.85em;
+  opacity: 0.4;
+}
+
+.th-ordenable--activo .orden-icono {
+  opacity: 1;
+}
+
 .fila-clickeable {
   cursor: pointer;
 }

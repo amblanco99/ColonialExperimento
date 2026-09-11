@@ -1,43 +1,96 @@
 import * as d3 from 'd3';
 
-/** Fila cruda de cualquiera de los tres CSV. Se deja abierta a propósito: el
- *  código accede a columnas por nombre y tiparlas todas sería reescribirlo. */
 type Fila = d3.DSVRowString<string>;
 
 const CSV_CRIMENES = `${import.meta.env.BASE_URL}data/crimenes.csv`;
 const CSV_FUENTES = `${import.meta.env.BASE_URL}data/Source.csv`;
 const CSV_Personas = `${import.meta.env.BASE_URL}data/Visualizaciones.csv`;
 const CSV_LINAJE = `${import.meta.env.BASE_URL}data/Linaje.csv`;
+// Trae el rango real del proceso (FechaInicial/Fecha_Final por ID_Caso), que
+// crimenes.csv no tiene: ahí "Año" es un único valor por documento. Se usa
+// solo para el encabezado del caso.
+const CSV_CASOS = `${import.meta.env.BASE_URL}data/Casos.csv`;
+// Archivo aparte (ver tools/generar-negrilla-csv.mjs): trae la misma
+// Descripción que crimenes.csv pero con la negrilla del Excel marcada entre
+// **doble asterisco**. crimenes.csv no se toca — de ahí lo sigue leyendo tal
+// cual la tabla general y el resto de gráficos. Ambos archivos se cruzan por
+// ID_Caso + ID_Crímen, y solo la tarjeta de cada crimen usa la versión con
+// negrilla.
+const CSV_NEGRILLA = `${import.meta.env.BASE_URL}data/DescripcionesNegrilla.csv`;
 
-// crimenes.csv ya no trae el nombre del crimen/subcrimen: solo Código y
-// Sub_Código. Se resuelven aquí contra Linaje.csv (ID_Código → Nombre).
-function buildCasesMap(crimenes: Fila[], fuentes: Fila[], linaje: Fila[]) {
+function escaparHtml(texto: string): string {
+  return texto.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function formatearDescripcion(texto: string, conNegrilla: boolean): string {
+  const escapado = escaparHtml((texto || '').trim());
+  return conNegrilla
+    ? escapado.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    : escapado.replace(/\*\*(.+?)\*\*/g, '$1');
+}
+
+function claveDocumento(idCaso?: string, idCrimen?: string): string {
+  return `${idCaso}|${idCrimen}`;
+}
+
+// FechaInicial/Fecha_Final del proceso, como rango si difieren o como año
+// único si coinciden; si Casos.csv no tiene el caso, cae al Año de crimenes.csv.
+function formatearRangoAnios(fechaInicial?: string, fechaFinal?: string, fallback?: string): string {
+  const inicial = (fechaInicial || '').trim();
+  const final = (fechaFinal || '').trim();
+  if (inicial && final) return inicial === final ? inicial : `${inicial} – ${final}`;
+  return inicial || final || fallback || '';
+}
+
+function buildCasesMap(
+  crimenes: Fila[],
+  fuentes: Fila[],
+  linaje: Fila[],
+  negrilla: Fila[],
+  casos: Fila[],
+) {
   const fuentesIdx: Record<string, Fila> = {};
   fuentes.forEach((f: Fila) => {
-    fuentesIdx[f.ID_Documento!] = f;
+    fuentesIdx[f['ID_Crímen']!] = f;
   });
   const linajeMap: Record<string, string> = {};
   linaje.forEach((l: Fila) => {
     linajeMap[l['ID_Código']!] = l.Nombre!;
   });
+  const casosIdx: Record<string, Fila> = {};
+  casos.forEach((c: Fila) => {
+    casosIdx[c.ID_Caso!] = c;
+  });
+  // Descripción con negrilla, indexada por ID_Caso + ID_Crímen (solo para
+  // las tarjetas; ver CSV_NEGRILLA arriba).
+  const negrillaIdx: Record<string, string> = {};
+  negrilla.forEach((n: Fila) => {
+    negrillaIdx[claveDocumento(n.ID_Caso, n['ID_Crímen'])] = n['Descripción']!;
+  });
+
   const casesMap = new Map();
   crimenes.forEach((row: Fila) => {
     const caseId = row.ID_Caso;
     const idCrimen = row['ID_Crímen'];
 
     if (!casesMap.has(caseId)) {
+      const casoInfo = casosIdx[caseId!];
       casesMap.set(caseId, {
         id: caseId,
         descripcion: row['Descripción'],
         año: row['Año'],
+        rangoAnios: formatearRangoAnios(casoInfo?.FechaInicial, casoInfo?.['Fecha_Final'], row['Año']),
         lugar: row['Lugar'],
         especificaciones: row['Especificaciones'],
         documentos: [],
       });
     }
     const caso = casesMap.get(caseId);
+    const descripcionNegrilla = negrillaIdx[claveDocumento(caseId, idCrimen)];
     caso.documentos.push({
       id_documento: idCrimen,
+      descripcion: descripcionNegrilla ?? row['Descripción'],
+      año: row['Año'],
       crimen: linajeMap[row['Código']!] || '',
       subcrimen: linajeMap[row['Sub_Código']!] || '',
       fuente: fuentesIdx[idCrimen!] ?? null,
@@ -65,14 +118,16 @@ async function loadCase(
   { main, loading }: { main: HTMLElement | null; loading: HTMLElement | null },
 ) {
   try {
-    const [crimenes, fuentes, personas, linaje] = await Promise.all([
+    const [crimenes, fuentes, personas, linaje, negrilla, casos] = await Promise.all([
       d3.csv(CSV_CRIMENES),
       d3.csv(CSV_FUENTES),
       d3.csv(CSV_Personas),
       d3.csv(CSV_LINAJE),
+      d3.csv(CSV_NEGRILLA),
+      d3.csv(CSV_CASOS),
     ]);
 
-    const casesMap = buildCasesMap(crimenes, fuentes, linaje);
+    const casesMap = buildCasesMap(crimenes, fuentes, linaje, negrilla, casos);
     const caso = casesMap.get(id);
 
     if (!caso) {
@@ -94,11 +149,11 @@ async function loadCase(
 function renderCase(caso: any, personas: Fila[], main: HTMLElement, casesMap: Map<string, any>) {
   const header = document.createElement('div');
   header.innerHTML = `
-    <h1 class="case-title">${caso.descripcion}</h1>
+    <h1 class="case-title">${formatearDescripcion(caso.descripcion, false)}</h1>
     <div class="meta-row">
       <div class="meta-pill">
         <span class="label">Año</span>
-        ${caso.año}
+        ${caso.rangoAnios}
       </div>
       <div class="meta-pill">
         <span class="label">Lugar</span>
@@ -195,8 +250,18 @@ function renderCase(caso: any, personas: Fila[], main: HTMLElement, casesMap: Ma
         </div>
       `;
     }
-    const fuenteHTML = doc.fuente
-      ? `<div class="source-block">
+    const anioRegistradoHTML = doc.año
+      ? `<div class="source-field">
+          <span class="sf-label">Año registrado</span>
+          <span class="sf-value">${doc.año}</span>
+        </div>`
+      : '';
+
+    const fuenteHTML = `
+      <div class="source-block">
+        ${
+          doc.fuente
+            ? `
           <div class="source-field">
             <span class="sf-label">Archivo</span>
             <span class="sf-value">${doc.fuente.Archivo ?? '—'}</span>
@@ -221,19 +286,42 @@ function renderCase(caso: any, personas: Fila[], main: HTMLElement, casesMap: Ma
             <span class="sf-label">Folios</span>
             <span class="sf-value">${doc.fuente.Folios ?? '—'}</span>
           </div>
-        </div>`
-      : `<p class="no-source">Fuente documental no disponible para este documento.</p>`;
+        `
+            : `<p class="no-source">Fuente documental no disponible para este documento.</p>`
+        }
+        ${anioRegistradoHTML}
+      </div>`;
+
+    const subcrimen = doc.subcrimen.trim();
+    const crimeFieldsHTML = `
+      <div class="crime-fields">
+        <div class="crime-field">
+          <p class="crime-name">${doc.crimen.trim()}</p>
+          <span class="crime-field-label">Crimen</span>
+        </div>
+        ${
+          subcrimen
+            ? `
+        <div class="crime-field">
+          <p class="crime-sub">${subcrimen}</p>
+          <span class="crime-field-label">Subcrimen</span>
+        </div>
+        `
+            : ''
+        }
+      </div>
+    `;
+
+    const crimeHeaderHTML = `
+      <div class="crime-header">
+        <p class="crime-descripcion">${formatearDescripcion(doc.descripcion, true)}</p>
+        ${crimeFieldsHTML}
+      </div>
+    `;
 
     card.innerHTML = `
       <div class="crime-info">
-        <div class="crime-fields">
-          <div class="crime-field">
-            <p class="crime-name" data-tooltip="Crimen">${doc.crimen.trim()}</p>
-          </div>
-          <div class="crime-field">
-            <p class="crime-sub" data-tooltip="Subcrimen">${doc.subcrimen.trim()}</p>
-          </div>
-        </div>
+        ${crimeHeaderHTML}
 
         ${agentesHTML}
 
@@ -327,7 +415,7 @@ function renderCasosSimilares(caso: any, casesMap: Map<string, any>, main: HTMLE
             <span>${s.año || 'Sin año'}</span>
             <span>${s.lugar || 'Sin lugar'}</span>
           </div>
-          <p class="similar-card-desc">${s.descripcion || ''}</p>
+          <p class="similar-card-desc">${formatearDescripcion(s.descripcion, false)}</p>
           <div class="similar-card-crimen">${[...crimenesDeCaso(s)].join(', ')}</div>
         </article>
       `,

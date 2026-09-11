@@ -1,31 +1,78 @@
 @use 'abstracts/variables' as v;
 
 /* =====================================================
-   LÍNEA DE TIEMPO DE CASOS (rueda selectora de años, scroll vertical)
-   (LineaTiempoCasos.ts) — solo entran al roll los años con casos (ver
-   dibujar()). El año más cerca del centro se ve nítido y grande; los de
-   alrededor se van desvaneciendo con la distancia — la opacidad de cada
-   fila se fija por JS en cada frame (actualizarDesvanecido), no por CSS.
-   Un degradado en los bordes (mask-image) refuerza el efecto de rueda.
-   Sin scrollbar visible; el scroll sigue funcionando con rueda/trackpad
-   (vía Lenis).
+   LÍNEA DE TIEMPO DE CASOS — dos vistas alternables con
+   .linea-tiempo-casos-selector-vista (ver mostrarVistaTimeline en el .ts):
+   "Vista en línea" (gráfico de líneas, conteo de casos por año — ver más
+   abajo) y "Rueda de años" (barra de tiempo con time slider, descrita a
+   continuación). Ambas comparten filtros, nota y leyenda.
 
-   A diferencia de una rueda de alto de fila fijo, acá cada año ocupa el
-   alto que necesite: si tiene muchos casos, sus puntos pasan a varias
-   líneas y la fila crece, en vez de recortarlos (min-height, no height, en
-   .linea-tiempo-casos-anio; ver ALTO_FILA_BASE/FILAS_VISIBLES en el .ts,
-   que ya no son "el" alto de fila sino solo la unidad para dimensionar la
-   ventana visible).
+   RUEDA DE AÑOS (barra de tiempo con time slider, scroll horizontal)
+   (LineaTiempoCasos.ts) — la barra representa el tiempo real: cada año con
+   casos se ubica en su posición real dentro del rango filtrado (escala
+   lineal año→px vía d3.scaleLinear), así que un hueco sin casos se ve como
+   un hueco real en la barra, no se comprime. La densidad (px por año) es
+   fija (ESPACIO_ANIO_BASE, sin zoom); se navega desplazando la ventana
+   visible con la guía de fecha (.linea-tiempo-casos-guia-fecha, un time
+   slider) o arrastrando/con la rueda del mouse directamente sobre la barra
+   (vía Lenis, orientation: 'horizontal'). El año más cerca del centro se ve
+   nítido y grande; los de alrededor se van desvaneciendo con la distancia —
+   la opacidad de cada columna se fija por JS en cada frame
+   (actualizarDesvanecido), no por CSS. Un degradado en los bordes
+   (mask-image) refuerza el efecto de rueda. Sin scrollbar visible.
 
-   .linea-tiempo-casos-cuerpo centra la columna de la rueda con
+   Cada año es una columna con los puntos arriba y el año (la "barra" de
+   tiempo) abajo — align-items: flex-end en .linea-tiempo-casos-lista-
+   contenido alinea todas las columnas por abajo, así que un año con muchos
+   casos crece hacia arriba en vez de recortar puntos, sin necesidad de un
+   alto fijo. El espaciado horizontal entre columnas NO es un ancho de
+   columna fijo: se fija por JS (recolocarColumnas) vía margin-left, para
+   reproducir la distancia real en años entre cada una.
+
+   .linea-tiempo-casos-cuerpo centra la columna de la barra con
    justify-content; al hacer clic en un punto, la tarjeta de detalle de al
    lado (.linea-tiempo-casos-panel-caso) gana ancho, y ese mismo centrado
-   hace que la rueda se corra sola un poco a la izquierda — no hay que
+   hace que la barra se corra sola un poco a la izquierda — no hay que
    animar ninguna posición a mano.
 ===================================================== */
 .linea-tiempo-casos-wrapper {
   position: relative;
   max-width: 100%;
+}
+
+// Alterna entre la rueda de puntos (.linea-tiempo-casos-cuerpo) y el
+// gráfico de líneas (.linea-tiempo-casos-contenedor-linea) — ver
+// mostrarVistaTimeline en el .ts. Ambas vistas se recalculan siempre en
+// cada dibujar(); esto solo cambia cuál se ve.
+.linea-tiempo-casos-selector-vista {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.linea-tiempo-casos-selector-vista__boton {
+  padding: 6px 14px;
+  border: 1px solid var(--mapa-borde);
+  border-radius: 999px;
+  background: var(--mapa-tarjeta-fondo);
+  color: var(--mapa-tinta-oscura);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.linea-tiempo-casos-selector-vista__boton:hover {
+  background: var(--mapa-panel);
+}
+
+.linea-tiempo-casos-selector-vista__boton--activo {
+  background: var(--mapa-acento-linea);
+  border-color: var(--mapa-acento-linea);
+  color: #fff;
 }
 
 .linea-tiempo-casos-cuerpo {
@@ -35,24 +82,107 @@
   gap: 28px;
 }
 
+.linea-tiempo-casos-cuerpo--oculto {
+  display: none;
+}
+
+// Gráfico de líneas (conteo de casos por año, criminal vs no criminal) —
+// ver renderizarLinea en el .ts. Comparte la leyenda de abajo con la rueda
+// de puntos, así que no repite los colores acá.
+.linea-tiempo-casos-contenedor-linea {
+  position: relative;
+  width: 100%;
+}
+
+.linea-tiempo-casos-contenedor-linea--oculto {
+  display: none;
+}
+
+.linea-tiempo-casos-linea-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.linea-tiempo-casos-linea-trazo {
+  fill: none;
+  stroke-width: 2;
+}
+
+.linea-tiempo-casos-linea-guia {
+  stroke: var(--mapa-borde);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+// Botón que dispara la animación de revelado (ver renderizarLinea en el
+// .ts) — arriba a la derecha del gráfico, igual que los antiguos botones de
+// zoom de la rueda.
+.linea-tiempo-casos-linea-reproducir {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 6px 14px;
+  border: 1px solid var(--mapa-borde);
+  border-radius: 999px;
+  background: var(--mapa-tarjeta-fondo);
+  color: var(--mapa-tinta-oscura);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.linea-tiempo-casos-linea-reproducir:hover:not(:disabled) {
+  background: var(--mapa-acento-linea);
+  border-color: var(--mapa-acento-linea);
+  color: #fff;
+}
+
+.linea-tiempo-casos-linea-reproducir:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
 .linea-tiempo-casos-columna-izq {
-  flex: none;
-  width: 480px;
-  max-width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+// Guía de fecha / time slider: mismo patrón visual que el filtro de década
+// (.mapa-slider-rango y compañía, en mapa.scss) — un <input type="range">
+// que muestra y controla qué ventana de años se ve en la rueda (ver
+// contenidoXDeAnio/irAAnio/sincronizarGuia en el .ts). Va debajo de la
+// rueda (después de .linea-tiempo-casos-lista en el DOM — ver el .ts),
+// ocupando todo el ancho de la columna.
+.linea-tiempo-casos-guia-fecha {
+  margin-top: 10px;
+}
+
+.linea-tiempo-casos-guia-fecha__etiqueta {
+  margin-top: 2px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--mapa-borde);
+  text-align: center;
 }
 
 .linea-tiempo-casos-lista {
   position: relative;
-  overflow-y: auto;
+  overflow-x: auto;
   overscroll-behavior: contain;
   scrollbar-width: none; // Firefox
   -ms-overflow-style: none; // Edge/IE viejos
-  mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
   -webkit-mask-image: linear-gradient(
-    to bottom,
+    to right,
     transparent 0%,
-    black 18%,
-    black 82%,
+    black 10%,
+    black 90%,
     transparent 100%
   );
 }
@@ -62,47 +192,87 @@
 }
 
 .linea-tiempo-casos-lista-contenido {
-  // Aleja el número del borde izquierdo de la columna, en vez de quedar
-  // pegado a él.
-  padding-left: 16px;
+  display: flex;
+  align-items: flex-end;
+  padding: 34px 0 4px;
 }
 
-// Sin alto fijo (min-height, no height): un año con muchos casos crece para
-// que todos sus puntos entren, en vez de recortarlos — ver
-// .linea-tiempo-casos-anio-circulos más abajo (ya no tiene overflow:hidden).
+// Sin ancho fijo: cada columna ocupa el ancho que su contenido necesite: el
+// espaciado ENTRE columnas lo fija recolocarColumnas() (margin-left) según
+// la escala de tiempo real, no este ancho. Un año con muchos casos crece en
+// alto para que todos sus puntos entren, en vez de recortarlos — ver
+// .linea-tiempo-casos-anio-circulos más abajo.
 .linea-tiempo-casos-anio {
+  flex: none;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 20px;
-  min-height: 72px;
-  padding: 8px 0;
+  gap: 8px;
   box-sizing: border-box;
 }
 
+// Colchón real al final del roll (su ancho lo fija recolocarColumnas en el
+// .ts) para que el último año pueda llegar al centro de la ventana visible
+// — un padding-right en el contenedor flex no sirve para esto porque las
+// columnas ya lo desbordan (flex-shrink:0), así que el padding queda muy
+// adentro del borde real y el scroll nunca lo alcanza. height: 1px (no 0):
+// un hijo de alto 0 no cuenta para el ancho scrolleable del contenedor en
+// Chromium, así que su ancho quedaba "invisible" para el scroll.
+.linea-tiempo-casos-espaciador {
+  flex: none;
+  height: 1px;
+}
+
+// El año se muestra como una barra/píldora (no un número suelto) — son
+// estas píldoras alineadas abajo, junto al espaciado real entre ellas, las
+// que forman visualmente "la barra de tiempo". Su tamaño NO varía según la
+// cantidad de casos de ese año (los casos siguen siendo solo los puntos de
+// arriba); sí crece/resalta la más cercana al centro (ver --activo).
 .linea-tiempo-casos-anio-numero {
   flex: none;
-  width: 120px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--mapa-panel);
+  border: 1px solid var(--mapa-borde);
   font-family: var(--font-ui);
-  font-size: var(--fs-3xl);
-  font-weight: 800;
-  line-height: var(--lh-tight);
+  font-size: var(--fs-sm);
+  font-weight: 700;
   color: var(--mapa-tinta-oscura);
+  white-space: nowrap;
   transition:
-    color 0.15s ease,
-    font-size 0.15s ease;
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .linea-tiempo-casos-anio--activo .linea-tiempo-casos-anio-numero {
+  background: var(--mapa-acento-linea);
+  border-color: var(--mapa-acento-linea);
+  color: #fff;
+  font-size: var(--fs-base);
+  padding: 7px 16px;
+}
+
+// Total de casos de ese año, arriba de los puntos — no es interactivo (los
+// puntos siguen siendo el único disparador del popup de detalle), solo un
+// conteo rápido para no tener que contarlos a ojo en años con muchos casos.
+.linea-tiempo-casos-anio-conteo {
+  flex: none;
+  font-family: var(--font-ui);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--mapa-borde);
+}
+
+.linea-tiempo-casos-anio--activo .linea-tiempo-casos-anio-conteo {
   color: var(--mapa-acento-linea);
-  font-size: var(--fs-4xl);
 }
 
 .linea-tiempo-casos-anio-circulos {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: none;
+  width: 96px;
   display: flex;
   flex-wrap: wrap;
-  align-content: center;
+  justify-content: center;
   gap: 6px;
 }
 
@@ -167,10 +337,24 @@
   border-radius: 50%;
   background: var(--mapa-punto-color);
   flex: none;
+  transition:
+    width 0.15s ease,
+    height 0.15s ease,
+    border-radius 0.15s ease;
 }
 
 .linea-tiempo-casos-leyenda-punto--no-criminal {
   background: var(--mapa-acento-secundario);
+}
+
+// En la vista en línea el chip de la leyenda pasa de puntito a segmento de
+// línea, para que se lea como el trazo que representa ahí (ver
+// mostrarVistaTimeline en el .ts) — mismos colores, misma leyenda, solo
+// cambia la forma del chip.
+.linea-tiempo-casos-leyenda--linea .linea-tiempo-casos-leyenda-punto {
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
 }
 
 /* Tarjeta de detalle del caso, a la derecha de la rueda — colapsada
@@ -227,6 +411,17 @@
   margin-top: 2px;
   margin-bottom: 12px;
   white-space: nowrap;
+}
+
+// Primera descripción del caso (Descripción de la primera fila), solo para
+// ilustrar de qué se trata sin abrir "Ver caso" — oculta si esa fila no
+// trae descripción (elDescripcion.hidden en el .ts).
+.linea-tiempo-casos-panel-caso__descripcion {
+  font-size: var(--fs-xs);
+  font-style: italic;
+  color: var(--mapa-tinta-oscura);
+  line-height: var(--lh-normal);
+  margin: 0 0 14px;
 }
 
 .linea-tiempo-casos-panel-caso__lista {

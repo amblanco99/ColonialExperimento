@@ -5,14 +5,8 @@ interface FiltrosTabla {
   agente?: string;
   codigo?: string;
   subcodigo?: string;
-  // `fecha` llega unas veces como string y otras como número (la década, que es
-  // numérica). URLSearchParams.set lo convierte solo, así que se acepta tal cual
-  // y se castea al pasarlo: meter String() sería tocar el runtime.
   fecha?: string | number;
   escala?: string;
-  // TiempoCrimenesMapa tiene su PROPIA irATablasFiltradas (línea 129) que además
-  // acepta `lugar`. Son dos funciones distintas con el mismo nombre; ver
-  // MIGRATION.md.
 }
 
 export function crearBotonVerCasos() {

@@ -1,4 +1,4 @@
-ID_Caso,ID_Documento,Archivo,Código_Referencia,Sección,Fondo,Legajo,Documento,Folios,Número_Folios,Source
+ID_Caso,ID_Crímen,Archivo,Código_Referencia,Sección,Fondo,Legajo,Documento,Folios,Número_Folios,Fuente
 1,1A,AGN,SC.19,Colonia,Criminales (Juicios),115,9,789-894,30+,AGNSC.191159789-8941A
 1,1B,AGN,SC.19,Colonia,Criminales (Juicios),1,1,1-12,30+,AGNSC.19111-121B
 1,1C,AGN,SC.19,Colonia,Criminales (Juicios),117,8,605-691,30+,AGNSC.191178605-6911C
@@ -238,8 +238,6 @@ ID_Caso,ID_Documento,Archivo,Código_Referencia,Sección,Fondo,Legajo,Documento,
 158,158A,AGN,SC.19,Colonia,Criminales (Juicios),6,37,832-1005,30+,AGNSC.19637832-1005158A
 158,158B,AGN,SC.19,Colonia,Criminales (Juicios),6,37,832-1005,30+,AGNSC.19637832-1005158B
 158,158C,AGN,SC.19,Colonia,Criminales (Juicios),6,37,832-1005,30+,AGNSC.19637832-1005158C
-158,158D,AGN,SC.19,Colonia,Criminales (Juicios),6,37,832-1005,30+,AGNSC.19637832-1005158D
-158,158E,AGN,SC.19,Colonia,Criminales (Juicios),6,37,832-1005,30+,AGNSC.19637832-1005158E
 159,159A,AGN,SC.19,Colonia,Criminales (Juicios),6,38,1006-1012,4-30,AGNSC.196381006-1012159A
 160,160A,AGN,SC.19,Colonia,Criminales (Juicios),6,39,1013-1049,30+,AGNSC.196391013-1049160A
 161,161A,AGN,SC.19,Colonia,Criminales (Juicios),7,1,1-17,4-30,AGNSC.19711-17161A
@@ -313,7 +311,6 @@ ID_Caso,ID_Documento,Archivo,Código_Referencia,Sección,Fondo,Legajo,Documento,
 213,213B,AGN,SC.19,Colonia,Criminales (Juicios),8,18,436-439,1-3,AGNSC.19818436-439213B
 214,214A,AGN,SC.19,Colonia,Criminales (Juicios),8,19,440-469,4-30,AGNSC.19819440-469214A
 214,214B,AGN,SC.19,Colonia,Criminales (Juicios),8,19,440-469,4-30,AGNSC.19819440-469214B
-214,214C,AGN,SC.19,Colonia,Criminales (Juicios),8,19,440-469,4-30,AGNSC.19819440-469214C
 215,215A,AGN,SC.19,Colonia,Criminales (Juicios),8,20,470-473,1-3,AGNSC.19820470-473215A
 216,216A,AGN,SC.19,Colonia,Criminales (Juicios),8,21,474-479,4-30,AGNSC.19821474-479216A
 217,217A,AGN,SC.19,Colonia,Criminales (Juicios),8,22,480-485,4-30,AGNSC.19822480-485217A
@@ -486,7 +483,6 @@ ID_Caso,ID_Documento,Archivo,Código_Referencia,Sección,Fondo,Legajo,Documento,
 340,340B,AGN,SC.19,Colonia,Criminales (Juicios),13,2,178-186,4-30,AGNSC.19132178-186340B
 341,341A,AGN,SC.19,Colonia,Criminales (Juicios),13,3,187-226,30+,AGNSC.19133187-226341A
 341,341B,AGN,SC.19,Colonia,Criminales (Juicios),13,3,187-226,30+,AGNSC.19133187-226341B
-341,341C,AGN,SC.19,Colonia,Criminales (Juicios),13,3,187-226,30+,AGNSC.19133187-226341C
 342,342A,AGN,SC.19,Colonia,Criminales (Juicios),13,4,227-370,30+,AGNSC.19134227-370342A
 342,342B,AGN,SC.19,Colonia,Criminales (Juicios),13,4,227-370,30+,AGNSC.19134227-370342B
 343,343A,AGN,SC.19,Colonia,Criminales (Juicios),13,5,371-415,30+,AGNSC.19135371-415343A
@@ -1358,6 +1354,7 @@ ID_Caso,ID_Documento,Archivo,Código_Referencia,Sección,Fondo,Legajo,Documento,
 883,883F,AGN,SC.19,Colonia,Criminales (Juicios),48,34,836-842,30+,AGNSC.194834836-842883F
 883,883G,AGN,SC.19,Colonia,Criminales (Juicios),43,13,833-903,30+,AGNSC.194313833-903883G
 883,883H,AGN,SC.19,Colonia,Criminales (Juicios),43,13,833-903,30+,AGNSC.194313833-903883H
+883,883I,AGN,SC.39,Colonia,Miscelánea,23,17,128-374,30+,AGNSC.392317128-374883I
 884,884A,AGN,SC.19,Colonia,Criminales (Juicios),43,14,904-959,30+,AGNSC.194314904-959884A
 884,884B,AGN,SC.19,Colonia,Criminales (Juicios),43,14,904-959,30+,AGNSC.194314904-959884B
 884,884D,AGN,SC.19,Colonia,Criminales (Juicios),43,14,904-959,30+,AGNSC.194314904-959884D
@@ -6525,7 +6522,6 @@ ID_Caso,ID_Documento,Archivo,Código_Referencia,Sección,Fondo,Legajo,Documento,
 4102,4102G,AGN,SC.19,Colonia,Criminales (Juicios),189,4,601-615,4-30,AGNSC.191894601-6154102G
 4102,4102H,AGN,SC.19,Colonia,Criminales (Juicios),208,4,191-211,4-30,AGNSC.192084191-2114102H
 4102,4102I,AGN,SC.19,Colonia,Criminales (Juicios),208,10,299-310,4-30,AGNSC.1920810299-3104102I
-4102,4102J,AGN,SC.19,Colonia,Criminales (Juicios),215,10,612-618,4-30,AGNSC.1921510612-6184102J
 4103,4103A,AGN,SC.19,Colonia,Criminales (Juicios),201,1,1-461,30+,AGNSC.1920111-4614103A
 4104,4104A,AGN,SC.19,Colonia,Criminales (Juicios),201,2,462-491,4-30,AGNSC.192012462-4914104A
 4104,4104B,AGN,SC.19,Colonia,Criminales (Juicios),201,2,462-491,4-30,AGNSC.192012462-4914104B

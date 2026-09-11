@@ -7,7 +7,9 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "predev": "node tools/generar-negrilla-csv.mjs",
     "dev": "astro dev",
+    "prebuild": "node tools/generar-negrilla-csv.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
@@ -23,6 +25,7 @@
     "astro": "^7.1.6",
     "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.1.8",
+    "exceljs": "^4.4.0",
     "globals": "^17.7.0",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",

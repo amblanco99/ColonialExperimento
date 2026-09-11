@@ -12,14 +12,8 @@ export async function crearTabla() {
     d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`),
   ]);
 
-  // crimenes.csv ya no trae el nombre del crimen/subcrimen: solo Código y
-  // Sub_Código. Se resuelven aquí contra Linaje.csv (ID_Código → Nombre).
   const linajeMap = new Map(dataLinaje.map((d) => [d['ID_Código'], d.Nombre]));
 
-  // Tipo_delito ("Criminal" / "No criminal" / "No aplica") vive en Linaje.csv
-  // por ID_Código, tanto para el código raíz como para el sub-código. Cuando
-  // difieren, el sub-código manda: es el nivel más específico y en la práctica
-  // el código raíz casi nunca marca "Criminal" algo cuyo sub-código no lo sea.
   const tipoDelitoMap = new Map(dataLinaje.map((d) => [d['ID_Código'], d.Tipo_delito]));
   const dataCrimenes = dataCrimenesCrudo.map((d) => {
     const tipoDelito = tipoDelitoMap.get(d['Sub_Código']) ?? tipoDelitoMap.get(d['Código']);
@@ -190,6 +184,32 @@ export async function crearTabla() {
     }
   }
 
+  type SortKey = 'crimen' | 'subcrimen' | 'Año' | 'Lugar';
+  // Por defecto, orden cronológico del caso más viejo al más reciente.
+  let sortKey: SortKey = 'Año';
+  let sortDir: 'asc' | 'desc' = 'asc';
+  // Hasta que el usuario haga clic en un encabezado, ninguna columna se marca
+  // como "activa": todas muestran el mismo ícono neutro para que se note que
+  // cualquiera se puede ordenar, aunque Año ya esté ordenado por defecto.
+  let sortTocado = false;
+
+  function compararFilas(a: (typeof dataCrimenes)[number], b: (typeof dataCrimenes)[number]) {
+    if (sortKey === 'Año') {
+      const anioA = +a.Año;
+      const anioB = +b.Año;
+      const validaA = a.Año !== '' && !isNaN(anioA);
+      const validaB = b.Año !== '' && !isNaN(anioB);
+      // Los casos sin año conocido siempre van al final, sin importar la dirección.
+      if (validaA !== validaB) return validaA ? -1 : 1;
+      if (!validaA && !validaB) return 0;
+      return sortDir === 'asc' ? anioA - anioB : anioB - anioA;
+    }
+    const valorA = String(a[sortKey] || '');
+    const valorB = String(b[sortKey] || '');
+    const resultado = valorA.localeCompare(valorB, 'es', { sensitivity: 'base' });
+    return sortDir === 'asc' ? resultado : -resultado;
+  }
+
   function renderTabla() {
     const lugar = filtroLugar.value;
     const crimen = filtroCrimen.value;
@@ -207,15 +227,28 @@ export async function crearTabla() {
       return cumpleLugar && cumpleCrimen && cumpleBusqueda && cumplePenal && cumpleAnio;
     });
 
+    filtrados.sort(compararFilas);
+
+    const encabezados: { etiqueta: string; key: SortKey | null }[] = [
+      { etiqueta: 'Descripción', key: null },
+      { etiqueta: 'Crímen', key: 'crimen' },
+      { etiqueta: 'Subcrímen', key: 'subcrimen' },
+      { etiqueta: 'Año', key: 'Año' },
+      { etiqueta: 'Lugar', key: 'Lugar' },
+    ];
+
     tablaContainer.innerHTML = `
       <table class="tabla-datos">
         <thead>
           <tr>
-            <th>Descripción</th>
-            <th>Crímen</th>
-            <th>Subcrímen</th>
-            <th>Año</th>
-            <th>Lugar</th>
+            ${encabezados
+              .map(({ etiqueta, key }) => {
+                if (!key) return `<th>${etiqueta}</th>`;
+                const activo = sortTocado && key === sortKey;
+                const icono = activo ? (sortDir === 'asc' ? '▲' : '▼') : '⇅';
+                return `<th data-key="${key}" class="th-ordenable${activo ? ' th-ordenable--activo' : ''}">${etiqueta}<span class="orden-icono">${icono}</span></th>`;
+              })
+              .join('')}
           </tr>
         </thead>
         <tbody>
@@ -240,6 +273,20 @@ export async function crearTabla() {
       tr.addEventListener('click', () => {
         const casoId = tr.dataset.caso;
         window.location.href = `${import.meta.env.BASE_URL}base-de-datos/caso.html?caso=${encodeURIComponent(casoId!)}`;
+      });
+    });
+
+    tablaContainer.querySelectorAll<HTMLElement>('th[data-key]').forEach((th) => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.key as SortKey;
+        if (sortTocado && sortKey === key) {
+          sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          sortKey = key;
+          sortDir = 'asc';
+        }
+        sortTocado = true;
+        renderTabla();
       });
     });
   }
