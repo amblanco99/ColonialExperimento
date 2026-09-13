@@ -13,6 +13,70 @@
   width: 100%;
 }
 
+/* Fila de crímenes fijados para comparar (ver renderizarFijados en el .ts):
+   vive ARRIBA de las barras, como el "filtro" desde el que se puede
+   desfijar uno (× en su chip) o todos (botón "Quitar selección") sin bajar
+   hasta la leyenda del spike. */
+.crimenes-tipo-fijados {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.crimenes-tipo-fijados--oculto {
+  display: none;
+}
+
+.crimenes-tipo-fijados-etiqueta {
+  font-family: var(--font-ui);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--mapa-tinta-oscura);
+}
+
+.crimenes-tipo-fijados-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--mapa-acento-linea);
+  background: var(--mapa-panel);
+  color: var(--mapa-tinta-oscura);
+  font-family: var(--font-ui);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.crimenes-tipo-fijados-chip:hover {
+  background: var(--mapa-acento-linea);
+  color: #fff;
+}
+
+.crimenes-tipo-fijados-chip-quitar {
+  font-weight: 700;
+  line-height: 1;
+}
+
+.crimenes-tipo-fijados-limpiar {
+  margin-left: auto;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-2xs);
+  color: var(--mapa-borde);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.crimenes-tipo-fijados-limpiar:hover {
+  color: var(--mapa-tinta-oscura);
+}
+
 .crimenes-tipo-fila {
   border-top: 1px solid var(--mapa-tierra);
 }
@@ -100,6 +164,14 @@
 /* Tarjeta "Evolución del crimen": un trazo por delito fijado, color
    asignado en CrimenesPorTipo.ts (mismos --mapa-serie-N que el resto del
    sitio) — acá solo el grosor/estructura, no el color. */
+/* Ancla de posicionamiento para el tooltip flotante (.tooltip-grafico es
+   position:absolute — sin este relative, se ubicaría contra un ancestro
+   más arriba en vez de seguir al cursor dentro de esta tarjeta; mismo
+   patrón que .mapa-contenedor-lineas y .linea-tiempo-casos-contenedor-linea). */
+#crimenesSpikeContenedor {
+  position: relative;
+}
+
 .crimenes-tipo-spike-svg {
   max-width: 100%;
   height: auto;
@@ -208,6 +280,12 @@
   color: #fff;
 }
 
+/* Misma ancla de posicionamiento que #crimenesSpikeContenedor arriba, para
+   el tooltip del donut. */
+#crimenesDonutContenedor {
+  position: relative;
+}
+
 .crimenes-tipo-donut-svg {
   display: block;
   margin: 0 auto;
@@ -219,7 +297,7 @@
 .crimenes-tipo-donut-porcion {
   stroke: var(--mapa-tarjeta-fondo);
   stroke-width: 1.5;
-  cursor: default;
+  cursor: pointer;
 }
 
 .crimenes-tipo-donut-total-num {

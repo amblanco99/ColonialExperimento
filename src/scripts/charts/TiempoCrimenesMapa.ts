@@ -23,6 +23,7 @@ declare global {
       lugar: string | null;
     } | null;
     __actualizarCrimenesPorTipoDashboard?: () => void;
+    __limpiarFiltroCrimenSiCoincide?: (nombre: string) => void;
     __actualizarLineaTiempoCasosDashboard?: () => void;
     __resaltarCasoEnMapa?: (lugar: string) => void;
   }
@@ -854,16 +855,32 @@ export async function inicializarDashboard() {
     selectCrimen.appendChild(opt);
   });
   selectCrimen.value = estado.crimen as unknown as string;
-  selectCrimen.addEventListener('change', (e) => {
-    estado.crimen = (e.target as HTMLInputElement).value;
+  // Compartida con window.__limpiarFiltroCrimenSiCoincide más abajo: mismos
+  // efectos secundarios elija el usuario en el <select> o se dispare desde
+  // CrimenesPorTipo.ts al desfijar un crimen que coincide con el filtro.
+  function establecerCrimen(nombre: string) {
+    estado.crimen = nombre;
+    selectCrimen.value = nombre;
     estado.subcrimen = 'Todos';
     comboSubcrimen.actualizarOpciones(subcrimenesParaCrimen(estado.crimen));
     actualizarMapa();
     actualizarPanelSecundario(true);
     actualizarCrimenesPorTipo();
+  }
+  selectCrimen.addEventListener('change', (e) => {
+    establecerCrimen((e.target as HTMLInputElement).value);
   });
   wrapCrimen.append(labelCrimen, selectCrimen);
   panelFiltros!.appendChild(wrapCrimen);
+
+  // CrimenesPorTipo.ts llama esto al desfijar un crimen (× de un chip o
+  // "Quitar selección"): si el filtro compartido de arriba seguía apuntando
+  // justo a ese crimen (porque fue lo que lo fijó, ver
+  // __obtenerFiltrosCrimenesPorTipo), lo vuelve a "Todos" — si no, no toca
+  // nada (pudo haberse fijado con un clic en su barra, sin pasar por acá).
+  window.__limpiarFiltroCrimenSiCoincide = function (nombre: string) {
+    if (estado.crimen === nombre) establecerCrimen('Todos');
+  };
 
   // Filtro oculto en las tres vistas ("Lugar" no habla de subcrímenes, ver
   // renderizarInfoLugares/buildSerieTotal; "Línea de tiempo" y "Crímenes"

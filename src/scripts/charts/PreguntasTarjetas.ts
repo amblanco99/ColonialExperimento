@@ -84,9 +84,8 @@ export async function crearPreguntasTarjetas(
   function pintarRespuesta(etiquetaChip: string, html: string) {
     chip.textContent = etiquetaChip;
     // innerHTML (no textContent): las respuestas traen <strong> para resaltar
-    // términos y saltos de línea dobles entre puntos, igual que las
-    // respuestas de PreguntasFrecuentes.ts — contenido propio del proyecto,
-    // no aporte externo.
+    // términos y saltos de línea dobles entre puntos — contenido propio del
+    // proyecto, no aporte externo.
     respuesta.innerHTML = html;
     enlazarNavegacion();
   }

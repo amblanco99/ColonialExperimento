@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import { esLinajeCriminal } from './linajeComun.js';
+import { crearBotonVerCasos } from './verCasos.js';
 
 // TODO: type — genéricos de selección de d3. Ver MIGRATION.md (mismo patrón que Linaje.ts).
 type SeleccionD3 = any;
@@ -37,15 +38,26 @@ interface FiltrosCrimenesPorTipo {
 }
 
 // Reconstruye exactamente los mismos filtros que ya se usaron para contar
-// las barras (ver pasaFiltrosBase en contar()): el crimen de la fila más el
-// subcrimen/lugar/rango de década compartidos, para que "Ver casos" lleve a
-// la tabla general con precisión, no solo con el nombre del crimen.
-function irATablasFiltradas(nombre: string, filtros: FiltrosCrimenesPorTipo | null) {
+// las barras/el spike/la dona, para que "Ver casos" lleve a la tabla general
+// con precisión. subcodigoNombre va aparte (no adentro de filtros) porque
+// tablageneral.ts espera el NOMBRE del subcrimen en ese parámetro, mientras
+// que filtros.subcodigo (el del panel compartido) es el ID_Código crudo
+// (p.ej. "20.1") — quien llama debe resolverlo contra linajeMap primero (ver
+// los tres call sites más abajo). decada, cuando viene, reemplaza el rango
+// fechaDesde/fechaHasta por una década puntual (clic en un punto del spike).
+function irATablasFiltradas(
+  nombre: string,
+  filtros: FiltrosCrimenesPorTipo | null,
+  subcodigoNombre: string | null,
+  overrides: { decada?: number } = {},
+) {
   const params = new URLSearchParams();
   params.set('codigo', nombre);
-  if (filtros?.subcodigo) params.set('subcodigo', filtros.subcodigo);
+  if (subcodigoNombre) params.set('subcodigo', subcodigoNombre);
   if (filtros?.lugar) params.set('lugar', filtros.lugar);
-  if (filtros) {
+  if (overrides.decada != null) {
+    params.set('fecha', String(overrides.decada));
+  } else if (filtros) {
     params.set('fechaDesde', String(filtros.decadaDesde));
     params.set('fechaHasta', String(filtros.decadaHasta));
   }
@@ -60,6 +72,10 @@ declare global {
   interface Window {
     __obtenerFiltrosCrimenesPorTipo?: () => FiltrosCrimenesPorTipo | null;
     __actualizarCrimenesPorTipoDashboard?: () => void;
+    // Implementado en TiempoCrimenesMapa.ts: si el filtro compartido "Crimen"
+    // sigue apuntando a `nombre`, lo vuelve a "Todos" — ver limpiarSeleccion
+    // y alternarSeleccion en renderizar() más abajo.
+    __limpiarFiltroCrimenSiCoincide?: (nombre: string) => void;
   }
 }
 
@@ -115,6 +131,28 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
   const layoutCrimenes = contenedorSpike?.closest('.mapa-crimenes-layout') ?? null;
   const columnaDerecha = contenedorSpike?.closest('.mapa-crimenes-col-derecha') ?? null;
 
+  // Botones "Ver casos" para un punto del spike y un gajo de la dona (mismo
+  // widget que botonVerCasosLinea en TiempoCrimenesMapa.ts): se crean una
+  // sola vez e insertan ANTES de su contenedor, no adentro — cada render
+  // vacía ese contenedor con innerHTML='', lo que borraría el botón si
+  // fuera su hijo.
+  const botonVerCasosSpike = crearBotonVerCasos();
+  contenedorSpike?.parentElement?.insertBefore(botonVerCasosSpike.boton, contenedorSpike);
+  const botonVerCasosDonut = crearBotonVerCasos();
+  contenedorDonut?.parentElement?.insertBefore(botonVerCasosDonut.boton, contenedorDonut);
+
+  // Fila de "fijados": los crímenes marcados para comparar en el spike/dona
+  // (clic en una barra, o clic en el filtro compartido "Crimen" de arriba,
+  // que fija el elegido sin poder quitarlo desde ahí — ver el manejo de
+  // filtros.codigo en renderizar()). Se muestra ARRIBA de las barras, no
+  // solo en la leyenda del spike, para poder desfijar uno o todos sin bajar
+  // hasta la columna derecha. Mismo motivo que los botones "Ver casos": se
+  // crea una sola vez e inserta ANTES de contenedorBarras porque dibujarBarras
+  // vacía ese contenedor en cada render.
+  const contenedorFijados = document.createElement('div');
+  contenedorFijados.className = 'crimenes-tipo-fijados crimenes-tipo-fijados--oculto';
+  contenedorBarras.parentElement?.insertBefore(contenedorFijados, contenedorBarras);
+
   function actualizarVisibilidadSpike() {
     const haySeleccion = crimenesSeleccionados.size > 0;
     layoutCrimenes?.classList.toggle('mapa-crimenes-layout--con-spike', haySeleccion);
@@ -159,15 +197,15 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
     (d) => esLinajeCriminal(d['Código']) && tipoDelitoMap.get(d['Código']) !== 'No aplica',
   );
 
-  // Décadas del corpus completo, para el spike de comparación.
+  // Décadas del corpus completo — solo se usa como límite por defecto en
+  // contar() cuando todavía no hay filtro de década activo (ver
+  // decadaMinGlobal ahí abajo).
   const decadasConDatos = [
     ...new Set(
       crimenesAplicables.filter((d) => decadaValida(+d.Año)).map((d) => getDecada(+d.Año)),
     ),
   ].sort((a, b) => a - b);
   const decadaMinGlobal = decadasConDatos[0];
-  const DECADAS_GLOBALES: number[] = [];
-  for (let t = decadaMinGlobal; t <= ULTIMA_DECADA; t += 10) DECADAS_GLOBALES.push(t);
 
   // Crímenes fijados para comparar en el spike (por nombre) — persiste entre
   // renders, igual que estado.lugaresFijados en TiempoCrimenesMapa.ts: cambiar
@@ -176,6 +214,13 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
   // Cuál de los crímenes fijados se muestra en el donut cuando hay más de
   // uno (ver renderizarDonut) — el selector de pestañas cambia este valor.
   let crimenActivoDonut: string | null = null;
+  // Punto del spike / gajo de la dona con el botón "Ver casos" abierto
+  // (clave `${nombre}||${década}` para el spike, nombre del subcrimen para
+  // la dona) — clic de nuevo sobre el mismo lo cierra (toggle), igual que
+  // seleccionarPuntoLinea en TiempoCrimenesMapa.ts. Se reinicia en cada
+  // render porque la selección de crímenes/filtros pudo cambiar debajo.
+  let puntoSeleccionadoSpike: string | null = null;
+  let subcrimenSeleccionadoDonut: string | null = null;
 
   function contar(filtros: FiltrosCrimenesPorTipo | null) {
     // El filtro "Crimen" compartido NO acota el desglose: acá crimen es
@@ -189,9 +234,18 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
       return okSubcodigo && okLugar;
     };
 
+    // Rango de décadas a mostrar: el del filtro compartido si hay uno, o el
+    // corpus completo si no (mismo rango que usaban las barras antes de
+    // tener filtro). Barras, spike y dona comparten este mismo recorte para
+    // que las tres vistas correspondan entre sí.
+    const decadaDesde = filtros?.decadaDesde ?? decadaMinGlobal;
+    const decadaHasta = filtros?.decadaHasta ?? ULTIMA_DECADA;
+    const decadasRango: number[] = [];
+    for (let t = decadaDesde; t <= decadaHasta; t += 10) decadasRango.push(t);
+
     const filtrados = crimenesAplicables.filter((d) => {
       const decada = getDecada(+d.Año);
-      const okDecada = !filtros || (decada >= filtros.decadaDesde && decada <= filtros.decadaHasta);
+      const okDecada = decada >= decadaDesde && decada <= decadaHasta;
       return okDecada && pasaFiltrosBase(d);
     });
 
@@ -201,20 +255,17 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
       conteos.set(nombre, (conteos.get(nombre) || 0) + 1);
     });
 
-    // El spike muestra la tendencia por década de TODO el corpus (solo
-    // respeta crimen/subcrimen/lugar, no el rango de décadas): así deja ver
-    // si un delito creció o cayó sin depender de mover el deslizador, y sigue
-    // disponible para un crimen fijado aunque el rango actual lo deje sin
-    // casos en las barras.
+    // El spike ahora respeta el mismo rango de décadas que las barras y la
+    // dona (antes mostraba siempre el corpus completo, lo que lo
+    // desincronizaba de los otros dos al mover el deslizador).
     const porDecadaPorNombre = new Map<string, number[]>();
-    crimenesAplicables.filter(pasaFiltrosBase).forEach((d) => {
-      if (!decadaValida(+d.Año)) return;
+    filtrados.forEach((d) => {
       const nombre = linajeMap.get(d['Código']) || 'Sin código';
       const decada = getDecada(+d.Año);
       if (!porDecadaPorNombre.has(nombre)) {
-        porDecadaPorNombre.set(nombre, DECADAS_GLOBALES.map(() => 0));
+        porDecadaPorNombre.set(nombre, decadasRango.map(() => 0));
       }
-      const idx = DECADAS_GLOBALES.indexOf(decada);
+      const idx = decadasRango.indexOf(decada);
       if (idx >= 0) porDecadaPorNombre.get(nombre)![idx]++;
     });
 
@@ -222,15 +273,17 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
       .map(([nombre, total]) => ({ nombre, total }))
       .sort((a, b) => b.total - a.total);
 
-    return { barras, porDecadaPorNombre, filtrados };
+    return { barras, porDecadaPorNombre, filtrados, decadasRango };
   }
 
   // Subcrímenes de un crimen fijado, con los mismos filtros/rango de década
-  // que las barras (a diferencia del spike, que ignora el rango). Se excluye
-  // el subcódigo cuyo nombre coincide con el del crimen: en Linaje.csv el
-  // hijo ".1" suele repetir el nombre del padre para representar "la forma
-  // general", no una subcategoría real (p.ej. "20" y "20.1" son ambos
-  // "Robo"; "20.2" sí es una subcategoría real, "Daños").
+  // que las barras (a diferencia del spike, que ignora el rango). Se agrupa
+  // por Sub_Código (no por su nombre): en Linaje.csv el ID_Código del hijo
+  // (p.ej. "1.1") es una entrada de pleno derecho, con su propia Explicación,
+  // aunque su Nombre repita el del padre (p.ej. "1" y "1.1" son ambos
+  // "Homicidio" — el segundo es "dar muerte", la forma específica del
+  // primero, no un duplicado a descartar). Por eso NO se excluye un
+  // subcódigo solo porque su nombre coincida con el del crimen padre.
   function subcrimenesDeCrimen(nombreCrimen: string, filtrados: typeof crimenesAplicables) {
     const conteos = new Map<string, number>();
     filtrados
@@ -239,7 +292,7 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
         const subCodigo = (d['Sub_Código'] || '').trim();
         if (!subCodigo || subCodigo.toLowerCase() === 'null') return;
         const nombreSub = linajeMap.get(subCodigo);
-        if (!nombreSub || nombreSub === nombreCrimen) return;
+        if (!nombreSub) return;
         conteos.set(nombreSub, (conteos.get(nombreSub) || 0) + 1);
       });
 
@@ -318,7 +371,8 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
       botonVerCasos.textContent = `Ver casos: ${delito.nombre}`;
       botonVerCasos.addEventListener('click', (evento) => {
         evento.stopPropagation();
-        irATablasFiltradas(delito.nombre, filtros);
+        const subcodigoNombre = filtros?.subcodigo ? linajeMap.get(filtros.subcodigo) || null : null;
+        irATablasFiltradas(delito.nombre, filtros, subcodigoNombre);
       });
       panelDefinicion.appendChild(botonVerCasos);
 
@@ -343,18 +397,22 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
 
   function renderizarSpike(
     porDecadaPorNombre: Map<string, number[]>,
+    decadas: number[],
+    filtros: FiltrosCrimenesPorTipo | null,
     alternarSeleccion: (nombre: string) => void,
   ) {
     if (!contenedorSpike) return;
     contenedorSpike.innerHTML = '';
+    puntoSeleccionadoSpike = null;
+    botonVerCasosSpike.ocultar();
 
     // La columna entera queda oculta sin selección (ver
     // actualizarVisibilidadSpike), así que no hace falta un aviso vacío acá.
     if (crimenesSeleccionados.size === 0) return;
 
     const seleccion = [...crimenesSeleccionados].map((nombre) => {
-      const porDecada = porDecadaPorNombre.get(nombre) || DECADAS_GLOBALES.map(() => 0);
-      return { nombre, porDecada, total: porDecada.reduce((a, b) => a + b, 0) };
+      const porDecada = porDecadaPorNombre.get(nombre) || decadas.map(() => 0);
+      return { nombre, porDecada, total: porDecada.reduce((a: number, b: number) => a + b, 0) };
     });
 
     const colorDe = new Map(seleccion.map((s, i) => [s.nombre, COLORES_SERIE[i % COLORES_SERIE.length]]));
@@ -365,7 +423,7 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
     const IW = WIDTH - MARGIN.left - MARGIN.right;
     const IH = HEIGHT - MARGIN.top - MARGIN.bottom;
 
-    const x = d3.scalePoint<number>().domain(d3.range(DECADAS_GLOBALES.length)).range([0, IW]);
+    const x = d3.scalePoint<number>().domain(d3.range(decadas.length)).range([0, IW]);
     const maxValor = d3.max(seleccion.flatMap((s) => s.porDecada)) || 1;
     const y = d3.scaleLinear().domain([0, maxValor]).nice().range([IH, 0]);
 
@@ -384,12 +442,12 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
     const ejeX = d3
       .axisBottom(x)
       .tickSize(0)
-      .tickFormat((idx) => formatoDecada(DECADAS_GLOBALES[idx as number]) as unknown as string);
-    if (DECADAS_GLOBALES.length > 10) {
-      const paso = Math.ceil(DECADAS_GLOBALES.length / 10);
+      .tickFormat((idx) => formatoDecada(decadas[idx as number]) as unknown as string);
+    if (decadas.length > 10) {
+      const paso = Math.ceil(decadas.length / 10);
       const valores = d3
-        .range(DECADAS_GLOBALES.length)
-        .filter((i) => i % paso === 0 || i === DECADAS_GLOBALES.length - 1);
+        .range(decadas.length)
+        .filter((i) => i % paso === 0 || i === decadas.length - 1);
       ejeX.tickValues(valores);
     }
     g.append('g')
@@ -428,7 +486,7 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
           .attr('r', 9)
           .attr('class', 'crimenes-tipo-spike-punto-hit')
           .on('mouseenter', () => {
-            tooltip.innerHTML = `<strong>${serie.nombre}</strong><br/>${formatoDecada(DECADAS_GLOBALES[i])}: ${valor.toLocaleString('es')} caso${valor === 1 ? '' : 's'}`;
+            tooltip.innerHTML = `<strong>${serie.nombre}</strong><br/>${formatoDecada(decadas[i])}: ${valor.toLocaleString('es')} caso${valor === 1 ? '' : 's'}`;
             tooltip.classList.add('tooltip-grafico--visible');
           })
           .on('mousemove', (event: MouseEvent) => {
@@ -436,7 +494,22 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
             tooltip.style.left = event.clientX - rect.left + 12 + 'px';
             tooltip.style.top = event.clientY - rect.top + 12 + 'px';
           })
-          .on('mouseleave', () => tooltip.classList.remove('tooltip-grafico--visible'));
+          .on('mouseleave', () => tooltip.classList.remove('tooltip-grafico--visible'))
+          .on('click', (event: MouseEvent) => {
+            event.stopPropagation();
+            const decada = decadas[i];
+            const clave = `${serie.nombre}||${decada}`;
+            if (puntoSeleccionadoSpike === clave) {
+              puntoSeleccionadoSpike = null;
+              botonVerCasosSpike.ocultar();
+              return;
+            }
+            puntoSeleccionadoSpike = clave;
+            const subcodigoNombre = filtros?.subcodigo ? linajeMap.get(filtros.subcodigo) || null : null;
+            botonVerCasosSpike.mostrar(`${serie.nombre} · ${formatoDecada(decada)}`, () =>
+              irATablasFiltradas(serie.nombre, filtros, subcodigoNombre, { decada }),
+            );
+          });
       });
     });
 
@@ -467,9 +540,11 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
 
   // Donut de subcrímenes del crimen fijado (o de uno elegido en el selector
   // de pestañas, si hay más de uno fijado) — ver subcrimenesDeCrimen.
-  function renderizarDonut(filtrados: typeof crimenesAplicables) {
+  function renderizarDonut(filtrados: typeof crimenesAplicables, filtros: FiltrosCrimenesPorTipo | null) {
     if (!contenedorDonut) return;
     contenedorDonut.innerHTML = '';
+    subcrimenSeleccionadoDonut = null;
+    botonVerCasosDonut.ocultar();
 
     // La columna entera queda oculta sin selección (ver
     // actualizarVisibilidadSpike), así que no hace falta un aviso vacío acá.
@@ -493,7 +568,7 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
         boton.textContent = nombre;
         boton.addEventListener('click', () => {
           crimenActivoDonut = nombre;
-          renderizarDonut(filtrados);
+          renderizarDonut(filtrados, filtros);
         });
         selector.appendChild(boton);
       });
@@ -549,7 +624,19 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
         tooltip.style.left = event.clientX - rect.left + 12 + 'px';
         tooltip.style.top = event.clientY - rect.top + 12 + 'px';
       })
-      .on('mouseleave', () => tooltip.classList.remove('tooltip-grafico--visible'));
+      .on('mouseleave', () => tooltip.classList.remove('tooltip-grafico--visible'))
+      .on('click', (event: MouseEvent, d) => {
+        event.stopPropagation();
+        if (subcrimenSeleccionadoDonut === d.data.nombre) {
+          subcrimenSeleccionadoDonut = null;
+          botonVerCasosDonut.ocultar();
+          return;
+        }
+        subcrimenSeleccionadoDonut = d.data.nombre;
+        botonVerCasosDonut.mostrar(d.data.nombre, () =>
+          irATablasFiltradas(crimenActivoDonut!, filtros, d.data.nombre),
+        );
+      });
 
     g.append('text')
       .attr('text-anchor', 'middle')
@@ -591,11 +678,13 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
 
   function renderizar() {
     const filtros = window.__obtenerFiltrosCrimenesPorTipo?.() ?? null;
-    const { barras, porDecadaPorNombre, filtrados } = contar(filtros);
+    const { barras, porDecadaPorNombre, filtrados, decadasRango } = contar(filtros);
 
     function alternarSeleccion(nombre: string) {
+      let desfijado = false;
       if (crimenesSeleccionados.has(nombre)) {
         crimenesSeleccionados.delete(nombre);
+        desfijado = true;
       } else {
         crimenesSeleccionados.add(nombre);
         // El donut sigue al crimen recién fijado, no al que ya estaba.
@@ -603,13 +692,70 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
       }
       marcarSeleccionEnBarras();
       actualizarVisibilidadSpike();
-      renderizarSpike(porDecadaPorNombre, alternarSeleccion);
-      renderizarDonut(filtrados);
+      renderizarSpike(porDecadaPorNombre, decadasRango, filtros, alternarSeleccion);
+      renderizarDonut(filtrados, filtros);
+      renderizarFijados();
+      // Si el filtro compartido "Crimen" de arriba seguía apuntando a este
+      // crimen (porque fue lo que lo fijó), lo vuelve a "Todos" — ver
+      // __limpiarFiltroCrimenSiCoincide en TiempoCrimenesMapa.ts.
+      if (desfijado) window.__limpiarFiltroCrimenSiCoincide?.(nombre);
+    }
+
+    // Quita TODOS los crímenes fijados de una vez (botón "Quitar selección"
+    // en contenedorFijados) — a diferencia de alternarSeleccion, que solo
+    // saca uno.
+    function limpiarSeleccion() {
+      if (crimenesSeleccionados.size === 0) return;
+      const nombresQuitados = [...crimenesSeleccionados];
+      crimenesSeleccionados.clear();
+      crimenActivoDonut = null;
+      marcarSeleccionEnBarras();
+      actualizarVisibilidadSpike();
+      renderizarSpike(porDecadaPorNombre, decadasRango, filtros, alternarSeleccion);
+      renderizarDonut(filtrados, filtros);
+      renderizarFijados();
+      nombresQuitados.forEach((nombre) => window.__limpiarFiltroCrimenSiCoincide?.(nombre));
+    }
+
+    // Un chip por crimen fijado, con su propio × (reutiliza alternarSeleccion:
+    // como el chip solo existe para un crimen ya fijado, "alternar" siempre
+    // lo quita), más un botón para quitarlos todos de un saque.
+    function renderizarFijados() {
+      contenedorFijados.innerHTML = '';
+      const haySeleccion = crimenesSeleccionados.size > 0;
+      contenedorFijados.classList.toggle('crimenes-tipo-fijados--oculto', !haySeleccion);
+      if (!haySeleccion) return;
+
+      const etiqueta = document.createElement('span');
+      etiqueta.className = 'crimenes-tipo-fijados-etiqueta';
+      etiqueta.textContent = 'Fijados para comparar:';
+      contenedorFijados.appendChild(etiqueta);
+
+      [...crimenesSeleccionados].forEach((nombre) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'crimenes-tipo-fijados-chip';
+        chip.title = `Quitar "${nombre}" de la comparación`;
+        const quitar = document.createElement('span');
+        quitar.className = 'crimenes-tipo-fijados-chip-quitar';
+        quitar.textContent = '×';
+        chip.append(document.createTextNode(`${nombre} `), quitar);
+        chip.addEventListener('click', () => alternarSeleccion(nombre));
+        contenedorFijados.appendChild(chip);
+      });
+
+      const botonLimpiar = document.createElement('button');
+      botonLimpiar.type = 'button';
+      botonLimpiar.className = 'crimenes-tipo-fijados-limpiar';
+      botonLimpiar.textContent = 'Quitar selección';
+      botonLimpiar.addEventListener('click', limpiarSeleccion);
+      contenedorFijados.appendChild(botonLimpiar);
     }
 
     // Elegir un crimen puntual en el filtro compartido de arriba fija ese
     // crimen para comparar, igual que un clic en su barra — no reemplaza la
-    // selección vigente ni la vacía al volver a "Todos".
+    // selección vigente ni la vacía al volver a "Todos" (para vaciarla del
+    // todo está el botón "Quitar selección" de renderizarFijados).
     const codigoActual = filtros?.codigo ?? null;
     if (codigoActual && codigoActual !== ultimoCodigoFiltro) {
       const nombre = linajeMap.get(codigoActual);
@@ -621,9 +767,10 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
     ultimoCodigoFiltro = codigoActual;
 
     dibujarBarras(barras, alternarSeleccion, filtros);
+    renderizarFijados();
     actualizarVisibilidadSpike();
-    renderizarSpike(porDecadaPorNombre, alternarSeleccion);
-    renderizarDonut(filtrados);
+    renderizarSpike(porDecadaPorNombre, decadasRango, filtros, alternarSeleccion);
+    renderizarDonut(filtrados, filtros);
   }
 
   window.__actualizarCrimenesPorTipoDashboard = renderizar;

@@ -96,7 +96,6 @@ import '../../styles/pages/preguntasTarjetas.scss';
     <script>
       import { crearTiposCasos } from '../../scripts/charts/TiposCasos.js';
       import { crearLinaje } from '../../scripts/charts/Linaje.js';
-      import { crearPreguntasFrecuentes } from '../../scripts/charts/PreguntasFrecuentes.js';
       import { crearHistoriaMetodologia } from '../../scripts/charts/HistoriaMetodologia.js';
       import { crearPreguntasTarjetas } from '../../scripts/charts/PreguntasTarjetas.js';
 
@@ -134,11 +133,14 @@ import '../../styles/pages/preguntasTarjetas.scss';
           vistaDelitosInicializada = true;
           crearLinaje('chartLinajeCriminal', true);
           crearLinaje('chartLinajeNoCriminal', false);
-          crearPreguntasFrecuentes('preguntasFrecuentes');
+          crearPreguntasTarjetas(
+            'preguntasFrecuentes',
+            `${import.meta.env.BASE_URL}data/CrimenesPreguntas.csv`,
+          );
         }
         if (vista === 'documentacion' && !vistaDocumentacionInicializada) {
           vistaDocumentacionInicializada = true;
-          crearPreguntasFrecuentes(
+          crearPreguntasTarjetas(
             'documentacionPreguntas',
             `${import.meta.env.BASE_URL}data/DocumentacionTecnicaPreguntas.csv`,
           );
