@@ -297,6 +297,11 @@ export async function inicializarDashboard() {
     lugaresFijados: new Set(),
   };
 
+  // El lugar que se fijó al elegirlo en el combo "Lugar" (ver
+  // elegirLugarDesdeCombo). Se recuerda aparte para soltar solo ese al cambiar
+  // de lugar, y no los que el usuario fijó haciendo clic en el mapa.
+  let lugarFijadoPorCombo: string | null = null;
+
   function decadasSeleccionadas() {
     return DECADAS.slice(estado.decadaMinIdx, estado.decadaMaxIdx + 1);
   }
@@ -321,17 +326,9 @@ export async function inicializarDashboard() {
     };
   };
 
-  window.__obtenerRangoDecadaGrafo = function () {
-    return rangoDecadaActual();
-  };
-
   function actualizarCrimenesPorTipo() {
     window.__actualizarCrimenesPorTipoDashboard?.();
     window.__actualizarLineaTiempoCasosDashboard?.();
-  }
-
-  function actualizarGrafoRelacion() {
-    window.__actualizarGrafoRelacionDashboard?.();
   }
 
   function irATablasFiltradas(overrides: Record<string, any> = {}) {
@@ -431,99 +428,163 @@ export async function inicializarDashboard() {
       (d: FilaCsv) => d.lugar === lugar && d.decada >= desde && d.decada <= hasta,
     );
 
-    const grupos = new Map<string, { crimen: string; anios: Set<number> }>();
+    const grupos = new Map<string, { crimen: string; anios: Set<number>; casos: Set<string> }>();
     filas.forEach((d: FilaCsv) => {
       if (!grupos.has(d.Nombre_Codigo)) {
-        grupos.set(d.Nombre_Codigo, { crimen: d.Nombre_Codigo, anios: new Set() });
+        grupos.set(d.Nombre_Codigo, {
+          crimen: d.Nombre_Codigo,
+          anios: new Set(),
+          casos: new Set(),
+        });
       }
-      grupos.get(d.Nombre_Codigo)!.anios.add(d.año);
+      const grupo = grupos.get(d.Nombre_Codigo)!;
+      grupo.anios.add(d.año);
+      grupo.casos.add(d.ID_Caso);
     });
 
     return [...grupos.values()]
-      .map((g) => ({ ...g, anios: [...g.anios].sort((a, b) => a - b) }))
+      .map((g) => ({
+        crimen: g.crimen,
+        anios: [...g.anios].sort((a, b) => a - b),
+        casos: g.casos.size,
+      }))
       .sort((a, b) => a.crimen.localeCompare(b.crimen));
   }
 
-  function crearFilaInfoLugar(etiqueta: string, valor: string) {
-    const fila = document.createElement('div');
-    fila.className = 'mapa-info-lugar-fila';
-    const dt = document.createElement('span');
-    dt.className = 'mapa-info-lugar-etiqueta';
-    dt.textContent = etiqueta;
-    const dd = document.createElement('span');
-    dd.className = 'mapa-info-lugar-valor';
-    dd.textContent = valor;
-    fila.append(dt, dd);
-    return fila;
+  function crearElemento<K extends keyof HTMLElementTagNameMap>(
+    etiqueta: K,
+    clase: string,
+    texto?: string,
+  ) {
+    const el = document.createElement(etiqueta);
+    el.className = clase;
+    if (texto !== undefined) el.textContent = texto;
+    return el;
   }
 
-  // Una sola tarjeta con una sección por lugar fijado (estado.lugaresFijados),
-  // debajo de "Evolución en el tiempo": clasificación/país/notas de
-  // Lugar.csv (solo los campos que no sean null) y, renglón por renglón,
-  // cada crimen+subcrimen que ocurrió ahí con su año o años exactos (ver
-  // resumenCrimenesLugar). Cuando hay más de un lugar fijado, sus secciones
-  // van una debajo de la otra separadas por un divisor, dentro de la MISMA
-  // tarjeta — no una tarjeta por lugar.
+  const rangoAnios = (desde: number, hasta: number) =>
+    desde === hasta ? `${desde}` : `${desde}–${hasta}`;
+
+  // Ficha de un lugar fijado: datos del lugar (Lugar.csv y provincia), una
+  // línea de tiempo con un punto por cada crimen y año, y la lista de crímenes
+  // con sus años.
+  function crearFichaLugar(lugar: string): HTMLElement {
+    const info = infoPorLugar[lugar];
+    const ficha = crearElemento('div', 'lugar-ficha');
+    ficha.appendChild(crearElemento('h3', 'lugar-ficha-titulo', lugar));
+
+    // Solo los datos que existen: Lugar.csv trae "null" en muchos.
+    const datos: [string, string | null | undefined][] = [
+      ['Clasificación', info?.clasificacion],
+      ['Provincia', provinciaPorLugar[lugar]],
+      ['País contemporáneo', info?.pais],
+    ];
+    const presentes = datos.filter((d): d is [string, string] => !!d[1]);
+    if (presentes.length > 0) {
+      const lista = crearElemento('dl', 'lugar-ficha-datos');
+      presentes.forEach(([etiqueta, valor]) => {
+        const bloque = crearElemento('div', 'lugar-ficha-dato');
+        bloque.append(
+          crearElemento('dt', 'lugar-ficha-dato-etiqueta', etiqueta),
+          crearElemento('dd', 'lugar-ficha-dato-valor', valor),
+        );
+        lista.appendChild(bloque);
+      });
+      ficha.appendChild(lista);
+    }
+    if (info?.notas) ficha.appendChild(crearElemento('p', 'lugar-ficha-notas', info.notas));
+
+    const detalle = resumenCrimenesLugar(lugar);
+    if (detalle.length === 0) {
+      ficha.appendChild(
+        crearElemento('p', 'lugar-ficha-vacio', 'Sin casos con los filtros actuales.'),
+      );
+      return ficha;
+    }
+
+    const todosLosAnios = detalle.flatMap((r) => r.anios);
+    const anioMin = Math.min(...todosLosAnios);
+    const anioMax = Math.max(...todosLosAnios);
+
+    const encabezado = crearElemento('div', 'lugar-ficha-encabezado');
+    encabezado.append(
+      crearElemento('h4', 'lugar-ficha-subtitulo', 'Crímenes documentados'),
+      crearElemento(
+        'span',
+        'lugar-ficha-resumen',
+        `${detalle.length} ${detalle.length === 1 ? 'tipo' : 'tipos'} · ${rangoAnios(anioMin, anioMax)}`,
+      ),
+    );
+    ficha.appendChild(encabezado);
+
+    // Línea de tiempo: un punto por cada crimen y año, en su posición real.
+    const linea = crearElemento('div', 'lugar-ficha-linea');
+    const eje = crearElemento('div', 'lugar-ficha-linea-eje');
+    detalle.forEach((r) => {
+      r.anios.forEach((anio) => {
+        const punto = crearElemento('span', 'lugar-ficha-linea-punto');
+        const pos = anioMax === anioMin ? 50 : ((anio - anioMin) / (anioMax - anioMin)) * 100;
+        punto.style.left = `${pos}%`;
+        punto.title = `${anio} · ${r.crimen.trim()}`;
+        eje.appendChild(punto);
+      });
+    });
+    linea.appendChild(eje);
+    const etiquetasAnio = crearElemento('div', 'lugar-ficha-linea-anios');
+    etiquetasAnio.append(
+      crearElemento('span', '', String(anioMin)),
+      ...(anioMax === anioMin ? [] : [crearElemento('span', '', String(anioMax))]),
+    );
+    linea.appendChild(etiquetasAnio);
+    ficha.appendChild(linea);
+
+    // Un renglón por crimen; lleva a la tabla general filtrada por este
+    // lugar y este crimen — mismo destino que "Ver casos" en el resto del
+    // dashboard (ver irATablasFiltradas).
+    const lista = crearElemento('ul', 'lugar-ficha-lista');
+    detalle.forEach((r) => {
+      const li = crearElemento('li', 'lugar-ficha-crimen');
+      li.tabIndex = 0;
+      li.setAttribute('role', 'link');
+      li.setAttribute('aria-label', `Ver los casos de ${r.crimen.trim()} en ${lugar}`);
+
+      const nombre = crearElemento('span', 'lugar-ficha-crimen-nombre');
+      nombre.append(crearElemento('i', 'lugar-ficha-punto'), r.crimen.trim());
+      const casos = crearElemento(
+        'span',
+        'lugar-ficha-crimen-casos',
+        `${r.casos} ${r.casos === 1 ? 'caso' : 'casos'}`,
+      );
+      const anios = crearElemento('span', 'lugar-ficha-anios');
+      r.anios.forEach((anio) => anios.appendChild(crearElemento('span', 'lugar-ficha-anio', String(anio))));
+
+      li.append(nombre, casos, anios);
+      const ir = () => irATablasFiltradas({ lugar, codigo: r.crimen, subcodigo: null });
+      li.addEventListener('click', ir);
+      li.addEventListener('keydown', (event: KeyboardEvent) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          ir();
+        }
+      });
+      lista.appendChild(li);
+    });
+    ficha.appendChild(lista);
+
+    return ficha;
+  }
+
+  // Una sola tarjeta con una ficha por lugar fijado (estado.lugaresFijados),
+  // debajo de "Evolución en el tiempo". Con más de un lugar fijado, las
+  // fichas van una debajo de la otra, separadas por un divisor, dentro de la
+  // MISMA tarjeta — no una tarjeta por lugar.
   function renderizarInfoLugares() {
     if (!contenedorInfoLugares) return;
     contenedorInfoLugares.innerHTML = '';
 
     [...estado.lugaresFijados].forEach((lugar: NodoMutable, i: number) => {
-      if (i > 0) {
-        const divisor = document.createElement('div');
-        divisor.className = 'mapa-tarjeta-divisor';
-        contenedorInfoLugares!.appendChild(divisor);
-      }
-
-      const info = infoPorLugar[lugar];
-      const titulo = document.createElement('div');
-      titulo.className = 'mapa-tarjeta-titulo';
-      titulo.textContent = lugar;
-      contenedorInfoLugares!.appendChild(titulo);
-
-      const provincia = provinciaPorLugar[lugar];
-      if (provincia) {
-        contenedorInfoLugares!.appendChild(crearFilaInfoLugar('Provincia', provincia));
-      }
-      if (info?.clasificacion) {
-        contenedorInfoLugares!.appendChild(crearFilaInfoLugar('Clasificación', info.clasificacion));
-      }
-      if (info?.pais) {
-        contenedorInfoLugares!.appendChild(crearFilaInfoLugar('País contemporáneo', info.pais));
-      }
-      if (info?.notas) {
-        contenedorInfoLugares!.appendChild(crearFilaInfoLugar('Notas', info.notas));
-      }
-
-      const subtitulo = document.createElement('div');
-      subtitulo.className = 'mapa-info-lugar-subtitulo';
-      subtitulo.textContent = `Los crímenes ocurridos en ${lugar}`;
-      contenedorInfoLugares!.appendChild(subtitulo);
-
-      const detalle = resumenCrimenesLugar(lugar);
-      if (detalle.length === 0) {
-        const vacio = document.createElement('div');
-        vacio.className = 'mapa-info-lugar-vacio';
-        vacio.textContent = 'Sin casos con los filtros actuales.';
-        contenedorInfoLugares!.appendChild(vacio);
-      } else {
-        const lista = document.createElement('ul');
-        lista.className = 'mapa-info-lugar-crimenes';
-        detalle.forEach((r) => {
-          const li = document.createElement('li');
-          li.className = 'mapa-info-lugar-crimen-fila';
-          const etiquetaAnios = r.anios.length === 1 ? `Año ${r.anios[0]}` : `Años ${r.anios.join(', ')}`;
-          li.textContent = `${r.crimen} — ${etiquetaAnios}`;
-          // Lleva a la tabla general (base-de-datos), filtrada por este lugar
-          // y este crimen concreto — mismo destino que "Ver casos" en el
-          // resto del dashboard (ver irATablasFiltradas).
-          li.addEventListener('click', () => {
-            irATablasFiltradas({ lugar, codigo: r.crimen, subcodigo: null });
-          });
-          lista.appendChild(li);
-        });
-        contenedorInfoLugares!.appendChild(lista);
-      }
+      if (i > 0) contenedorInfoLugares!.appendChild(crearElemento('div', 'mapa-tarjeta-divisor'));
+      contenedorInfoLugares!.appendChild(crearFichaLugar(lugar));
     });
   }
 
@@ -760,7 +821,11 @@ export async function inicializarDashboard() {
       }
     }
 
-    return { wrap, actualizarOpciones };
+    function establecerValor(valor: string) {
+      input.value = valor;
+    }
+
+    return { wrap, actualizarOpciones, establecerValor };
   }
 
   const wrapTiempo = document.createElement('div');
@@ -810,7 +875,6 @@ export async function inicializarDashboard() {
   function actualizarPorCambioRango() {
     sincronizarSlider();
     actualizarMapa();
-    actualizarGrafoRelacion();
     actualizarPanelSecundario(false);
     actualizarCrimenesPorTipo();
   }
@@ -915,8 +979,10 @@ export async function inicializarDashboard() {
     valorInicial: estado.provincia,
     onChange: (valor: any) => {
       estado.provincia = valor;
+      soltarLugarDelCombo();
       estado.lugar = 'Todos';
       comboLugar.actualizarOpciones(lugaresDeProvincia(valor));
+      actualizarVisibilidadBotonLimpiar();
       actualizarMapa();
       actualizarPanelSecundario(true);
       actualizarVisibilidadSpike();
@@ -933,25 +999,52 @@ export async function inicializarDashboard() {
     etiqueta: 'Lugar',
     opciones: lugaresLista,
     valorInicial: estado.lugar,
-    onChange: (valor: number) => {
-      estado.lugar = valor as unknown as string;
-      actualizarMapa();
-      actualizarCrimenesPorTipo();
-    },
+    onChange: (valor: string) => elegirLugarDesdeCombo(valor),
   });
   comboLugar.wrap.id = 'filtro-lugar-wrap';
 
+  function soltarLugarDelCombo() {
+    if (lugarFijadoPorCombo) estado.lugaresFijados.delete(lugarFijadoPorCombo);
+    lugarFijadoPorCombo = null;
+  }
+
+  // Elegir un lugar en el combo equivale a hacer clic en su punto del mapa:
+  // además de filtrar por ese lugar, se fija — aparece su línea "Evolución en
+  // el tiempo", su ficha y el botón para quitar la selección. Si el lugar ya
+  // estaba fijado por un clic, no se toca ese pin. Elegir otro lugar suelta el
+  // anterior; elegir "Todos" lo suelta sin fijar nada.
+  function elegirLugarDesdeCombo(valor: string) {
+    soltarLugarDelCombo();
+    estado.lugar = valor;
+    if (valor !== 'Todos' && !estado.lugaresFijados.has(valor)) {
+      estado.lugaresFijados.add(valor);
+      lugarFijadoPorCombo = valor;
+    }
+    actualizarVisibilidadBotonLimpiar();
+    actualizarMapa();
+    actualizarPanelSecundario(true);
+    actualizarVisibilidadSpike();
+    actualizarCrimenesPorTipo();
+  }
+
   const btnLimpiarPines = document.createElement('button');
   btnLimpiarPines.type = 'button';
-  btnLimpiarPines.textContent = 'Quitar comparaciones';
+  btnLimpiarPines.textContent = 'Quitar selección';
   btnLimpiarPines.className = 'btn-mapa-limpiar';
   btnLimpiarPines.addEventListener('click', () => {
     estado.lugaresFijados.clear();
+    lugarFijadoPorCombo = null;
+    const habiaLugarElegido = estado.lugar !== 'Todos';
+    if (habiaLugarElegido) {
+      estado.lugar = 'Todos';
+      comboLugar.establecerValor('Todos');
+    }
     limpiarMarcadorCaso();
     actualizarVisibilidadBotonLimpiar();
     actualizarMapa();
     actualizarPanelSecundario(true);
     actualizarVisibilidadSpike();
+    if (habiaLugarElegido) actualizarCrimenesPorTipo();
   });
   panelFiltros!.appendChild(btnLimpiarPines);
 
@@ -965,7 +1058,7 @@ export async function inicializarDashboard() {
   function actualizarVisibilidadBotonLimpiar() {
     btnLimpiarPines.classList.toggle(
       'btn-mapa--visible',
-      estado.lugaresFijados.size > 0 || hayMarcadorCaso,
+      estado.lugaresFijados.size > 0 || estado.lugar !== 'Todos' || hayMarcadorCaso,
     );
   }
 
@@ -1111,7 +1204,7 @@ export async function inicializarDashboard() {
   const gMarcadorCaso = gZoom.append('g').attr('class', 'capa-marcador-caso');
 
   // Refleja si __resaltarCasoEnMapa dejó el marcador rojo puesto; controla,
-  // junto con estado.lugaresFijados, si "Quitar comparaciones" debe mostrarse
+  // junto con estado.lugaresFijados, si "Quitar selección" debe mostrarse
   // (ver actualizarVisibilidadBotonLimpiar más arriba) y qué limpia al
   // hacerle clic.
   let hayMarcadorCaso = false;
@@ -1496,13 +1589,27 @@ export async function inicializarDashboard() {
   }
 
   function alternarPin(lugar: string) {
+    let cambioElFiltroDeLugar = false;
     if (estado.lugaresFijados.has(lugar)) {
       estado.lugaresFijados.delete(lugar);
+      if (lugarFijadoPorCombo === lugar) lugarFijadoPorCombo = null;
+      // Si era el lugar elegido en el combo, soltar su pin sin quitar el filtro
+      // dejaría el mapa reducido a un solo punto y sin botón para volver.
+      if (estado.lugar === lugar) {
+        estado.lugar = 'Todos';
+        comboLugar.establecerValor('Todos');
+        cambioElFiltroDeLugar = true;
+      }
     } else {
       estado.lugaresFijados.add(lugar);
     }
     actualizarVisibilidadBotonLimpiar();
-    dibujarCapsulasFijadas();
+    if (cambioElFiltroDeLugar) {
+      actualizarMapa();
+      actualizarCrimenesPorTipo();
+    } else {
+      dibujarCapsulasFijadas();
+    }
     actualizarPanelSecundario(true);
     actualizarVisibilidadSpike();
   }

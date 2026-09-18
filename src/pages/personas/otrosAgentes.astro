@@ -1,64 +1,14 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-
-// Cadena de otrosAgentesMain.js, en el mismo orden. Ocho hojas de página; la
-//
-// dashboard.css NO es un resto: esta página usa siete clases que solo define esa
-// hoja (personas-main-ancho, personas-dashboard-seccion, personas-filtros-top,
-// personas-fila-ancha, personas-grid, personas-columna, personas-tarjeta).
-// personas-fila-ancha también la usa personas.astro, para el grafo de
-// "Relación entre crímenes" al final del dashboard.
-import '../../styles/pages/tooltips.scss';
-import '../../styles/pages/botones.scss';
-import '../../styles/pages/graficos.scss';
-import '../../styles/pages/filtros-chip.scss';
-import '../../styles/pages/mariposa.scss';
-import '../../styles/pages/agentes-filtros.scss';
-import '../../styles/pages/sunburst.scss';
-import '../../styles/pages/lineas.scss';
-import '../../styles/pages/dashboard.scss';
-
-// Esta página no lleva conmutador de vistas: no hay .vista-toggle en el marcado
-// y otrosAgentesMain.js tampoco importa vistaToggle.js. Es coherente.
-//
-// #agentesFiltrosTop es obligatorio: OtrosAgentesDashboard.js:9 hace return si
-// falta. Los ids agTipoFila, agDecadaDesde, agDecadaHasta, agCrimenSelect,
-// agLeyenda y agLimpiar los construye el JS dentro de ese contenedor, no van en
-// el marcado.
+import ComposicionSocial from './_ComposicionSocial.astro';
 ---
 
 <BaseLayout title="Otros agentes" active="personas">
-  <main class="container personas-main-ancho">
-    <h1 class="section-mainTitle">Otros agentes</h1>
+  <ComposicionSocial modo="agentes" />
 
-    <section class="personas-dashboard-seccion">
-      <div id="agentesFiltrosTop" class="personas-filtros-top"></div>
+  <script>
+    import { crearComposicionSocial } from '../../scripts/charts/ComposicionSocial.js';
 
-      <div class="personas-fila-ancha">
-        <div class="personas-tarjeta">
-          <div id="agParticipacionTiempo"></div>
-        </div>
-      </div>
-
-      <div class="personas-grid">
-        <div class="personas-columna">
-          <div class="personas-tarjeta">
-            <div id="agSunburst"></div>
-          </div>
-        </div>
-
-        <div class="personas-columna">
-          <div class="personas-tarjeta">
-            <div id="agButterfly"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <script>
-      import { crearOtrosAgentesDashboard } from '../../scripts/charts/OtrosAgentesDashboard.js';
-
-      crearOtrosAgentesDashboard();
-    </script>
-  </main>
+    crearComposicionSocial('agentes');
+  </script>
 </BaseLayout>

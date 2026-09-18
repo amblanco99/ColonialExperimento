@@ -86,7 +86,7 @@
   display: none;
 }
 
-// Gráfico de líneas (conteo de casos por año, criminal vs no criminal) —
+// Gráfico de líneas (conteo de casos por año, por tipo de proceso) —
 // ver renderizarLinea en el .ts. Comparte la leyenda de abajo con la rueda
 // de puntos, así que no repite los colores acá.
 .linea-tiempo-casos-contenedor-linea {
@@ -283,7 +283,8 @@
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: var(--mapa-punto-color);
+  // --tipo-color lo pone el .ts según el tipo de proceso del caso.
+  background: var(--tipo-color, var(--mapa-punto-color));
   cursor: pointer;
   transition: transform 0.1s ease;
 }
@@ -291,17 +292,6 @@
 .linea-tiempo-casos-punto:hover {
   background: var(--mapa-acento-linea);
   transform: scale(1.25);
-}
-
-// Casos de linajes "No criminal" (documentos, traslados, juicios civiles,
-// etc.) — mismo azul secundario que ya usa el resto del mapa, distinto del
-// morado de los delitos.
-.linea-tiempo-casos-punto--no-criminal {
-  background: var(--mapa-acento-secundario);
-}
-
-.linea-tiempo-casos-punto--no-criminal:hover {
-  background: var(--mapa-acento-linea);
 }
 
 .linea-tiempo-casos-nota {
@@ -335,16 +325,12 @@
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--mapa-punto-color);
+  background: var(--tipo-color, var(--mapa-punto-color));
   flex: none;
   transition:
     width 0.15s ease,
     height 0.15s ease,
     border-radius 0.15s ease;
-}
-
-.linea-tiempo-casos-leyenda-punto--no-criminal {
-  background: var(--mapa-acento-secundario);
 }
 
 // En la vista en línea el chip de la leyenda pasa de puntito a segmento de
@@ -478,4 +464,11 @@
 
 .linea-tiempo-casos-panel-caso__boton-caso:hover {
   background: var(--mapa-panel);
+}
+
+// Los nombres de tipo de proceso son largos ("No es un proceso penal con
+// delito identificable"): sin esto el tooltip genérico (220px) los parte en
+// cuatro líneas.
+.linea-tiempo-casos-contenedor-linea .tooltip-grafico {
+  max-width: 20rem;
 }

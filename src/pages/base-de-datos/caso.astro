@@ -2,18 +2,29 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 // baseDeDatosMain.js importaba style.css y caso.css. Aquí caso.css es la hoja
-// principal: define .site-header, .back-link, .page, .state-msg y todo el
+// principal: define .caso-barra, .back-link, .page, .state-msg y todo el
 import '../../styles/pages/caso.scss';
 
-// Esta página no lleva nav. En su lugar tiene un <header class="site-header">
+// Esta página no lleva nav. En su lugar tiene una barra propia (.caso-barra)
 // con un enlace de vuelta a la tabla, y es la única de las 11 así. Por eso
 // conNav={false}: ponerle el nav sería añadir algo que hoy no está.
+//
+// caso.ts completa "Volver a resultados", "Caso N de M" y Anterior / Siguiente:
+// con la lista de la tabla si se llegó desde ella, o con todos los casos si no.
 const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="Detalle del Caso" conNav={false}>
-  <header class="site-header">
-    <a href={`${base}base-de-datos/index.html`} class="back-link">Base de datos</a>
+  <header class="caso-barra">
+    <div class="caso-barra-izquierda">
+      <a id="casoVolver" href={`${base}base-de-datos/index.html`} class="back-link">Base de datos</a
+      >
+      <span id="casoPosicion" class="caso-posicion"></span>
+    </div>
+    <nav id="casoNav" class="caso-nav" aria-label="Casos de los resultados" hidden>
+      <a id="casoAnterior" class="caso-nav-boton">‹ Anterior</a>
+      <a id="casoSiguiente" class="caso-nav-boton">Siguiente ›</a>
+    </nav>
   </header>
 
   <main class="page" id="main-content">

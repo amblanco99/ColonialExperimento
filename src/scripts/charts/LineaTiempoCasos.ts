@@ -1,6 +1,5 @@
 import * as d3 from 'd3';
 import Lenis from 'lenis';
-import { esLinajeCriminal } from './linajeComun.js';
 import type { FilaCsv } from './agentesComun.js';
 
 type SeleccionD3 = any;
@@ -38,12 +37,16 @@ function decadaValida(y: number): boolean {
 // Tope de década del dashboard de Tiempo (fallback cuando no hay filtros).
 const ULTIMA_DECADA = 1820;
 
+// Para un caso que no aparezca en Casos.csv (hoy no hay ninguno).
+const SIN_TIPO_PROCESO = 'Sin información';
+
 interface ResumenCaso {
   id: string;
   anioDesde: number;
   anioHasta: number;
   lugar: string;
-  esCriminal: boolean;
+  /** TipoProceso del caso, tal como viene en Casos.csv. */
+  tipoProceso: string;
   filas: FilaCsv[];
 }
 
@@ -67,9 +70,10 @@ export async function crearLineaTiempoCasos(containerId: string) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  const [crimenes, linaje] = await Promise.all([
+  const [crimenes, linaje, casosCsv] = await Promise.all([
     d3.csv(`${import.meta.env.BASE_URL}data/crimenes.csv`),
     d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`),
+    d3.csv(`${import.meta.env.BASE_URL}data/Casos.csv`),
   ]);
 
   // A diferencia de CrimenesPorTipo.ts, aquí SÍ entran los linajes "No
@@ -82,13 +86,18 @@ export async function crearLineaTiempoCasos(containerId: string) {
   const linajeMap = new Map(linaje.map((d) => [d['ID_Código'], d.Nombre]));
   const tipoDelitoMap = new Map(linaje.map((d) => [d['ID_Código'], d.Tipo_delito]));
 
+  // Cómo se clasifica cada caso lo dice Casos.csv (columna TipoProceso), no el
+  // código de delito de sus filas.
+  const tipoProcesoPorCaso = new Map(
+    casosCsv.map((c: FilaCsv) => [c['ID_Caso'], (c['TipoProceso'] || '').trim()]),
+  );
+
   const crimenesAplicables = crimenes
     .filter((d: FilaCsv) => tipoDelitoMap.get(d['Código']) !== 'No aplica' && decadaValida(+d.Año))
     .map((d: FilaCsv) => ({
       ...d,
       año: +d.Año,
       decada: getDecada(+d.Año),
-      esCriminal: esLinajeCriminal(d['Código']),
     }));
 
   const casosPorId = new Map<string, FilaCsv[]>();
@@ -117,13 +126,31 @@ export async function crearLineaTiempoCasos(containerId: string) {
       anioDesde: Math.min(...anios),
       anioHasta: Math.max(...anios),
       lugar,
-      // Un caso con al menos un delito criminal cuenta como criminal, aunque
-      // también traiga filas administrativas (p. ej. el documento del
-      // traslado de ese mismo proceso).
-      esCriminal: filas.some((f) => f.esCriminal),
+      tipoProceso: tipoProcesoPorCaso.get(id) || SIN_TIPO_PROCESO,
       filas,
     });
   });
+
+  // Tipos de proceso presentes, del más al menos frecuente. El orden fija el
+  // color de cada uno: el primero (el proceso judicial criminal, que es el
+  // mayoritario) conserva el morado de siempre y el segundo el azul.
+  const tiposProceso = [
+    ...d3.rollup(
+      [...resumenPorCaso.values()],
+      (v) => v.length,
+      (c) => c.tipoProceso,
+    ),
+  ]
+    .sort((a, b) => b[1] - a[1])
+    .map(([tipo]) => tipo);
+  const PALETA_TIPOS = [
+    leerVariableCss('--mapa-punto-color', '#7b5ea7'),
+    leerVariableCss('--mapa-acento-secundario', '#4e9bbb'),
+    leerVariableCss('--mapa-serie-3', '#e8a838'),
+    leerVariableCss('--mapa-serie-4', '#56b87e'),
+  ];
+  const colorDeTipo = (tipo: string) =>
+    PALETA_TIPOS[Math.max(0, tiposProceso.indexOf(tipo)) % PALETA_TIPOS.length];
 
   const decadasConDatos = [...new Set(crimenesAplicables.map((d) => d.decada))].sort(
     (a, b) => a - b,
@@ -153,8 +180,8 @@ export async function crearLineaTiempoCasos(containerId: string) {
   const wrapper = document.createElement('div');
   wrapper.className = 'linea-tiempo-casos-wrapper';
 
-  // Selector de vista: "Vista en línea" (conteo de casos por año, criminal
-  // vs no criminal, como un gráfico de líneas — para ver TODOS los casos
+  // Selector de vista: "Vista en línea" (conteo de casos por año, por tipo
+  // de proceso, como un gráfico de líneas — para ver TODOS los casos
   // sumados sin que un año con muchos casos ocupe más espacio que otro) y
   // "Rueda de años" (la vista de puntos/píldoras con zoom que ya existía).
   // Ambas se recalculan en cada dibujar(); acá solo se alterna cuál se ve.
@@ -192,7 +219,7 @@ export async function crearLineaTiempoCasos(containerId: string) {
     linea: {
       titulo: 'Casos por año',
       subtitulo:
-        'Cada línea suma los casos por año — criminal y no criminal por separado — según los filtros de arriba.',
+        'Cada línea suma los casos por año según su tipo de proceso, con los filtros de arriba.',
     },
   } as const;
 
@@ -496,14 +523,15 @@ export async function crearLineaTiempoCasos(containerId: string) {
 
   const leyenda = document.createElement('div');
   leyenda.className = 'linea-tiempo-casos-leyenda';
-  leyenda.innerHTML = `
-    <span class="linea-tiempo-casos-leyenda-item">
-      <span class="linea-tiempo-casos-leyenda-punto"></span>Delito criminal
-    </span>
-    <span class="linea-tiempo-casos-leyenda-item">
-      <span class="linea-tiempo-casos-leyenda-punto linea-tiempo-casos-leyenda-punto--no-criminal"></span>No criminal (documentos, traslados, juicios civiles, etc.)
-    </span>
-  `;
+  tiposProceso.forEach((tipo) => {
+    const item = document.createElement('span');
+    item.className = 'linea-tiempo-casos-leyenda-item';
+    const punto = document.createElement('span');
+    punto.className = 'linea-tiempo-casos-leyenda-punto';
+    punto.style.setProperty('--tipo-color', colorDeTipo(tipo));
+    item.append(punto, tipo);
+    leyenda.appendChild(item);
+  });
   wrapper.appendChild(leyenda);
 
   // Tarjeta de detalle a la derecha de la rueda (no un popup modal): al
@@ -583,11 +611,8 @@ export async function crearLineaTiempoCasos(containerId: string) {
     if (event.key === 'Escape') ocultarPopup();
   });
 
-  const colorCriminal = leerVariableCss('--mapa-punto-color', '#7b5ea7');
-  const colorNoCriminal = leerVariableCss('--mapa-acento-secundario', '#4e9bbb');
-
-  // Vista en línea: conteo de casos POR AÑO (no acumulado), una línea para
-  // delitos criminales y otra para el resto — a diferencia de la rueda de
+  // Vista en línea: conteo de casos POR AÑO (no acumulado), una línea por
+  // tipo de proceso — a diferencia de la rueda de
   // puntos, acá un año con muchísimos casos no ocupa más espacio que otro:
   // solo hace más alta la línea en ese punto, así que siempre se ven TODOS
   // los casos sumados de un vistazo. El dominio es todo el rango de décadas
@@ -604,17 +629,20 @@ export async function crearLineaTiempoCasos(containerId: string) {
       return;
     }
 
-    const conteoPorAnio = new Map<number, { criminal: number; noCriminal: number }>();
+    const conteoPorAnio = new Map<number, Map<string, number>>();
     casos.forEach((c) => {
-      const entrada = conteoPorAnio.get(c.anioDesde) || { criminal: 0, noCriminal: 0 };
-      if (c.esCriminal) entrada.criminal += 1;
-      else entrada.noCriminal += 1;
+      const entrada = conteoPorAnio.get(c.anioDesde) || new Map<string, number>();
+      entrada.set(c.tipoProceso, (entrada.get(c.tipoProceso) || 0) + 1);
       conteoPorAnio.set(c.anioDesde, entrada);
     });
 
     const anios = d3.range(anioDesde, anioHasta + 1);
-    const serieCriminal = anios.map((a) => conteoPorAnio.get(a)?.criminal ?? 0);
-    const serieNoCriminal = anios.map((a) => conteoPorAnio.get(a)?.noCriminal ?? 0);
+    // Una serie por tipo de proceso presente en los datos.
+    const series = tiposProceso.map((tipo) => ({
+      tipo,
+      color: colorDeTipo(tipo),
+      valores: anios.map((a) => conteoPorAnio.get(a)?.get(tipo) ?? 0),
+    }));
 
     const MARGIN = { top: 16, right: 20, bottom: 30, left: 44 };
     const WIDTH = 900;
@@ -623,7 +651,7 @@ export async function crearLineaTiempoCasos(containerId: string) {
     const IH = HEIGHT - MARGIN.top - MARGIN.bottom;
 
     const x = d3.scaleLinear().domain([anioDesde, anioHasta]).range([0, IW]);
-    const maxValor = Math.max(1, d3.max([...serieCriminal, ...serieNoCriminal]) || 1);
+    const maxValor = Math.max(1, d3.max(series.flatMap((s) => s.valores)) || 1);
     const y = d3.scaleLinear().domain([0, maxValor]).nice().range([IH, 0]);
 
     const svg = d3
@@ -677,18 +705,14 @@ export async function crearLineaTiempoCasos(containerId: string) {
     const clipRect = svg.select<SVGRectElement>(`#${clipId} rect`);
 
     const grupoLineas = g.append('g').attr('clip-path', `url(#${clipId})`);
-    grupoLineas
-      .append('path')
-      .datum(serieCriminal)
-      .attr('d', lineGen)
-      .attr('class', 'linea-tiempo-casos-linea-trazo')
-      .attr('stroke', colorCriminal);
-    grupoLineas
-      .append('path')
-      .datum(serieNoCriminal)
-      .attr('d', lineGen)
-      .attr('class', 'linea-tiempo-casos-linea-trazo')
-      .attr('stroke', colorNoCriminal);
+    series.forEach((s) => {
+      grupoLineas
+        .append('path')
+        .datum(s.valores)
+        .attr('d', lineGen)
+        .attr('class', 'linea-tiempo-casos-linea-trazo')
+        .attr('stroke', s.color);
+    });
 
     // Sin un puntito por año fijo (con ~300 años en el eje sería puro
     // ruido): la guía vertical y los dos puntos de foco solo aparecen bajo
@@ -701,16 +725,9 @@ export async function crearLineaTiempoCasos(containerId: string) {
       .attr('y1', 0)
       .attr('y2', IH)
       .style('display', 'none');
-    const focoCriminal = g
-      .append('circle')
-      .attr('r', 4)
-      .attr('fill', colorCriminal)
-      .style('display', 'none');
-    const focoNoCriminal = g
-      .append('circle')
-      .attr('r', 4)
-      .attr('fill', colorNoCriminal)
-      .style('display', 'none');
+    const focos = series.map((s) =>
+      g.append('circle').attr('r', 4).attr('fill', s.color).style('display', 'none'),
+    );
 
     const tooltip = document.createElement('div');
     tooltip.className = 'tooltip-grafico tooltip-grafico--sans';
@@ -722,21 +739,24 @@ export async function crearLineaTiempoCasos(containerId: string) {
     function moverFocoA(anioBruto: number) {
       const anio = Math.min(anioHasta, Math.max(anioDesde, Math.round(anioBruto)));
       const idx = anio - anioDesde;
-      const vCriminal = serieCriminal[idx];
-      const vNoCriminal = serieNoCriminal[idx];
       const xPix = x(anio);
       guia.attr('x1', xPix).attr('x2', xPix).style('display', null);
-      focoCriminal.attr('cx', xPix).attr('cy', y(vCriminal)).style('display', null);
-      focoNoCriminal.attr('cx', xPix).attr('cy', y(vNoCriminal)).style('display', null);
-      tooltip.innerHTML = `<strong>${anio}</strong><br/>Delito criminal: ${vCriminal.toLocaleString('es')}<br/>No criminal: ${vNoCriminal.toLocaleString('es')}`;
+      focos.forEach((foco, i) =>
+        foco
+          .attr('cx', xPix)
+          .attr('cy', y(series[i].valores[idx]))
+          .style('display', null),
+      );
+      tooltip.innerHTML =
+        `<strong>${anio}</strong>` +
+        series.map((s) => `<br/>${s.tipo}: ${s.valores[idx].toLocaleString('es')}`).join('');
       tooltip.classList.add('tooltip-grafico--visible');
       return xPix;
     }
 
     function ocultarFoco() {
       guia.style('display', 'none');
-      focoCriminal.style('display', 'none');
-      focoNoCriminal.style('display', 'none');
+      focos.forEach((foco) => foco.style('display', 'none'));
       tooltip.classList.remove('tooltip-grafico--visible');
     }
 
@@ -863,14 +883,13 @@ export async function crearLineaTiempoCasos(containerId: string) {
       casosAnio.forEach((caso) => {
         const punto = document.createElement('button');
         punto.type = 'button';
-        punto.className = caso.esCriminal
-          ? 'linea-tiempo-casos-punto'
-          : 'linea-tiempo-casos-punto linea-tiempo-casos-punto--no-criminal';
+        punto.className = 'linea-tiempo-casos-punto';
+        punto.style.setProperty('--tipo-color', colorDeTipo(caso.tipoProceso));
         const rango =
           caso.anioDesde === caso.anioHasta
             ? `${caso.anioDesde}`
             : `${caso.anioDesde}–${caso.anioHasta}`;
-        punto.title = `${caso.lugar || 'Sin información'} · ${rango}${caso.esCriminal ? '' : ' · No criminal'}`;
+        punto.title = `${caso.lugar || 'Sin información'} · ${rango} · ${caso.tipoProceso}`;
         punto.addEventListener('click', () => mostrarPopup(caso));
         circulos.appendChild(punto);
       });

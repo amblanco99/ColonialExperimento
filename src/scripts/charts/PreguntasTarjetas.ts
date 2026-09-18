@@ -1,6 +1,5 @@
 import * as d3 from 'd3';
 import Lenis from 'lenis';
-import { crearTiposCasos } from './TiposCasos.js';
 
 interface FilaPreguntaTarjeta {
   Pregunta: string;
@@ -11,7 +10,6 @@ interface FilaPreguntaTarjeta {
 interface FilaDecision {
   Decision: string;
   Explicacion: string;
-  Grafica?: string;
 }
 
 const cache = new Map<string, Promise<FilaPreguntaTarjeta[]>>();
@@ -90,45 +88,6 @@ export async function crearPreguntasTarjetas(
     enlazarNavegacion();
   }
 
-  // Algunas decisiones (ver columna Grafica de DecisionesMetodologicas.csv)
-  // no se explican solo con texto: la gráfica va incrustada dentro de la
-  // tarjeta, no como enlace a otra sección. Cada clave mapea a la función
-  // de gráfico correspondiente — hoy solo existe 'tipoCaso', pero el mapa
-  // deja lugar para sumar otras sin tocar el resto del componente.
-  let contadorGrafica = 0;
-  const graficas: Record<string, (containerId: string) => void> = {
-    tipoCaso: crearTiposCasos,
-  };
-  function pintarGrafica(clave: string) {
-    const render = graficas[clave];
-    if (!render) return;
-
-    const contenedorGrafica = document.createElement('div');
-    contenedorGrafica.className = 'preguntas-tarjetas-grafica';
-    contenedorGrafica.id = `preguntas-tarjetas-grafica-${clave}-${contadorGrafica++}`;
-    respuesta.appendChild(contenedorGrafica);
-    render(contenedorGrafica.id);
-
-    // Fuera de la tarjeta, "Tipos de Caso" trae esta misma leyenda en el
-    // HTML de la sección (ver about/index.astro); acá adentro no hay nada
-    // más que explique los colores, así que se repite.
-    if (clave === 'tipoCaso') {
-      const leyenda = document.createElement('div');
-      leyenda.className = 'legend';
-      leyenda.innerHTML = `
-        <div class="legend-item">
-          <div class="color-box azul"></div>
-          <span>No es un proceso penal con delito identificable</span>
-        </div>
-        <div class="legend-item">
-          <div class="color-box rosa"></div>
-          <span>Proceso judicial criminal identificable</span>
-        </div>
-      `;
-      respuesta.appendChild(leyenda);
-    }
-  }
-
   let indiceRaizActivo = 0;
 
   function pintarNivelRaiz() {
@@ -166,7 +125,6 @@ export async function crearPreguntasTarjetas(
       pintarNivelDesglose();
       const decision = decisiones[indice];
       pintarRespuesta(decision.Decision, decision.Explicacion);
-      if (decision.Grafica) pintarGrafica(decision.Grafica);
     }
 
     function pintarNivelDesglose() {

@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import { leerResultados } from './resultadosGuardados.js';
 
 type Fila = d3.DSVRowString<string>;
 
@@ -29,13 +30,111 @@ function formatearDescripcion(texto: string, conNegrilla: boolean): string {
     : escapado.replace(/\*\*(.+?)\*\*/g, '$1');
 }
 
+const fmt = (n: number) => n.toLocaleString('de-DE');
+
+// Color del círculo de cada agente: el de su género (personas) o el de su tipo
+// (instituciones y poblaciones), los mismos de la página de Composición social.
+function variableColorAgente(p: Fila): string {
+  if (p.Agente === 'Persona') {
+    if (p.Género === 'Mujer') return '--genero-mujer';
+    if (p.Género === 'Hombre') return '--genero-hombre';
+    return '--genero-sin-info';
+  }
+  if (p.Agente === 'Institución') return '--tipo-institucion';
+  if (p.Agente === 'Población Indígena Completa') return '--tipo-poblacion-indigena';
+  return '--tipo-poblacion-completa';
+}
+
+// Referencia archivística en una línea, lista para pegar en una cita.
+function referenciaArchivistica(fuente: Fila | null): string {
+  if (!fuente) return '';
+  const partes = [fuente.Archivo, fuente['Sección'], fuente.Fondo].filter(Boolean) as string[];
+  if (fuente.Legajo) partes.push(`leg. ${fuente.Legajo}`);
+  if (fuente.Documento) partes.push(`doc. ${fuente.Documento}`);
+  if (fuente.Folios) partes.push(`ff. ${fuente.Folios}`);
+  return partes.length ? `${partes.join(', ')}.` : '';
+}
+
+async function copiarTexto(texto: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(texto);
+    return true;
+  } catch {
+    // Contextos sin la API del portapapeles: se copia con un campo temporal.
+    const campo = document.createElement('textarea');
+    campo.value = texto;
+    campo.style.position = 'fixed';
+    campo.style.opacity = '0';
+    document.body.appendChild(campo);
+    campo.select();
+    const copiado = document.execCommand('copy');
+    campo.remove();
+    return copiado;
+  }
+}
+
+// Todos los casos, del más antiguo al más reciente (los sin año, al final):
+// el orden por defecto de la tabla. Sirve de lista cuando no se llegó desde una
+// búsqueda.
+function idsDeTodosLosCasos(casesMap: Map<string, any>): string[] {
+  const anio = (caso: any) => {
+    const n = parseInt(caso.año, 10);
+    return Number.isNaN(n) || n <= 0 ? Infinity : n;
+  };
+  return [...casesMap.values()].sort((a, b) => anio(a) - anio(b)).map((caso) => caso.id);
+}
+
+// Barra superior: "Volver a resultados", "Caso N de M" y Anterior / Siguiente.
+// Si se llegó desde la tabla se usa la lista que se estaba viendo y el enlace
+// deja la tabla como estaba; si no (entrada directa, o un caso que no está en
+// esa lista) se recorren todos los casos y el enlace lleva a la tabla completa.
+function renderNavegacion(id: string, casesMap: Map<string, any>) {
+  const base = import.meta.env.BASE_URL;
+  const volver = document.getElementById('casoVolver') as HTMLAnchorElement | null;
+  const etiquetaPosicion = document.getElementById('casoPosicion');
+  const nav = document.getElementById('casoNav');
+  const anterior = document.getElementById('casoAnterior') as HTMLAnchorElement | null;
+  const siguiente = document.getElementById('casoSiguiente') as HTMLAnchorElement | null;
+  if (!volver || !etiquetaPosicion || !nav || !anterior || !siguiente) return;
+
+  const guardados = leerResultados();
+  const desdeLaTabla = !!guardados && guardados.ids.includes(id);
+  const ids = desdeLaTabla ? guardados!.ids : idsDeTodosLosCasos(casesMap);
+  const posicion = ids.indexOf(id);
+  if (posicion < 0) return;
+
+  if (desdeLaTabla) {
+    const separador = guardados!.urlTabla.includes('?') ? '&' : '?';
+    volver.href = `${guardados!.urlTabla}${separador}volver=1`;
+  } else {
+    volver.href = `${base}base-de-datos/index.html`;
+  }
+  volver.textContent = 'Volver a resultados';
+  etiquetaPosicion.textContent = `Caso ${fmt(posicion + 1)} de ${fmt(ids.length)}`;
+
+  const enlazar = (a: HTMLAnchorElement, destino: string | undefined) => {
+    const activo = destino !== undefined;
+    if (activo) a.href = `${base}base-de-datos/caso.html?caso=${encodeURIComponent(destino)}`;
+    else a.removeAttribute('href');
+    a.setAttribute('aria-disabled', String(!activo));
+    a.classList.toggle('caso-nav-boton--inactivo', !activo);
+  };
+  enlazar(anterior, ids[posicion - 1]);
+  enlazar(siguiente, ids[posicion + 1]);
+  nav.hidden = false;
+}
+
 function claveDocumento(idCaso?: string, idCrimen?: string): string {
   return `${idCaso}|${idCrimen}`;
 }
 
 // FechaInicial/Fecha_Final del proceso, como rango si difieren o como año
 // único si coinciden; si Casos.csv no tiene el caso, cae al Año de crimenes.csv.
-function formatearRangoAnios(fechaInicial?: string, fechaFinal?: string, fallback?: string): string {
+function formatearRangoAnios(
+  fechaInicial?: string,
+  fechaFinal?: string,
+  fallback?: string,
+): string {
   const inicial = (fechaInicial || '').trim();
   const final = (fechaFinal || '').trim();
   if (inicial && final) return inicial === final ? inicial : `${inicial} – ${final}`;
@@ -79,7 +178,11 @@ function buildCasesMap(
         id: caseId,
         descripcion: row['Descripción'],
         año: row['Año'],
-        rangoAnios: formatearRangoAnios(casoInfo?.FechaInicial, casoInfo?.['Fecha_Final'], row['Año']),
+        rangoAnios: formatearRangoAnios(
+          casoInfo?.FechaInicial,
+          casoInfo?.['Fecha_Final'],
+          row['Año'],
+        ),
         lugar: row['Lugar'],
         especificaciones: row['Especificaciones'],
         documentos: [],
@@ -138,6 +241,7 @@ async function loadCase(
     loading!.remove();
 
     renderCase(caso, personas, main!, casesMap);
+    renderNavegacion(id, casesMap);
   } catch (err) {
     loading!.textContent = 'Error al cargar los datos. Revisa la consola.';
     console.error(err);
@@ -149,6 +253,7 @@ async function loadCase(
 function renderCase(caso: any, personas: Fila[], main: HTMLElement, casesMap: Map<string, any>) {
   const header = document.createElement('div');
   header.innerHTML = `
+    <p class="case-eyebrow">Caso ID ${escaparHtml(String(caso.id))}</p>
     <h1 class="case-title">${formatearDescripcion(caso.descripcion, false)}</h1>
     <div class="meta-row">
       <div class="meta-pill">
@@ -163,13 +268,12 @@ function renderCase(caso: any, personas: Fila[], main: HTMLElement, casesMap: Ma
   `;
   main.appendChild(header);
 
-  const secTitle = document.createElement('h2');
-  secTitle.className = 'section-title';
-  secTitle.textContent =
-    caso.documentos.length === 1
-      ? 'Crimen registrado'
-      : `Crímenes registrados (${caso.documentos.length})`;
-  main.appendChild(secTitle);
+  if (caso.documentos.length > 1) {
+    const secTitle = document.createElement('h2');
+    secTitle.className = 'section-title';
+    secTitle.textContent = `Crímenes registrados (${caso.documentos.length})`;
+    main.appendChild(secTitle);
+  }
 
   const list = document.createElement('div');
   list.className = 'crimes-list';
@@ -197,99 +301,106 @@ function renderCase(caso: any, personas: Fila[], main: HTMLElement, casesMap: Ma
         grupos[atributo].push(p);
       });
 
+      const entradas = Object.entries(grupos);
+      // Con un solo rol, va a la derecha del título; con varios, cada grupo
+      // lleva el suyo encima.
+      const unSoloRol = entradas.length === 1;
+
       agentesHTML = `
         <div class="agents-block">
+          <div class="agents-cabecera">
+            <h4>Agentes involucrados</h4>
+            ${unSoloRol ? `<span class="agent-role">${entradas[0][0]}</span>` : ''}
+          </div>
 
-          <h4>Agentes involucrados</h4>
-
-          ${Object.entries(grupos)
+          ${entradas
             .map(
               ([atributo, personasGrupo]) => `
-
               <div class="agent-group">
-
-                <div class="agent-role">
-                  ${atributo}
-                </div>
+                ${unSoloRol ? '' : `<div class="agent-role">${atributo}</div>`}
 
                 <div class="agents-list">
-
                   ${personasGrupo
                     .map(
                       (p: Fila) => `
                         <div class="agent-person">
+                          <span class="agent-avatar" style="--avatar: var(${variableColorAgente(p)})" aria-hidden="true"></span>
 
-                          <div class="agent-name">
-                            ${p.Agente}
+                          <div>
+                            <div class="agent-name">
+                              ${p.Agente}
+                            </div>
+
+                            <div class="agent-meta">
+                              ${[
+                                { label: 'Género', valor: p.Género },
+                                { label: 'Calidad', valor: p.Calidad },
+                                { label: 'Labor', valor: p.Labor },
+                              ]
+                                .filter((c) => c.valor && c.valor !== 'null')
+                                .map((c) => `<span data-tooltip="${c.label}">${c.valor}</span>`)
+                                .join(' · ')}
+                            </div>
                           </div>
-
-                          <div class="agent-meta">
-                            ${[
-                              { label: 'Género', valor: p.Género },
-                              { label: 'Calidad', valor: p.Calidad },
-                              { label: 'Labor', valor: p.Labor },
-                            ]
-                              .filter((c) => c.valor && c.valor !== 'null')
-                              .map((c) => `<span data-tooltip="${c.label}">${c.valor}</span>`)
-                              .join(' · ')}
-                          </div>
-
                         </div>
                       `,
                     )
                     .join('')}
-
                 </div>
-
               </div>
-
             `,
             )
             .join('')}
-
         </div>
       `;
     }
-    const anioRegistradoHTML = doc.año
-      ? `<div class="source-field">
-          <span class="sf-label">Año registrado</span>
-          <span class="sf-value">${doc.año}</span>
-        </div>`
-      : '';
+
+    const camposFicha = doc.fuente
+      ? [
+          ['Archivo', doc.fuente.Archivo],
+          ['Sección', doc.fuente['Sección']],
+          ['Fondo', doc.fuente.Fondo],
+          ['Legajo', doc.fuente.Legajo],
+          ['Documento', doc.fuente.Documento],
+          ['Folios', doc.fuente.Folios],
+        ]
+      : [];
+    const referencia = referenciaArchivistica(doc.fuente);
 
     const fuenteHTML = `
-      <div class="source-block">
+      <div class="ficha">
+        <h4 class="ficha-titulo">Referencia</h4>
         ${
           doc.fuente
-            ? `
-          <div class="source-field">
-            <span class="sf-label">Archivo</span>
-            <span class="sf-value">${doc.fuente.Archivo ?? '—'}</span>
-          </div>
-          <div class="source-field">
-            <span class="sf-label">Sección</span>
-            <span class="sf-value">${doc.fuente['Sección'] ?? '—'}</span>
-          </div>
-          <div class="source-field">
-            <span class="sf-label">Fondo</span>
-            <span class="sf-value">${doc.fuente.Fondo ?? '—'}</span>
-          </div>
-          <div class="source-field">
-            <span class="sf-label">Legajo</span>
-            <span class="sf-value">${doc.fuente.Legajo ?? '—'}</span>
-          </div>
-          <div class="source-field">
-            <span class="sf-label">Documento</span>
-            <span class="sf-value">${doc.fuente.Documento ?? '—'}</span>
-          </div>
-          <div class="source-field">
-            <span class="sf-label">Folios</span>
-            <span class="sf-value">${doc.fuente.Folios ?? '—'}</span>
-          </div>
-        `
+            ? `<div class="ficha-grid">
+                ${camposFicha
+                  .map(
+                    ([etiqueta, valor]) => `
+                  <div class="source-field">
+                    <span class="sf-label">${etiqueta}</span>
+                    <span class="sf-value">${valor ?? '—'}</span>
+                  </div>`,
+                  )
+                  .join('')}
+              </div>`
             : `<p class="no-source">Fuente documental no disponible para este documento.</p>`
         }
-        ${anioRegistradoHTML}
+        <div class="ficha-pie">
+          <div class="ficha-chips">
+            ${doc.año ? `<span class="doc-chip">Año ${doc.año}</span>` : ''}
+          </div>
+          ${
+            referencia
+              ? `<button type="button" class="copiar-ref">
+                  <svg viewBox="0 0 16 16" aria-hidden="true">
+                    <rect x="5.25" y="5.25" width="8" height="8" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"></rect>
+                    <path d="M10.75 5.25V3.5a1.2 1.2 0 0 0-1.2-1.2H3.5a1.2 1.2 0 0 0-1.2 1.2v6.05a1.2 1.2 0 0 0 1.2 1.2h1.75" fill="none" stroke="currentColor" stroke-width="1.3"></path>
+                  </svg>
+                  <span class="copiar-ref-texto">Copiar referencia archivística</span>
+                </button>`
+              : ''
+          }
+        </div>
       </div>`;
 
     const subcrimen = doc.subcrimen.trim();
@@ -319,8 +430,21 @@ function renderCase(caso: any, personas: Fila[], main: HTMLElement, casesMap: Ma
       </div>
     `;
 
+    const idDocumentoHTML = `
+      <div class="crime-id">
+        <span class="doc-chip doc-chip--id">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M4 1.75h5.2L12.5 5v9.25H4V1.75Z M9 1.75V5.25h3.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"></path>
+          </svg>
+          ID Crimen: ${doc.id_documento}
+        </span>
+      </div>
+    `;
+
     card.innerHTML = `
       <div class="crime-info">
+        ${idDocumentoHTML}
+
         ${crimeHeaderHTML}
 
         ${agentesHTML}
@@ -328,6 +452,23 @@ function renderCase(caso: any, personas: Fila[], main: HTMLElement, casesMap: Ma
         ${fuenteHTML}
       </div>
     `;
+
+    const botonCopiar = card.querySelector<HTMLButtonElement>('.copiar-ref');
+    if (botonCopiar) {
+      const textoBoton = botonCopiar.querySelector('.copiar-ref-texto')!;
+      const textoInicial = textoBoton.textContent;
+      let temporizador: number | undefined;
+      botonCopiar.addEventListener('click', async () => {
+        const copiado = await copiarTexto(referenciaArchivistica(doc.fuente));
+        textoBoton.textContent = copiado ? 'Referencia copiada' : 'No se pudo copiar';
+        botonCopiar.classList.toggle('copiar-ref--copiado', copiado);
+        window.clearTimeout(temporizador);
+        temporizador = window.setTimeout(() => {
+          textoBoton.textContent = textoInicial;
+          botonCopiar.classList.remove('copiar-ref--copiado');
+        }, 2000);
+      });
+    }
 
     list.appendChild(card);
   });

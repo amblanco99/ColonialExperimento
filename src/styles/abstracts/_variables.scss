@@ -107,14 +107,14 @@ $mapa-provincias: (
 );
 
 // ── Paleta de género ─────────────────────────────────────
-$genero-mujer: #ffa600;
-$genero-hombre: #bb4e99;
-$genero-sin-info: #003f5c;
+$genero-mujer: #c9a679;
+$genero-hombre: #a9573b;
+$genero-sin-info: #5b7c92;
 
 // ── Paleta de tipo de agente ─────────────────────────────
-$tipo-institucion: #2f6f76;
-$tipo-poblacion-completa: #c98a3b;
-$tipo-poblacion-indigena: #7a3b1e;
+$tipo-institucion: #5b7c92;
+$tipo-poblacion-completa: #c9a679;
+$tipo-poblacion-indigena: #a9573b;
 
 // ── Breakpoints ──────────────────────────────────────────
 // Sin lector en JS: son variables SCSS de tiempo de compilación y no se emiten

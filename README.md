@@ -20,10 +20,8 @@ about/delitos.html           └─ Delitos
 about/documentacion-tecnica.html
                               └─ Documentación técnica
 tiempo/index.html           Tiempo (mapa + línea de tiempo)
-personas/index.html         Composición social (portada)
-personas/personas.html       └─ Personas
-personas/otrosAgentes.html
-                              └─ Otros agentes
+personas/index.html         Composición social · pestaña Personas
+personas/otrosAgentes.html   Composición social · pestaña Otros agentes
 
 public/data/           CSV/JSON fuente que consumen los gráficos (se sirven
                        tal cual, sin build)

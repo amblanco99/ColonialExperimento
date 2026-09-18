@@ -1,0 +1,882 @@
+// Layout de "Personas" y "Otros agentes" (pages/personas/_ComposicionSocial.astro). Un solo
+// tablero por pestaña: filtros, tarjetas con rol, línea, barras, dona y red
+// comparten el mismo estado. Los tokens llegan por la inyección de
+// astro.config.mjs; el bloque :root lo emite solo abstracts/_root.scss.
+
+// Tonos propios del tablero: el vino oscuro de la barra de filtros y el
+// crema de las tarjetas. Los demás salen de los tokens de identidad.
+$cs-filtros-fondo: #431a2c;
+$cs-tarjeta: #faf5e9;
+$cs-tarjeta-realce: #f2e9d3;
+$cs-borde: #e4d8bd;
+$cs-texto: #2a1a12;
+$cs-texto-suave: #8a6f55;
+$cs-grilla: #e8dfc8;
+
+main.container.cs-pagina {
+  width: calc(100% - 2rem);
+  max-width: 1240px;
+  padding: 2rem 0 5rem;
+  align-items: stretch;
+  text-align: left;
+  gap: 1.25rem;
+}
+
+// ── Encabezado y pestañas ────────────────────────────────
+.cs-encabezado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+}
+
+.cs-eyebrow {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--rosado);
+}
+
+.cs-titulo {
+  margin: 0;
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-tight);
+  color: var(--crema);
+}
+
+.cs-pestañas {
+  display: inline-flex;
+  margin-top: 0.4rem;
+  border: 1px solid var(--dorado);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cs-pestaña {
+  padding: 0.5rem 1.6rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--dorado);
+  text-decoration: none;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(209, 166, 119, 0.15);
+  }
+
+  &--activa {
+    background: var(--dorado);
+    color: $cs-texto;
+    cursor: default;
+
+    &:hover {
+      background: var(--dorado);
+    }
+  }
+}
+
+.cs-pista {
+  margin: 0.25rem 0 0;
+  max-width: none;
+  font-size: var(--fs-sm);
+  color: var(--dorado);
+}
+
+// ── Filtros ──────────────────────────────────────────────
+.cs-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 1.5rem;
+  padding: 1.1rem 1.4rem;
+  background: $cs-filtros-fondo;
+  border: 1px solid rgba(209, 166, 119, 0.35);
+  border-radius: 6px;
+
+  // Fija bajo el menú superior (que mide unos 67px) mientras se recorre la
+  // página. El fondo es opaco para que no se transparente el contenido.
+  position: sticky;
+  top: 4.5rem;
+  z-index: $z-panel-filtros;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
+}
+
+.cs-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.cs-campo-titulo {
+  font-family: var(--font-ui);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dorado);
+}
+
+.cs-select {
+  min-width: 6.5rem;
+  max-width: 100%;
+  padding: 0.55rem 0.75rem;
+  background: $cs-tarjeta-realce;
+  color: $cs-texto;
+  border: 1px solid $cs-borde;
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+}
+
+.cs-campo:first-child .cs-select {
+  min-width: 13rem;
+}
+
+.cs-filtros-separador {
+  align-self: stretch;
+  width: 1px;
+  background: rgba(209, 166, 119, 0.35);
+}
+
+.cs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cs-chip {
+  --cs-color: var(--dorado);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 1rem;
+  background: transparent;
+  color: var(--crema);
+  border: 1px solid rgba(209, 166, 119, 0.4);
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+
+  i {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--cs-color);
+  }
+
+  &:hover {
+    border-color: var(--dorado);
+  }
+
+  &--activo {
+    background: var(--cs-color);
+    border-color: var(--cs-color);
+    color: $cs-texto;
+    font-weight: 700;
+
+    i {
+      background: $cs-texto;
+    }
+  }
+}
+
+.cs-restablecer {
+  margin-left: auto;
+  padding: 0.5rem 1.1rem;
+  background: transparent;
+  color: var(--crema);
+  border: 1px solid var(--dorado);
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
+
+  &:hover:not(:disabled) {
+    background: rgba(209, 166, 119, 0.18);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+// ── Títulos de sección ───────────────────────────────────
+h2.cs-seccion-titulo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  border: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dorado);
+  text-align: center;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(209, 166, 119, 0.55));
+  }
+
+  &::after {
+    background: linear-gradient(to left, transparent, rgba(209, 166, 119, 0.55));
+  }
+}
+
+// ── Tarjetas de grupo ────────────────────────────────────
+.cs-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+
+.cs-tarjeta {
+  --cs-color: var(--dorado);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.25rem 1.1rem;
+  background: $cs-tarjeta;
+  color: $cs-texto;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &--activa {
+    border-color: var(--cs-color);
+  }
+}
+
+.cs-tarjeta-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cs-tarjeta-nombre {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $cs-texto-suave;
+
+  i {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--cs-color);
+  }
+}
+
+// "Ver rol" / "Ocultar rol": una píldora rellena con el color de acento para
+// que se note que la tarjeta se puede abrir. Al abrirla se invierte (solo
+// borde) para indicar el estado sin dejar de verse.
+.cs-tarjeta-accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.8rem;
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(122, 59, 30, 0.35);
+  transition:
+    background 0.15s,
+    color 0.15s;
+
+  &::after {
+    content: '▸';
+  }
+}
+
+.cs-tarjeta:hover .cs-tarjeta-accion {
+  background: var(--accent-dim);
+  border-color: var(--accent-dim);
+}
+
+.cs-tarjeta--activa .cs-tarjeta-accion {
+  background: transparent;
+  color: var(--accent);
+  box-shadow: none;
+
+  &::after {
+    content: '▾';
+  }
+}
+
+.cs-tarjeta--activa:hover .cs-tarjeta-accion {
+  background: rgba(122, 59, 30, 0.1);
+  border-color: var(--accent);
+}
+
+.cs-tarjeta-valor {
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+  line-height: 1.1;
+}
+
+.cs-tarjeta-sub {
+  font-size: var(--fs-sm);
+  color: $cs-texto-suave;
+}
+
+// ── Paneles crema ────────────────────────────────────────
+.cs-panel {
+  max-width: none;
+  margin: 0;
+  padding: 1.5rem 1.75rem;
+  background: $cs-tarjeta;
+  color: $cs-texto;
+  border-radius: 4px;
+  min-width: 0;
+}
+
+.cs-panel-titulo {
+  margin: 0;
+  font-size: var(--fs-xl);
+  line-height: var(--lh-snug);
+}
+
+.cs-panel-subtitulo {
+  max-width: none;
+  margin: 0.3rem 0 1rem;
+  font-size: var(--fs-sm);
+  color: $cs-texto-suave;
+}
+
+.cs-vacio {
+  max-width: none;
+  padding: 2rem 0;
+  text-align: center;
+  font-style: italic;
+  color: $cs-texto-suave;
+}
+
+.cs-nota {
+  max-width: none;
+  margin: 0.75rem 0 0;
+  font-size: var(--fs-sm);
+  color: $cs-texto-suave;
+
+  a,
+  .cs-enlace {
+    margin: 0;
+    color: var(--accent);
+    text-decoration: underline;
+  }
+}
+
+.cs-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  font-family: var(--font-ui);
+}
+
+// Leyendas
+.cs-leyenda-cuadros,
+.cs-leyenda-lineas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.1rem;
+  font-size: var(--fs-sm);
+  color: $cs-texto-suave;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  i {
+    display: inline-block;
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 2px;
+  }
+}
+
+.cs-leyenda-lineas {
+  margin-top: 0.75rem;
+}
+
+.cs-leyenda-linea {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+
+  i {
+    width: 1.1rem;
+    height: 2px;
+    border-radius: 0;
+  }
+}
+
+.cs-leyenda-cuadros {
+  margin-top: 0.5rem;
+}
+
+// ── Panel de rol ─────────────────────────────────────────
+.cs-panel--rol {
+  padding: 0;
+  overflow: hidden;
+}
+
+.cs-rol {
+  margin: 1.5rem 1.75rem 0;
+  padding: 1.25rem 1.5rem 1rem;
+  border: 1px solid $cs-borde;
+  border-radius: 4px;
+}
+
+.cs-rol-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+
+  .cs-leyenda-cuadros {
+    margin-top: 0;
+  }
+}
+
+.cs-rol-titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  font-size: var(--fs-lg);
+
+  i {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: var(--cs-color);
+  }
+}
+
+.cs-medidores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.cs-medidor {
+  margin: 0;
+  text-align: center;
+
+  svg {
+    width: min(100%, 12rem);
+    height: auto;
+  }
+
+  figcaption {
+    display: flex;
+    flex-direction: column;
+    margin-top: -1.1rem;
+    line-height: 1.2;
+
+    strong {
+      font-family: var(--font-display);
+      font-size: var(--fs-xl);
+      font-weight: 400;
+    }
+
+    span {
+      font-size: var(--fs-sm);
+      color: $cs-texto-suave;
+    }
+  }
+}
+
+.cs-medidor-pista {
+  fill: $cs-grilla;
+}
+
+.cs-rol-delito {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  margin: 1.25rem 0 0;
+  padding: 1.1rem 1.75rem 1.4rem;
+  background: $cs-tarjeta-realce;
+}
+
+.cs-rol-delito-titulo {
+  font-family: var(--font-ui);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.cs-rol-delito-nombre {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 400;
+}
+
+.cs-rol-delito-texto {
+  font-size: var(--fs-sm);
+  color: $cs-texto-suave;
+}
+
+.cs-enlace {
+  margin-top: 0.4rem;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: var(--fs-sm);
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+// ── Línea ────────────────────────────────────────────────
+.cs-linea-wrapper,
+.cs-barras-wrapper,
+.cs-red-wrapper {
+  user-select: none;
+  position: relative;
+  width: 100%;
+}
+
+.cs-grilla {
+  stroke: $cs-grilla;
+}
+
+.cs-eje-base {
+  stroke: $cs-borde;
+}
+
+.cs-eje-texto {
+  // d3.axis fija font-family="sans-serif" en el <g> del eje; se corrige aquí.
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  fill: $cs-texto-suave;
+}
+
+.cs-trazo {
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cs-punto {
+  stroke: $cs-tarjeta;
+  stroke-width: 1.5;
+  cursor: default;
+}
+
+// ── Rejilla barras + dona ────────────────────────────────
+.cs-rejilla {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.cs-panel--dona {
+  #csDonaGrafico {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  // Etiquetas del sunburst reutilizado, sobre fondo crema.
+  .filtro-nota {
+    max-width: none;
+    margin: 0.5rem 0 0;
+    font-size: var(--fs-xs);
+    color: $cs-texto-suave;
+  }
+
+  .grafico-vacio,
+  .agentes-vacio {
+    max-width: none;
+    text-align: center;
+    color: $cs-texto-suave;
+  }
+}
+
+// En el modo de un nivel el anillo es ancho: las etiquetas pueden ser más grandes.
+.cs-panel--dona .sunburst-svg--un-nivel {
+  .sunburst-etiqueta {
+    font-size: var(--fs-md);
+  }
+
+  .sunburst-etiqueta-pct {
+    font-size: var(--fs-xs);
+  }
+
+  .sunburst-texto-central {
+    font-size: var(--fs-md);
+  }
+}
+
+// Ampliar: la dona pasa a ocupar todo el ancho, con la barra doble encima.
+.cs-rejilla--dona-grande {
+  grid-template-columns: minmax(0, 1fr);
+
+  .cs-panel--dona #csDonaGrafico {
+    width: min(100%, 48rem);
+  }
+}
+
+.cs-herramientas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.cs-herramienta {
+  padding: 0.35rem 0.9rem;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(169, 87, 59, 0.1);
+  }
+
+  &[aria-pressed='true'] {
+    background: var(--accent);
+    color: #fff;
+  }
+}
+
+// ── Barra doble ──────────────────────────────────────────
+.cs-barras-fila {
+  cursor: pointer;
+  outline: none;
+
+  &:hover .cs-barras-banda,
+  &:focus-visible .cs-barras-banda {
+    fill: rgba(169, 87, 59, 0.07);
+  }
+}
+
+// Los subdelitos no son clicables: no cambian el filtro.
+.cs-barras-fila--sub {
+  cursor: default;
+}
+
+.cs-barras-banda {
+  fill: transparent;
+
+  &--sub {
+    fill: rgba(169, 87, 59, 0.05);
+  }
+
+  &--activa {
+    fill: rgba(169, 87, 59, 0.12);
+  }
+}
+
+.cs-barras-etiqueta {
+  font-size: var(--fs-md);
+  fill: $cs-texto;
+  pointer-events: none;
+
+  &--sub {
+    font-size: var(--fs-sm);
+    fill: $cs-texto-suave;
+  }
+
+  &--activa {
+    font-weight: 700;
+  }
+}
+
+.cs-barras-valor {
+  font-size: var(--fs-2xs);
+  fill: $cs-texto-suave;
+  pointer-events: none;
+}
+
+.cs-boton-mas {
+  display: block;
+  margin: 0.75rem auto 0;
+  padding: 0.45rem 1.2rem;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(169, 87, 59, 0.1);
+  }
+}
+
+// ── Red ──────────────────────────────────────────────────
+.cs-red-vinculo {
+  stroke: #e0d3b6;
+  stroke-linecap: round;
+  pointer-events: none;
+
+  &--activo {
+    stroke: #c9a679;
+  }
+}
+
+.cs-red-vinculo-hit {
+  stroke: transparent;
+  stroke-width: 14;
+  cursor: pointer;
+}
+
+.cs-ver-casos {
+  display: none;
+  align-self: flex-start;
+  margin-bottom: 0.75rem;
+  padding: 0.45rem 1.1rem;
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  cursor: pointer;
+
+  &--visible {
+    display: inline-block;
+  }
+
+  &:hover {
+    background: var(--accent-dim);
+    border-color: var(--accent-dim);
+  }
+}
+
+.cs-red-nodo {
+  cursor: grab;
+  outline: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.cs-red-circulo {
+  stroke: $cs-tarjeta;
+  stroke-width: 2;
+
+  &--activo {
+    stroke: $cs-texto;
+    stroke-width: 3.5;
+  }
+}
+
+.cs-red-nodo:focus-visible .cs-red-circulo {
+  stroke: $cs-texto;
+  stroke-width: 3;
+}
+
+.cs-red-etiqueta {
+  text-anchor: middle;
+  pointer-events: none;
+  font-size: var(--fs-xs);
+
+  &--dentro {
+    font-weight: 700;
+    fill: $cs-tarjeta;
+  }
+
+  &--fuera {
+    font-weight: 700;
+    fill: $cs-texto;
+  }
+
+  &--apagada {
+    fill: #c9b998;
+  }
+}
+
+// ── Responsive ───────────────────────────────────────────
+@media (max-width: $bp-dashboard) {
+  .cs-rejilla {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: $bp-filtros) {
+  // En pantallas angostas la barra ocupa media pantalla: no se fija.
+  .cs-filtros {
+    position: static;
+  }
+
+  .cs-filtros-separador {
+    display: none;
+  }
+
+  .cs-campo:first-child {
+    flex: 1 1 100%;
+
+    .cs-select {
+      width: 100%;
+    }
+  }
+
+  .cs-panel {
+    padding: 1.1rem 1rem;
+  }
+
+  .cs-rol {
+    margin: 1rem 1rem 0;
+    padding: 1rem;
+  }
+
+  .cs-rol-delito {
+    padding: 1rem;
+  }
+}

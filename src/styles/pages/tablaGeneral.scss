@@ -1,0 +1,553 @@
+// Tabla general (base-de-datos/index.astro). Las tipografías son las que la
+// página ya usaba: título en display, campos en body, encabezado de la tabla
+// en mono, y etiquetas/botones en ui. Los tokens llegan por la inyección de
+// astro.config.mjs; el bloque :root lo emite solo abstracts/_root.scss.
+
+$tg-panel: #431a2c;
+$tg-linea: rgba(209, 166, 119, 0.35);
+$tg-fila: #f3ebd4;
+$tg-fila-alterna: #ebe2c9;
+$tg-encabezado-tabla: #e2d5b0;
+
+main.container.tg-pagina {
+  width: calc(100% - 2rem);
+  max-width: 1200px;
+  padding: 2.5rem 0 5rem;
+  align-items: stretch;
+  text-align: left;
+  gap: 1.5rem;
+}
+
+// ── Encabezado ───────────────────────────────────────────
+.tg-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.75rem 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(to right, var(--dorado), transparent) 1;
+}
+
+.tg-titulo {
+  margin: 0;
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-tight);
+  color: var(--crema);
+}
+
+.tg-subtitulo {
+  max-width: none;
+  margin: 0.6rem 0 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dorado);
+}
+
+.tg-conteo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: none;
+  margin: 0;
+  line-height: var(--lh-snug);
+}
+
+.tg-conteo-numero {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--crema);
+}
+
+.tg-conteo-etiqueta {
+  font-size: var(--fs-md);
+  color: var(--dorado);
+}
+
+// ── Panel de filtros ─────────────────────────────────────
+.tg-filtros {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+  gap: 1.5rem 2rem;
+  padding: 1.4rem 1.6rem;
+  background: $tg-panel;
+  border: 1px solid $tg-linea;
+  border-radius: 4px;
+  // Segundo marco, como en el diseño: un filete fino por fuera del panel.
+  outline: 1px solid rgba(209, 166, 119, 0.22);
+  outline-offset: 5px;
+}
+
+.tg-filtros-izquierda {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  min-width: 0;
+}
+
+.tg-campos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(0, 1.4fr);
+  gap: 1rem;
+}
+
+.tg-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.tg-etiqueta {
+  font-family: var(--font-ui);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dorado);
+}
+
+.tg-control {
+  position: relative;
+  display: block;
+}
+
+.tg-icono {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  transform: translateY(-50%);
+  color: var(--accent);
+  pointer-events: none;
+}
+
+// La base ya define el aspecto de los campos (.filtros-tabla en global.scss);
+// aquí solo se les hace sitio al ícono y se les da el ancho de su columna.
+.tg-filtros .tg-control select,
+.tg-filtros .tg-control input[type='text'] {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 3rem;
+  padding: 0.7rem 0.75rem 0.7rem 2.4rem;
+  text-overflow: ellipsis;
+}
+
+.tg-filtros .tg-control input[type='text']::placeholder {
+  color: color-mix(in srgb, var(--vinotinto) 55%, transparent);
+}
+
+.tg-filtros-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem 1.5rem;
+}
+
+// Casilla propia (la nativa no combina con el panel oscuro).
+.tg-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--crema);
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+}
+
+.tg-check-caja {
+  position: relative;
+  flex: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 1px solid var(--dorado);
+  border-radius: 3px;
+  background: transparent;
+  transition: background 0.15s;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0.32rem;
+    top: 0.1rem;
+    width: 0.3rem;
+    height: 0.6rem;
+    border: solid $tg-panel;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    opacity: 0;
+  }
+}
+
+.tg-check input:checked + .tg-check-caja {
+  background: var(--dorado);
+
+  &::after {
+    opacity: 1;
+  }
+}
+
+.tg-check input:focus-visible + .tg-check-caja {
+  outline: 2px solid var(--crema);
+  outline-offset: 2px;
+}
+
+.tg-boton-buscar {
+  padding: 0.65rem 1.6rem;
+  background: var(--dorado);
+  color: $tg-panel;
+  border: 1px solid var(--dorado);
+  border-radius: 4px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--crema);
+  }
+}
+
+// ── Período: control deslizante de dos extremos ──────────
+.tg-periodo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding-left: 2rem;
+  border-left: 1px solid $tg-linea;
+}
+
+.tg-periodo-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.tg-periodo-valor {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--crema);
+}
+
+.tg-slider {
+  --desde: 0%;
+  --hasta: 100%;
+  position: relative;
+  height: 1.5rem;
+
+  input[type='range'] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    background: transparent;
+    appearance: none;
+    pointer-events: none;
+    cursor: pointer;
+
+    // Solo las bolitas reciben el ratón: así los dos controles conviven en el
+    // mismo carril sin taparse.
+    &::-webkit-slider-runnable-track {
+      background: transparent;
+      height: 100%;
+    }
+
+    &::-moz-range-track {
+      background: transparent;
+      height: 100%;
+    }
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      pointer-events: auto;
+      width: 1.15rem;
+      height: 1.15rem;
+      margin-top: 0.175rem;
+      border-radius: 50%;
+      border: 3px solid var(--dorado);
+      background: var(--crema);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    &::-moz-range-thumb {
+      pointer-events: auto;
+      box-sizing: border-box;
+      width: 1.15rem;
+      height: 1.15rem;
+      border-radius: 50%;
+      border: 3px solid var(--dorado);
+      background: var(--crema);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    &:focus-visible {
+      outline: none;
+
+      &::-webkit-slider-thumb {
+        outline: 2px solid var(--crema);
+        outline-offset: 2px;
+      }
+
+      &::-moz-range-thumb {
+        outline: 2px solid var(--crema);
+        outline-offset: 2px;
+      }
+    }
+  }
+
+  // Con las dos bolitas juntas, la de encima debe ser la que puede moverse:
+  // la de "hasta" mientras están a la izquierda, la de "desde" a la derecha.
+  #filtroAnioHasta {
+    z-index: 2;
+  }
+
+  #filtroAnioDesde {
+    z-index: 1;
+  }
+
+  &--desde-encima {
+    #filtroAnioDesde {
+      z-index: 3;
+    }
+  }
+}
+
+.tg-slider-pista,
+.tg-slider-relleno {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+}
+
+.tg-slider-pista {
+  left: 0.575rem;
+  right: 0.575rem;
+  background: rgba(209, 166, 119, 0.35);
+}
+
+.tg-slider-relleno {
+  // El carril útil empieza y termina a media bolita de los bordes.
+  left: calc(0.575rem + (100% - 1.15rem) * var(--desde) / 100);
+  right: calc(0.575rem + (100% - 1.15rem) * (100 - var(--hasta)) / 100);
+  background: var(--dorado);
+}
+
+.tg-slider-marcas {
+  position: relative;
+  height: 1rem;
+  margin: 0 0.575rem;
+}
+
+.tg-marca {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-family: var(--font-ui);
+  font-size: var(--fs-2xs);
+  color: color-mix(in srgb, var(--dorado) 80%, transparent);
+}
+
+// ── Filtros activos ──────────────────────────────────────
+.tg-activos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.75rem;
+}
+
+.tg-activos-titulo {
+  margin-right: 0.25rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--dorado) 75%, transparent);
+}
+
+.tg-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  max-width: 100%;
+  padding: 0.3rem 0.5rem 0.3rem 0.9rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(209, 166, 119, 0.5);
+  border-radius: 999px;
+  color: var(--crema);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.tg-chip-texto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tg-chip-quitar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.3rem;
+  height: 1.3rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  color: inherit;
+  font-size: var(--fs-md);
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(255, 255, 255, 0.18);
+    outline: none;
+  }
+}
+
+.tg-limpiar {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--dorado);
+  font-size: var(--fs-sm);
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--crema);
+  }
+}
+
+// ── Tabla ────────────────────────────────────────────────
+// #tablaContainer ya tiene overflow-x: auto (global.scss): el redondeo se
+// aplica a la propia tabla para no recortar su desplazamiento.
+.tg-tabla {
+  .tabla-datos {
+    margin-top: 0;
+    border: 1px solid $tg-linea;
+    border-radius: 6px;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    background: $tg-fila;
+  }
+
+  .tabla-datos th {
+    background: $tg-encabezado-tabla;
+    color: var(--cafe);
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid rgba(84, 59, 39, 0.25);
+  }
+
+  .tabla-datos th.th-ordenable:hover {
+    background: color-mix(in srgb, $tg-encabezado-tabla 85%, white);
+  }
+
+  .tabla-datos th.th-ordenable--activo {
+    color: var(--accent);
+  }
+
+  .tabla-datos td {
+    padding: 0.85rem 1.4rem;
+    text-align: left;
+    vertical-align: top;
+    color: var(--cafe);
+    border-bottom: 1px solid rgba(84, 59, 39, 0.12);
+  }
+
+  .tabla-datos tbody tr:nth-child(odd) {
+    background: $tg-fila;
+  }
+
+  .tabla-datos tbody tr:nth-child(even) {
+    background: $tg-fila-alterna;
+  }
+
+  .tabla-datos tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  // Descripción ocupa el ancho que sobra; las demás, lo justo.
+  .tabla-datos td:first-child {
+    width: 42%;
+  }
+
+  .tabla-datos td:nth-child(4) {
+    white-space: nowrap;
+  }
+}
+
+.tg-vacio {
+  max-width: none;
+  margin: 0;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  font-style: italic;
+  color: var(--cafe);
+}
+
+// ── Responsive ───────────────────────────────────────────
+@media (max-width: $bp-dashboard) {
+  .tg-filtros {
+    grid-template-columns: minmax(0, 1fr);
+    outline: none;
+  }
+
+  .tg-periodo {
+    padding-left: 0;
+    padding-top: 1.25rem;
+    border-left: 0;
+    border-top: 1px solid $tg-linea;
+  }
+
+  .tg-campos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tg-campo--busqueda {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: $bp-movil) {
+  .tg-titulo {
+    font-size: var(--fs-2xl);
+  }
+
+  .tg-conteo {
+    align-items: flex-start;
+  }
+
+  .tg-campos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tg-tabla .tabla-datos td:first-child {
+    width: auto;
+  }
+
+  .tg-tabla .tabla-datos th,
+  .tg-tabla .tabla-datos td {
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+  }
+}

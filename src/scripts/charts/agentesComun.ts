@@ -11,9 +11,9 @@ export type FilaCsv = any;
 export const TIPOS_AGENTE = ['Institución', 'Población Completa', 'Población Indígena Completa'];
 
 export const PALETA_TIPO = {
-  Institución: leerVariableCss('--tipo-institucion', '#2f6f76'),
-  'Población Completa': leerVariableCss('--tipo-poblacion-completa', '#c98a3b'),
-  'Población Indígena Completa': leerVariableCss('--tipo-poblacion-indigena', '#7a3b1e'),
+  Institución: leerVariableCss('--tipo-institucion', '#5b7c92'),
+  'Población Completa': leerVariableCss('--tipo-poblacion-completa', '#c9a679'),
+  'Población Indígena Completa': leerVariableCss('--tipo-poblacion-indigena', '#a9573b'),
 };
 
 export function grupoDeTipo(tipo: string): string {
@@ -26,15 +26,15 @@ export const PALETA_GRUPO = {
 };
 
 export const PALETA_GENERO = {
-  Mujer: leerVariableCss('--genero-mujer', '#ffa600'),
-  Hombre: leerVariableCss('--genero-hombre', '#bb4e99'),
-  'Sin información': leerVariableCss('--genero-sin-info', '#003f5c'),
+  Mujer: leerVariableCss('--genero-mujer', '#c9a679'),
+  Hombre: leerVariableCss('--genero-hombre', '#a9573b'),
+  'Sin información': leerVariableCss('--genero-sin-info', '#5b7c92'),
 };
 
 export const PALETA_ATRIBUTO = {
-  Víctima: '#2f7d5c',
-  Perpetrador: '#c1443e',
-  Cómplice: '#6b5b95',
+  Víctima: '#4e7d5c',
+  Perpetrador: '#b5443a',
+  Cómplice: '#5b7c92',
 };
 
 export const ATRIBUTOS_ORDEN = ['Víctima', 'Perpetrador', 'Cómplice'];

@@ -98,22 +98,11 @@ import 'lenis/dist/lenis.css';
         </div>
       </div>
 
-      <div class="mapa-tarjeta mapa-tarjeta--compacta mapa-tarjeta--grafo-relacion">
-        <div class="mapa-tarjeta-encabezado">
-          <div class="mapa-tarjeta-titulo">Relación entre crímenes</div>
-          <div class="mapa-tarjeta-subtitulo">
-            Qué crímenes son comunes encontrar juntos en un mismo caso
-          </div>
-        </div>
-        <div class="mapa-tarjeta-divisor"></div>
-        <div id="grafoRelacionContenedor"></div>
-      </div>
     </div>
 
     <script>
       import { inicializarDashboard } from '../../scripts/charts/TiempoCrimenesMapa.js';
       import { crearCrimenesPorTipo } from '../../scripts/charts/CrimenesPorTipo.js';
-      import { crearRelacionCrimenes } from '../../scripts/charts/RelacionCrimenes.js';
       import { crearLineaTiempoCasos } from '../../scripts/charts/LineaTiempoCasos.js';
 
       // El botón "Ver en el mapa" de LineaTiempoCasos.ts vive en otra vista;
@@ -186,7 +175,6 @@ import 'lenis/dist/lenis.css';
             spikeId: 'crimenesSpikeContenedor',
             donutId: 'crimenesDonutContenedor',
           });
-          crearRelacionCrimenes('grafoRelacionContenedor');
         }
       }
 

@@ -1,0 +1,108 @@
+---
+// El guion bajo evita que Astro lo publique como ruta: es el cuerpo común de
+// las dos páginas de esta carpeta (index.astro y otrosAgentes.astro), que solo
+// cambian el modo.
+import type { Modo } from '../../scripts/charts/ComposicionDatos';
+
+// Hojas que siguen usando los sunbursts reutilizados (tooltip, botón "Ver
+// casos", envoltorio y etiquetas) más la propia del layout.
+import '../../styles/pages/tooltips.scss';
+import '../../styles/pages/botones.scss';
+import '../../styles/pages/graficos.scss';
+import '../../styles/pages/sunburst.scss';
+import '../../styles/pages/apilado.scss';
+import '../../styles/pages/composicion.scss';
+
+interface Props {
+  modo: Modo;
+}
+
+const { modo } = Astro.props;
+const base = import.meta.env.BASE_URL;
+
+const esPersonas = modo === 'personas';
+const titulo = esPersonas ? 'Personas' : 'Otros agentes';
+const pista = esPersonas
+  ? 'Haz clic en un género, un delito o un nodo de la red — los demás paneles se actualizan'
+  : 'Haz clic en un tipo de agente, un delito o un nodo de la red — los demás paneles se actualizan';
+
+const pestañas = [
+  { modo: 'personas', texto: 'Personas', href: `${base}personas/index.html` },
+  { modo: 'agentes', texto: 'Otros agentes', href: `${base}personas/otrosAgentes.html` },
+] as const;
+---
+
+<main class="container cs-pagina" data-modo={modo}>
+  <header class="cs-encabezado">
+    <p class="cs-eyebrow">Agentes registrados</p>
+    <h1 class="cs-titulo">{titulo}</h1>
+
+    <nav class="cs-pestañas" aria-label="Tipo de agente">
+      {
+        pestañas.map((p) => (
+          <a
+            href={p.href}
+            class={`cs-pestaña${p.modo === modo ? ' cs-pestaña--activa' : ''}`}
+            aria-current={p.modo === modo ? 'page' : undefined}
+          >
+            {p.texto}
+          </a>
+        ))
+      }
+    </nav>
+
+    <p class="cs-pista">{pista}</p>
+  </header>
+
+  <div id="csFiltros" class="cs-filtros"></div>
+
+  <h2 class="cs-seccion-titulo"><span>Quién · clic en una tarjeta para ver su rol</span></h2>
+  <div id="csTarjetas" class="cs-tarjetas"></div>
+  <div id="csRol" class="cs-panel cs-panel--rol" hidden></div>
+
+  <h2 class="cs-seccion-titulo"><span>Cuándo</span></h2>
+  <section class="cs-panel">
+    <h3 class="cs-panel-titulo">
+      {esPersonas ? 'Personas registradas' : 'Agentes registrados'} a lo largo del tiempo
+    </h3>
+    <p id="csLineaSubtitulo" class="cs-panel-subtitulo"></p>
+    <div id="csLinea"></div>
+  </section>
+
+  <h2 class="cs-seccion-titulo">
+    <span>Qué y cómo se relaciona</span>
+  </h2>
+  <div id="csRejilla" class="cs-rejilla">
+    <section class="cs-panel cs-panel--barras">
+      <h3 class="cs-panel-titulo">Delitos más registrados</h3>
+      <p class="cs-panel-subtitulo">
+        Haz clic en un delito para ver sus subdelitos, filtrar la dona y resaltarlo en la red de
+        abajo
+      </p>
+      <div id="csBarras"></div>
+    </section>
+
+    <section class="cs-panel cs-panel--dona">
+      <h3 class="cs-panel-titulo">Recorrido por rol y {esPersonas ? 'género' : 'tipo'}</h3>
+      <p id="csDonaSubtitulo" class="cs-panel-subtitulo"></p>
+      <div class="cs-herramientas" role="group" aria-label="Vista del gráfico circular">
+        <button type="button" id="csDonaNivel" class="cs-herramienta" aria-pressed="false">
+          Un nivel a la vez
+        </button>
+        <button type="button" id="csDonaAmpliar" class="cs-herramienta" aria-pressed="false">
+          Ampliar
+        </button>
+      </div>
+      <div id="csDonaGrafico"></div>
+    </section>
+  </div>
+
+  <section class="cs-panel">
+    <h3 class="cs-panel-titulo">Delitos que suelen coincidir en un mismo caso</h3>
+    <p id="csRedSubtitulo" class="cs-panel-subtitulo">
+      Los nodos en color son los 5 delitos principales de la barra de arriba — haz clic para
+      vincular ambos paneles y arrastra para mover
+    </p>
+    <div id="csRed"></div>
+  </section>
+</main>

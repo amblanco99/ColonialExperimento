@@ -5,48 +5,119 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 // recibía las dos aunque caso.css sea sobre todo para el detalle del caso.
 // Se conserva igual: las cadenas por página no cambian en este port.
 import '../../styles/pages/caso.scss';
-
-// Esta página no tiene <h1>: empieza con <section> y un <h2>. Es la única así,
-// y se deja tal cual.
+import '../../styles/pages/tablaGeneral.scss';
 ---
 
 <BaseLayout title="Tablas y Filtros" active="base-de-datos">
-  <main class="container">
-    <section>
-      <h2>Base de datos Crímenes Coloniales</h2>
+  <main class="container tg-pagina">
+    <header class="tg-encabezado">
+      <div class="tg-encabezado-texto">
+        <h1 class="tg-titulo">Base de Datos de Crímenes Coloniales</h1>
+        <p id="tgSubtitulo" class="tg-subtitulo">Archivo general</p>
+      </div>
+      <p class="tg-conteo" aria-live="polite">
+        <strong id="tgConteo" class="tg-conteo-numero">—</strong>
+        <span id="tgConteoEtiqueta" class="tg-conteo-etiqueta">registros encontrados</span>
+      </p>
+    </header>
 
-      <div id="filtros-activos"></div>
+    <form class="filtros-tabla tg-filtros" id="tgFiltros" aria-label="Filtros de la tabla">
+      <div class="tg-filtros-izquierda">
+        <div class="tg-campos">
+          <label class="tg-campo" for="filtroLugar">
+            <span class="tg-etiqueta">Lugar</span>
+            <span class="tg-control">
+              <svg class="tg-icono" viewBox="0 0 16 16" aria-hidden="true">
+                <path
+                  d="M8 14.5s4.5-4.1 4.5-7.75a4.5 4.5 0 1 0-9 0C3.5 10.4 8 14.5 8 14.5Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linejoin="round"></path>
+                <circle
+                  cx="8"
+                  cy="6.75"
+                  r="1.6"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"></circle>
+              </svg>
+              <select id="filtroLugar">
+                <option value="">Todos los lugares</option>
+              </select>
+            </span>
+          </label>
 
-      <div class="filtros-tabla">
-        <select id="filtroLugar">
-          <option value="">Todos los lugares</option>
-        </select>
+          <label class="tg-campo" for="filtroCrimen">
+            <span class="tg-etiqueta">Crimen</span>
+            <span class="tg-control">
+              <svg class="tg-icono" viewBox="0 0 16 16" aria-hidden="true">
+                <path
+                  d="m8 1.9 1.7 3.5 3.8.5-2.8 2.7.7 3.8L8 10.5l-3.4 1.9.7-3.8L2.5 5.9l3.8-.5L8 1.9Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linejoin="round"></path>
+              </svg>
+              <select id="filtroCrimen">
+                <option value="">Todos los crímenes</option>
+              </select>
+            </span>
+          </label>
 
-        <select id="filtroCrimen">
-          <option value="">Todos los crimenes</option>
-        </select>
+          <label class="tg-campo tg-campo--busqueda" for="busqueda">
+            <span class="tg-etiqueta">Buscar en descripción</span>
+            <span class="tg-control">
+              <svg class="tg-icono" viewBox="0 0 16 16" aria-hidden="true">
+                <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.3"
+                ></circle>
+                <path
+                  d="m10.5 10.5 3.5 3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"></path>
+              </svg>
+              <input type="text" id="busqueda" placeholder="Nombre, lugar o palabra clave..." />
+            </span>
+          </label>
+        </div>
 
-        <input type="text" id="busqueda" placeholder="Buscar..." />
-
-        <span class="filtro-rango-anio">
-          <input type="number" id="filtroAnioDesde" placeholder="Año desde" />
-          <span class="filtro-rango-separador">–</span>
-          <input type="number" id="filtroAnioHasta" placeholder="Año hasta" />
-        </span>
-
-        <label class="filtro-checkbox" for="filtroCrimenesPenales">
-          <input type="checkbox" id="filtroCrimenesPenales" checked />
-          Crímenes penales
-        </label>
+        <div class="tg-filtros-pie">
+          <label class="tg-check" for="filtroCrimenesPenales">
+            <input type="checkbox" id="filtroCrimenesPenales" checked />
+            <span class="tg-check-caja" aria-hidden="true"></span>
+            Sólo crímenes penales
+          </label>
+          <button type="submit" class="tg-boton-buscar">Buscar</button>
+        </div>
       </div>
 
-      <div id="tablaContainer"></div>
-    </section>
+      <div class="tg-periodo">
+        <div class="tg-periodo-cabecera">
+          <span class="tg-etiqueta">Periodo</span>
+          <output id="tgPeriodoValor" class="tg-periodo-valor" for="filtroAnioDesde filtroAnioHasta"
+            >—</output
+          >
+        </div>
+        <div class="tg-slider" id="tgSlider">
+          <div class="tg-slider-pista"></div>
+          <div class="tg-slider-relleno"></div>
+          <input type="range" id="filtroAnioDesde" aria-label="Año desde" />
+          <input type="range" id="filtroAnioHasta" aria-label="Año hasta" />
+        </div>
+        <div class="tg-slider-marcas" id="tgMarcas" aria-hidden="true"></div>
+      </div>
+    </form>
 
-    <script>
-      import { crearTabla } from '../../scripts/tables/tablageneral.js';
+    <div id="filtros-activos" class="tg-activos" hidden></div>
 
-      crearTabla();
-    </script>
+    <div id="tablaContainer" class="tg-tabla"></div>
   </main>
+
+  <script>
+    import { crearTabla } from '../../scripts/tables/tablageneral.js';
+
+    crearTabla();
+  </script>
 </BaseLayout>

@@ -14,9 +14,14 @@ export function dibujarDelitosSunburstGenero(
   containerId: string,
   filas: any[],
   crimenSeleccionado: string | null,
+  opciones: { unNivel?: boolean } = {},
 ) {
   const contenedor = document.getElementById(containerId);
   if (!contenedor) return;
+  // Un nivel a la vez: solo se ve el anillo pegado al centro. Al hacer clic en
+  // un sector se baja al siguiente nivel y el centro sube de vuelta.
+  const unNivel = opciones.unNivel === true;
+  const nivelesVisibles = unNivel ? 2 : 3;
   contenedor.innerHTML = '';
   contenedor.className = '';
 
@@ -63,7 +68,7 @@ export function dibujarDelitosSunburstGenero(
 
   const width = 600;
   const height = width;
-  const radius = width / 6;
+  const radius = unNivel ? width / 4.5 : width / 6;
 
   d3.partition().size([2 * Math.PI, root.height + 1])(root);
   root.each((d: NodoMutable) => (d.current = d));
@@ -145,7 +150,7 @@ export function dibujarDelitosSunburstGenero(
   const svg = d3
     .create('svg')
     .attr('viewBox', `0 0 ${width} ${height}`)
-    .attr('class', 'sunburst-svg grafico-svg');
+    .attr('class', `sunburst-svg grafico-svg${unNivel ? ' sunburst-svg--un-nivel' : ''}`);
 
   const g = svg.append('g').attr('transform', `translate(${width / 2},${height / 2})`);
 
@@ -224,7 +229,7 @@ export function dibujarDelitosSunburstGenero(
     .attr('text-anchor', 'middle')
     .attr('dy', '0.35em')
     .attr('class', 'sunburst-texto-central')
-    .text('← volver');
+    .text(unNivel ? '' : '← volver');
 
   function clicked(event: MouseEvent | null, p: NodoMutable) {
     parent.datum(p.parent || root);
@@ -284,11 +289,11 @@ export function dibujarDelitosSunburstGenero(
   }
 
   function arcVisible(d: NodoMutable) {
-    return d.y1 <= 3 && d.y0 >= 1 && d.x1 > d.x0;
+    return d.y1 <= nivelesVisibles && d.y0 >= 1 && d.x1 > d.x0;
   }
 
   function labelVisible(d: NodoMutable) {
-    return d.y1 <= 3 && d.y0 >= 1 && (d.y1 - d.y0) * (d.x1 - d.x0) > 0.05;
+    return d.y1 <= nivelesVisibles && d.y0 >= 1 && (d.y1 - d.y0) * (d.x1 - d.x0) > 0.05;
   }
 
   function labelTransform(d: NodoMutable) {
@@ -299,7 +304,7 @@ export function dibujarDelitosSunburstGenero(
 
   function truncate(text: any, d: NodoMutable) {
     const available = (d.y1 - d.y0) * radius;
-    const maxChars = Math.floor(available / 7);
+    const maxChars = Math.floor(available / (unNivel ? 8.5 : 7));
     if (text.length > maxChars && maxChars > 3) {
       return text.slice(0, Math.max(0, maxChars - 2)) + '…';
     }
@@ -310,8 +315,11 @@ export function dibujarDelitosSunburstGenero(
 
   const nota = document.createElement('p');
   nota.className = 'filtro-nota';
+  const pista = unNivel
+    ? 'Clic en un sector para bajar al siguiente nivel; el centro vuelve.'
+    : 'Clic en un anillo para hacer zoom.';
   nota.textContent = hayCrimenFijado
-    ? `Recorrido de las ${filasHierarchy.length.toLocaleString('es')} persona(s) con subcrimen registrado en "${crimenSeleccionado}". Clic en un anillo para hacer zoom.`
-    : `Recorrido de las ${filasHierarchy.length.toLocaleString('es')} persona(s) registradas, todos los crímenes. Clic en un anillo para hacer zoom.`;
+    ? `Recorrido de las ${filasHierarchy.length.toLocaleString('es')} persona(s) con subcrimen registrado en "${crimenSeleccionado}". ${pista}`
+    : `Recorrido de las ${filasHierarchy.length.toLocaleString('es')} persona(s) registradas, todos los crímenes. ${pista}`;
   contenedor.appendChild(nota);
 }

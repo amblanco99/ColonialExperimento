@@ -151,18 +151,6 @@
   filter: brightness(0.85);
 }
 
-.preguntas-tarjetas-grafica {
-  margin-top: 16px;
-}
-
-// El gráfico de Observable Plot fija un width en px (ver TiposCasos.ts);
-// como acá vive dentro de una tarjeta angosta, se reescala por CSS en vez
-// de dejarlo desbordar con scroll.
-.preguntas-tarjetas-grafica svg {
-  max-width: 100%;
-  height: auto;
-}
-
 @media (max-width: v.$bp-movil) {
   .preguntas-tarjetas {
     flex-direction: column;

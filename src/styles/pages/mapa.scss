@@ -99,13 +99,6 @@
   pointer-events: none;
 }
 
-/* Tarjeta "Relación entre crímenes": 85% del ancho de la fila de arriba (el
-   grafo adentro escala a 100% de esta tarjeta, así que se achica con ella). */
-.mapa-tarjeta--grafo-relacion {
-  max-width: 85%;
-  margin: 0 auto;
-}
-
 // !important a propósito: es una clase de utilidad "ocultar" aplicada sobre
 // toda clase de elementos (vistas completas, wraps de filtro, tarjetas...),
 // algunos de los cuales (p. ej. .mapa-tarjeta, display:flex) están definidos
@@ -247,13 +240,17 @@
   margin: 0;
 }
 
-/* Tarjeta única de información de lugares fijados, debajo de "Evolución en
-   el tiempo" (ver renderizarInfoLugares en TiempoCrimenesMapa.ts): una
-   sección por lugar (clasificación/país/notas de Lugar.csv, sin los campos
-   null, y el detalle de crímenes/subcrímenes con sus años exactos), todas
-   dentro de la misma tarjeta y separadas por .mapa-tarjeta-divisor. */
+/* Tarjeta única con la ficha de cada lugar fijado, debajo de "Evolución en
+   el tiempo" (ver crearFichaLugar en TiempoCrimenesMapa.ts): datos del lugar,
+   línea de tiempo de sus crímenes y la lista de crímenes con sus años. Con
+   varios lugares fijados, cada ficha va dentro de esta misma tarjeta,
+   separadas por un divisor. */
 .mapa-info-lugares {
   margin-top: 14px;
+  gap: 1.25rem;
+  padding: 1.6rem 1.75rem 1.4rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(58, 45, 26, 0.14);
 }
 
 // Sin lugares fijados (solo una provincia elegida), renderizarInfoLugares()
@@ -263,56 +260,213 @@
   display: none;
 }
 
-.mapa-info-lugar-fila {
+.lugar-ficha {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.lugar-ficha-titulo {
+  margin: 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(107, 79, 42, 0.25);
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  font-weight: 400;
+  line-height: var(--lh-tight);
+  text-align: center;
+  color: var(--mapa-tinta-oscura);
+}
+
+// Clasificación · Provincia · País contemporáneo: tres columnas separadas por
+// una línea fina; se apilan solas cuando falta ancho.
+.lugar-ficha-datos {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(107, 79, 42, 0.25);
+}
+
+.lugar-ficha-dato {
+  flex: 1 1 8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0 0.75rem;
+  text-align: center;
+}
+
+.lugar-ficha-dato + .lugar-ficha-dato {
+  border-left: 1px solid rgba(107, 79, 42, 0.25);
+}
+
+.lugar-ficha-dato-etiqueta {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-3xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mapa-borde);
+}
+
+.lugar-ficha-dato-valor {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  color: var(--verde);
+}
+
+.lugar-ficha-notas,
+.lugar-ficha-vacio {
+  max-width: none;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-style: italic;
+  color: var(--mapa-borde);
+}
+
+.lugar-ficha-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.25rem 1rem;
+}
+
+.lugar-ficha-subtitulo {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 400;
+  color: var(--mapa-tinta-oscura);
+}
+
+.lugar-ficha-resumen {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  color: var(--mapa-borde);
+}
+
+// Línea de tiempo: cada punto es un crimen en un año, a su escala real.
+.lugar-ficha-linea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.lugar-ficha-linea-eje {
+  position: relative;
+  height: 14px;
+  margin: 0 5px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    right: -5px;
+    top: 50%;
+    height: 1px;
+    background: rgba(107, 79, 42, 0.3);
+  }
+}
+
+.lugar-ficha-linea-punto {
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--mapa-punto-color);
+  transform: translate(-50%, -50%);
+}
+
+.lugar-ficha-linea-anios {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
-  font-family: var(--mapa-font);
-  font-size: var(--fs-xs);
-}
-
-.mapa-info-lugar-etiqueta {
+  font-family: var(--font-ui);
+  font-size: var(--fs-3xs);
   color: var(--mapa-borde);
-  font-weight: 600;
-  flex-shrink: 0;
 }
 
-.mapa-info-lugar-valor {
-  color: var(--mapa-tinta-oscura);
-  text-align: right;
+.lugar-ficha-punto {
+  flex: none;
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--mapa-punto-color);
 }
 
-.mapa-info-lugar-subtitulo {
-  font-family: var(--mapa-font);
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  color: var(--mapa-tinta-oscura);
-  margin-top: 4px;
-}
-
-.mapa-info-lugar-crimenes {
+.lugar-ficha-lista {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  font-family: var(--mapa-font);
-  font-size: var(--fs-2xs);
+}
+
+/* Cada renglón lleva a la tabla general filtrada por ese crimen en ese
+   lugar — ver el click en crearFichaLugar. */
+.lugar-ficha-crimen {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.45rem 1rem;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid rgba(107, 79, 42, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.15s;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(107, 79, 42, 0.07);
+  }
+
+  &:hover .lugar-ficha-crimen-nombre,
+  &:focus-visible .lugar-ficha-crimen-nombre {
+    text-decoration: underline;
+  }
+}
+
+.lugar-ficha-crimen-nombre {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  font-weight: 700;
   color: var(--mapa-tinta-oscura);
 }
 
-/* Cada renglón lleva a la tabla general filtrada por ese crimen/subcrimen
-   en ese lugar — ver el click en renderizarInfoLugares. */
-.mapa-info-lugar-crimen-fila {
-  cursor: pointer;
+.lugar-ficha-crimen-casos {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  color: var(--mapa-borde);
+  white-space: nowrap;
 }
 
-.mapa-info-lugar-crimen-fila:hover {
-  text-decoration: underline;
-  color: var(--mapa-acento-linea);
+.lugar-ficha-anios {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding-left: calc(9px + 0.6rem);
 }
 
+.lugar-ficha-anio {
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mapa-punto-color) 14%, transparent);
+  color: color-mix(in srgb, var(--mapa-punto-color) 70%, #2a1a12);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+}
+
+// Aviso "sin datos" en cursiva. Lo usa también CrimenesPorTipo.ts (definición
+// de un crimen sin explicación), por eso se conserva con su nombre original.
 .mapa-info-lugar-vacio {
   font-family: var(--mapa-font);
   font-size: var(--fs-xs);
@@ -431,11 +585,6 @@
   flex: 1 1 190px;
   width: auto;
   max-width: 240px;
-}
-
-.mapa-area-grafo {
-  position: relative;
-  width: 100%;
 }
 
 .mapa-contenedor-lineas {
@@ -737,25 +886,3 @@
   cursor: pointer;
 }
 
-/* Grafo "Relación entre crímenes" (SVG) */
-.mapa-grafo-etiqueta {
-  font-size: var(--fs-3xs);
-  text-anchor: middle;
-  pointer-events: none;
-  fill: var(--mapa-tinta-oscura);
-}
-
-.mapa-grafo-svg {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  font-family: var(--font-ui);
-}
-
-.mapa-grafo-link {
-  pointer-events: stroke;
-}
-
-.mapa-grafo-nodo {
-  cursor: pointer;
-}

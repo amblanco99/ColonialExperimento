@@ -94,7 +94,6 @@ import '../../styles/pages/preguntasTarjetas.scss';
     </div>
 
     <script>
-      import { crearTiposCasos } from '../../scripts/charts/TiposCasos.js';
       import { crearLinaje } from '../../scripts/charts/Linaje.js';
       import { crearHistoriaMetodologia } from '../../scripts/charts/HistoriaMetodologia.js';
       import { crearPreguntasTarjetas } from '../../scripts/charts/PreguntasTarjetas.js';
@@ -151,7 +150,6 @@ import '../../styles/pages/preguntasTarjetas.scss';
       vistas.delitos.boton.addEventListener('click', () => mostrarVista('delitos'));
       vistas.documentacion.boton.addEventListener('click', () => mostrarVista('documentacion'));
 
-      crearTiposCasos();
       crearHistoriaMetodologia('historiaMetodologia');
       crearPreguntasTarjetas('preguntasMetodologicas', undefined, (vista) =>
         mostrarVista(vista as Vista),

@@ -352,39 +352,8 @@ a.card p {
 }
 
 /* =====================================================
-   LEYENDAS Y FILTROS
+   FILTROS
 ==================================================== */
-.legend {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-ui);
-  font-size: var(--fs-md);
-  color: var(--ink-light);
-}
-
-.color-box {
-  width: 14px;
-  height: 14px;
-  border-radius: 2px;
-}
-
-/* Mantuve las clases de colores de tus gráficos */
-.azul {
-  background: #003f5c;
-}
-.rosa {
-  background: #bc5090;
-}
-
 .filtros-tabla select,
 .filtros-tabla input[type='text'] {
   padding: 0.6rem;
@@ -431,47 +400,6 @@ a.card p {
     background: var(--vinotinto);
     color: var(--crema);
   }
-}
-
-.filtro-checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem;
-  font-family: var(--font-ui);
-  font-size: var(--fs-md);
-  color: var(--crema);
-  cursor: pointer;
-}
-
-.filtro-checkbox input {
-  cursor: pointer;
-}
-
-.filtro-rango-anio {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.filtro-rango-anio input {
-  width: 100px;
-  padding: 0.6rem;
-  font-family: var(--font-body);
-  font-size: var(--fs-md);
-  color: var(--vinotinto);
-  background: var(--crema);
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  outline: none;
-}
-
-.filtro-rango-anio input:focus {
-  border-color: var(--accent);
-}
-
-.filtro-rango-separador {
-  color: var(--crema);
 }
 
 /* =====================================================
