@@ -28,7 +28,7 @@ export const PALETA_GRUPO = {
 export const PALETA_GENERO = {
   Mujer: leerVariableCss('--genero-mujer', '#c9a679'),
   Hombre: leerVariableCss('--genero-hombre', '#a9573b'),
-  'Sin información': leerVariableCss('--genero-sin-info', '#5b7c92'),
+  Indeterminado: leerVariableCss('--genero-sin-info', '#5b7c92'),
 };
 
 export const PALETA_ATRIBUTO = {

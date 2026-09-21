@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import type { Fila, Grupo } from './ComposicionDatos.js';
 import { fmt } from './ComposicionDatos.js';
-import { PALETA_ATRIBUTO, PALETA_GENERO } from './agentesComun.js';
+import { colorDeCrimen } from './coloresCrimen.js';
 
 const ANCHO = 1000;
 const ALTO = 460;
@@ -10,16 +10,6 @@ const RELACIONES_COMUNES = 10;
 // sin etiquetas en los nodos que no son destacados (el tooltip los nombra).
 const UMBRAL_DENSO = 30;
 const SEP = ' ↔ ';
-
-// Sin grupo elegido, los delitos principales de la barra van en color y el resto
-// en un tono apagado. Con un grupo elegido, todos toman el color de ese grupo.
-const COLORES_DESTACADOS = [
-  (PALETA_GENERO as Record<string, string>).Hombre,
-  (PALETA_GENERO as Record<string, string>).Mujer,
-  (PALETA_GENERO as Record<string, string>)['Sin información'],
-  (PALETA_ATRIBUTO as Record<string, string>)['Víctima'],
-];
-const COLOR_APAGADO = '#8b7048';
 
 interface Nodo extends d3.SimulationNodeDatum {
   id: string;
@@ -238,11 +228,16 @@ export function dibujarRed({
     .attr('aria-pressed', (n) => n.id === crimenActivo)
     .attr('aria-label', (n) => `${n.id}, ${fmt(n.casos)} caso(s)`);
 
-  const idxDestacado = new Map(destacados.map((nombre, i) => [nombre, i]));
+  const destacadosSet = new Set(destacados);
+  // filas ya trae cada crimen junto a su ID_Código (ver ComposicionDatos.ts);
+  // se guarda el primero que aparece para cada nombre.
+  const codigoPorCrimen = new Map<string, string>();
+  filas.forEach((f) => {
+    if (!codigoPorCrimen.has(f.crimen)) codigoPorCrimen.set(f.crimen, f.codigoCrimen);
+  });
   const colorNodo = (id: string) => {
     if (grupoActivo) return grupoActivo.color;
-    const i = idxDestacado.get(id);
-    return i === undefined ? COLOR_APAGADO : COLORES_DESTACADOS[i % COLORES_DESTACADOS.length];
+    return colorDeCrimen(codigoPorCrimen.get(id));
   };
 
   grupos
@@ -256,7 +251,7 @@ export function dibujarRed({
   grupos.each(function (n) {
     const g = d3.select(this);
     const r = radio(n.casos);
-    const destacado = idxDestacado.has(n.id);
+    const destacado = destacadosSet.has(n.id);
     const cercano = enGrafo && vecinos.get(crimenActivo!)!.has(n.id);
     // El texto claro del interior solo se lee sobre los colores oscuros de los
     // nodos destacados; con un grupo elegido las etiquetas van fuera.

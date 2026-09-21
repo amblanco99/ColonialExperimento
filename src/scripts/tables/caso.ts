@@ -5,7 +5,10 @@ type Fila = d3.DSVRowString<string>;
 
 const CSV_CRIMENES = `${import.meta.env.BASE_URL}data/crimenes.csv`;
 const CSV_FUENTES = `${import.meta.env.BASE_URL}data/Source.csv`;
-const CSV_Personas = `${import.meta.env.BASE_URL}data/Visualizaciones.csv`;
+// Un renglón por agente (no por crimen): Relación_crímenes lista los
+// ID_Crímen en los que participó (ver el filtro por doc.id_documento en
+// renderCase, más abajo).
+const CSV_Personas = `${import.meta.env.BASE_URL}data/ConteoAgentes.csv`;
 const CSV_LINAJE = `${import.meta.env.BASE_URL}data/Linaje.csv`;
 // Trae el rango real del proceso (FechaInicial/Fecha_Final por ID_Caso), que
 // crimenes.csv no tiene: ahí "Año" es un único valor por documento. Se usa
@@ -282,8 +285,10 @@ function renderCase(caso: any, personas: Fila[], main: HTMLElement, casesMap: Ma
     const card = document.createElement('article');
     card.className = 'crime-card';
 
-    const agentesDocumento = personas.filter(
-      (p: Fila) => String(p.ID_Documento).trim() === String(doc.id_documento).trim(),
+    const agentesDocumento = personas.filter((p: Fila) =>
+      ((p['Relación_crímenes'] as string) || '')
+        .split(',')
+        .some((c) => c.trim() === String(doc.id_documento).trim()),
     );
 
     let agentesHTML = '';

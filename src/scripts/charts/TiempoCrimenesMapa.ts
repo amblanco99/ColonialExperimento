@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import rewind from '@turf/rewind';
 import { crearMapaBaseTopografico } from './mapaBaseTopografico.js';
+import { colorDeCrimen } from './coloresCrimen.js';
 import type { FilaCsv } from './agentesComun.js';
 
 // TODO: type — nodo/dato mutado por d3 (grafo de relación, jerarquías). Ver MIGRATION.md.
@@ -142,9 +143,9 @@ export async function inicializarDashboard() {
     leerVariableCss(`--mapa-provincia-${i + 1}`, valor),
   );
 
-  const [NuevaGranadaRaw, rawViz, rawLugar, rawLinaje] = await Promise.all([
+  const [NuevaGranadaRaw, rawCrimenes, rawLugar, rawLinaje] = await Promise.all([
     d3.json(`${import.meta.env.BASE_URL}data/NuevaGranada.json`),
-    d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`),
+    d3.csv(`${import.meta.env.BASE_URL}data/crimenes.csv`),
     d3.csv(`${import.meta.env.BASE_URL}data/Lugar.csv`),
     d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`),
   ]);
@@ -185,34 +186,6 @@ export async function inicializarDashboard() {
     }
   });
 
-  const datosLimpios = rawViz
-    .filter(
-      (d: FilaCsv) => d.Año && d.Nombre_Codigo && d.ID_Documento && d.Lugar && d.Nombre_Sub_Codigo,
-    )
-    .map((d: FilaCsv) => ({
-      ...d,
-      año: +d.Año,
-      decada: getDecada(+d.Año),
-      lugar: d.Lugar.trim(),
-      coords: coordPorLugar[d.Lugar.trim()] || null,
-    }))
-    .filter((d: FilaCsv) => decadaValida(d.año));
-
-  // El período colonial documentado llega hasta 1824 (ver ULTIMO_ANIO_COLONIAL
-  // más abajo), aunque Visualizaciones.csv no tenga filas en la última década
-  // (1818 es el año máximo real ahí; crimenes.csv sí llega a 1824). Se arma la
-  // lista de décadas de forma contigua entre la mínima con datos y esa década
-  // final, en vez de tomar solo las décadas presentes en Visualizaciones.csv,
-  // para que el deslizador pueda llegar hasta 1824 y así cubrir también los
-  // datos de "Crímenes por tipo" (basados en crimenes.csv).
-  const decadasConDatos = [...new Set(datosLimpios.map((d: FilaCsv) => d.decada))].sort(
-    (a: NodoMutable, b: NodoMutable) => a - b,
-  );
-  const DECADAS: NodoMutable[] = [];
-  for (let d = decadasConDatos[0] as number; d <= ULTIMA_DECADA; d += 10) {
-    DECADAS.push(d);
-  }
-
   const linajeFilas = rawLinaje.map((d: FilaCsv) => ({
     idCodigo: (d['ID_Código'] || '').trim(),
     nombre: (d.Nombre || '').trim(),
@@ -222,6 +195,54 @@ export async function inicializarDashboard() {
     linajeFilas.filter((f: any) => f.nivel === 'Nivel 0').map((f: any) => f.nombre),
   );
   const ordenPorCodigo = new Map(linajeFilas.map((f, i) => [f.idCodigo, i]));
+
+  // Código en crimenes.csv apunta a ID_Código en Linaje.csv (mismo join que
+  // usa CrimenesPorTipo.ts): traduce cada código numérico a su nombre legible.
+  // El mapa muestra todos los crímenes que aparecen en el corpus (no solo los
+  // "delitos" penales): solo se descartan los que no traen Código, los que
+  // caen en el linaje "No aplica" (Delitos, Sin codificar), y "No Casos"
+  // (ID_Código 32: registros que no son casos propiamente).
+  const LINAJE_NO_CASOS = '32';
+  const linajeNombreMap = new Map(linajeFilas.map((f: any) => [f.idCodigo, f.nombre]));
+  const tipoDelitoMap = new Map(rawLinaje.map((d: FilaCsv) => [d['ID_Código'], d.Tipo_delito]));
+
+  const datosLimpios = rawCrimenes
+    .filter((d: FilaCsv) => {
+      if (!d.Año) return false;
+      const codigo = valorONulo(d['Código']);
+      return !!codigo && codigo !== LINAJE_NO_CASOS && tipoDelitoMap.get(codigo) !== 'No aplica';
+    })
+    .map((d: FilaCsv) => {
+      const codigo = (d['Código'] || '').trim();
+      const subcodigo = valorONulo(d['Sub_Código']) || codigo;
+      const lugar = valorONulo(d.Lugar);
+      return {
+        ...d,
+        año: +d.Año,
+        decada: getDecada(+d.Año),
+        lugar,
+        coords: lugar ? coordPorLugar[lugar] || null : null,
+        ID_Documento: d['ID_Crímen'],
+        Código: codigo,
+        'Sub_Código': subcodigo,
+        Nombre_Codigo: linajeNombreMap.get(codigo) || 'Sin código',
+        Nombre_Sub_Codigo: linajeNombreMap.get(subcodigo) || linajeNombreMap.get(codigo) || 'Sin código',
+      };
+    })
+    .filter((d: FilaCsv) => d.lugar && decadaValida(d.año));
+
+  // El período colonial documentado llega hasta 1824 (ver ULTIMO_ANIO_COLONIAL
+  // más abajo). Se arma la lista de décadas de forma contigua entre la mínima
+  // con datos y esa década final, en vez de tomar solo las décadas presentes
+  // en los datos, para que el deslizador siempre llegue hasta el final del
+  // corpus aunque la última década tenga pocos registros.
+  const decadasConDatos = [...new Set(datosLimpios.map((d: FilaCsv) => d.decada))].sort(
+    (a: NodoMutable, b: NodoMutable) => a - b,
+  );
+  const DECADAS: NodoMutable[] = [];
+  for (let d = decadasConDatos[0] as number; d <= ULTIMA_DECADA; d += 10) {
+    DECADAS.push(d);
+  }
 
   const codigoPorNombreSub = new Map();
   const codigoPorNombreCrimen = new Map();
@@ -428,11 +449,15 @@ export async function inicializarDashboard() {
       (d: FilaCsv) => d.lugar === lugar && d.decada >= desde && d.decada <= hasta,
     );
 
-    const grupos = new Map<string, { crimen: string; anios: Set<number>; casos: Set<string> }>();
+    const grupos = new Map<
+      string,
+      { crimen: string; codigo: string; anios: Set<number>; casos: Set<string> }
+    >();
     filas.forEach((d: FilaCsv) => {
       if (!grupos.has(d.Nombre_Codigo)) {
         grupos.set(d.Nombre_Codigo, {
           crimen: d.Nombre_Codigo,
+          codigo: d['Código'],
           anios: new Set(),
           casos: new Set(),
         });
@@ -445,6 +470,7 @@ export async function inicializarDashboard() {
     return [...grupos.values()]
       .map((g) => ({
         crimen: g.crimen,
+        codigo: g.codigo,
         anios: [...g.anios].sort((a, b) => a - b),
         casos: g.casos.size,
       }))
@@ -525,6 +551,7 @@ export async function inicializarDashboard() {
         const punto = crearElemento('span', 'lugar-ficha-linea-punto');
         const pos = anioMax === anioMin ? 50 : ((anio - anioMin) / (anioMax - anioMin)) * 100;
         punto.style.left = `${pos}%`;
+        punto.style.background = colorDeCrimen(r.codigo);
         punto.title = `${anio} · ${r.crimen.trim()}`;
         eje.appendChild(punto);
       });
@@ -549,7 +576,9 @@ export async function inicializarDashboard() {
       li.setAttribute('aria-label', `Ver los casos de ${r.crimen.trim()} en ${lugar}`);
 
       const nombre = crearElemento('span', 'lugar-ficha-crimen-nombre');
-      nombre.append(crearElemento('i', 'lugar-ficha-punto'), r.crimen.trim());
+      const puntoCrimen = crearElemento('i', 'lugar-ficha-punto');
+      puntoCrimen.style.background = colorDeCrimen(r.codigo);
+      nombre.append(puntoCrimen, r.crimen.trim());
       const casos = crearElemento(
         'span',
         'lugar-ficha-crimen-casos',
@@ -603,15 +632,32 @@ export async function inicializarDashboard() {
           lugar: d.lugar,
           coords: d.coords,
           docs: new Set(),
+          porCodigo: new Map<string, number>(),
         };
       }
       map[key].docs.add(d.ID_Documento);
+      const codigo = d['Código'];
+      map[key].porCodigo.set(codigo, (map[key].porCodigo.get(codigo) || 0) + 1);
     });
 
-    return Object.values(map).map((r) => ({
-      ...r,
-      count: r.docs.size,
-    }));
+    return Object.values(map).map((r: any) => {
+      // El crimen predominante del punto: el de más participaciones dentro
+      // del rango de décadas y filtros actuales — determina el color del
+      // círculo (ver colorDe en actualizarMapa).
+      let codigoPredominante: string | null = null;
+      let maxConteo = 0;
+      r.porCodigo.forEach((n: number, codigo: string) => {
+        if (n > maxConteo) {
+          maxConteo = n;
+          codigoPredominante = codigo;
+        }
+      });
+      return {
+        ...r,
+        count: r.docs.size,
+        codigoPredominante,
+      };
+    });
   }
 
   const mapaContenedor = document.getElementById('mapa-contenedor');
@@ -1089,7 +1135,6 @@ export async function inicializarDashboard() {
   const height = 820;
 
   const RADIO_PUNTO = 2;
-  const PUNTO_COLOR = leerVariableCss('--mapa-punto-color', '#7b5ea7');
   // Grosor del borde entre provincias en unidades de viewBox (a k=1, sin
   // zoom); el handler de zoom lo divide entre k para que se vea igual de
   // grueso en pantalla sin importar el nivel de zoom. Más grueso solo con el
@@ -1098,9 +1143,6 @@ export async function inicializarDashboard() {
   const GROSOR_BORDE_PROVINCIA_NORMAL = 0.5;
   const GROSOR_BORDE_PROVINCIA_TOPOGRAFICO = 1.5;
   const rScale = d3.scaleLog().range([RADIO_PUNTO, 18]);
-  const colorScaleMap = d3.scaleSequentialLog(
-    d3.interpolateHcl(PALETA.acentoSecundario, PALETA.acentoLinea),
-  );
   let escalarPorCantidad = false;
 
   const botonVerCasosMapa = crearBotonVerCasos();
@@ -1311,7 +1353,8 @@ export async function inicializarDashboard() {
   // Hook para LineaTiempoCasos.ts: su botón "Ver en el mapa" cambia a la
   // vista "Lugar" (ver __irAVistaLugar en index.astro) y llama a este, que
   // centra el mapa en el lugar del caso y deja un marcador rojo persistente
-  // (independiente de los puntos normales, que usan PUNTO_COLOR).
+  // (independiente de los puntos normales, que ahora se pintan por
+  // colorDeCrimen).
   window.__resaltarCasoEnMapa = function (lugar: string) {
     const coords = coordPorLugar[lugar];
     if (!coords) return;
@@ -1517,9 +1560,12 @@ export async function inicializarDashboard() {
     const maxCasosCrudo = d3.max(datos, (d: FilaCsv) => d.count) || 1;
     const maxCasos = maxCasosCrudo > minCasos ? maxCasosCrudo : minCasos + 1;
     rScale.domain([minCasos, maxCasos]);
-    colorScaleMap.domain([minCasos, maxCasos]);
     const radioDe = (d: FilaCsv) => (escalarPorCantidad ? rScale(d.count) : RADIO_PUNTO);
-    const colorDe = (d: FilaCsv) => (escalarPorCantidad ? colorScaleMap(d.count) : PUNTO_COLOR);
+    // El color ya no depende de "Tamaño según cantidad de crímenes": el
+    // círculo siempre se pinta del color de su crimen predominante (ver
+    // agruparMapaInstante), para que coincida con el mismo crimen en el
+    // resto del sitio (ver coloresCrimen.ts).
+    const colorDe = (d: FilaCsv) => colorDeCrimen(d.codigoPredominante);
 
     const puntos = gPuntos.selectAll('circle').data(datos, (d: FilaCsv) => d.lugar);
 

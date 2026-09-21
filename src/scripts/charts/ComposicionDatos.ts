@@ -15,7 +15,11 @@ export interface Fila {
   tipo: string;
   atributo: string;
   crimen: string;
+  /** ID_Código (Linaje.csv) de `crimen` — clave estable para colorDeCrimen(). */
+  codigoCrimen: string;
   subcrimen: string | null;
+  /** ID_Código de `subcrimen`, o null si no tiene. */
+  codigoSubcrimen: string | null;
   año: number;
   década: number;
 }
@@ -51,7 +55,7 @@ export interface ConfigModo {
 
 export const ATRIBUTOS = ['Víctima', 'Perpetrador', 'Cómplice'] as const;
 
-const GENEROS = ['Mujer', 'Hombre', 'Sin información'];
+const GENEROS = ['Mujer', 'Hombre', 'Indeterminado'];
 
 const TIPOS: { clave: string; etiqueta: string }[] = [
   { clave: 'Institución', etiqueta: 'Instituciones' },
@@ -62,7 +66,7 @@ const TIPOS: { clave: string; etiqueta: string }[] = [
 const ROL_PERSONAS: Record<string, string> = {
   Mujer: 'Rol de las mujeres en los casos',
   Hombre: 'Rol de los hombres en los casos',
-  'Sin información': 'Rol de las personas sin género registrado',
+  Indeterminado: 'Rol de las personas con género indeterminado',
 };
 
 export function crearConfig(modo: Modo): ConfigModo {
@@ -107,35 +111,92 @@ function textoOpcional(valor: string | undefined): string | null {
   return v && v.toUpperCase() !== 'NULL' ? v : null;
 }
 
+// crimenes.csv escribe algunos años faltantes como " " (un espacio) en vez de
+// vacío o "null": +' ' da 0 en JS, no NaN, así que un simple isNaN(+v) los
+// deja pasar como año 0 y descalibra los ejes de década. También descarta
+// rangos como "1583-1742" (+eso si es NaN) y años fuera del corpus documental
+// (1500-1899, mismo límite que usa TiempoCrimenesMapa.ts).
+function añoValido(valor: string | undefined): number | null {
+  const n = +(valor || '').trim();
+  return !isNaN(n) && n >= 1500 && n <= 1899 ? n : null;
+}
+
 export async function cargarFilas(modo: Modo): Promise<Fila[]> {
-  const raw: FilaCsv[] = await d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`);
+  const [rawAgentes, rawCrimenes, rawLinaje]: [FilaCsv[], FilaCsv[], FilaCsv[]] = await Promise.all([
+    d3.csv(`${import.meta.env.BASE_URL}data/ConteoAgentes.csv`),
+    d3.csv(`${import.meta.env.BASE_URL}data/crimenes.csv`),
+    d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`),
+  ]);
+
+  // ConteoAgentes.csv trae un renglón por agente (ya deduplicado: ID_Agente es
+  // único por persona/institución en su caso), pero no el nombre del delito ni
+  // el año — Relación_crímenes solo lista los ID_Crímen (crimenes.csv) en los
+  // que participó. Se arman los dos mapas de join: crimen por ID_Crímen, y
+  // código -> nombre legible vía Linaje.csv (mismo join que usa
+  // CrimenesPorTipo.ts).
+  const crimenPorId = new Map(rawCrimenes.map((d: FilaCsv) => [(d['ID_Crímen'] || '').trim(), d]));
+  const linajeNombreMap = new Map(
+    rawLinaje.map((d: FilaCsv) => [(d['ID_Código'] || '').trim(), (d.Nombre || '').trim()]),
+  );
+
   const vistos = new Set<string>();
   const filas: Fila[] = [];
 
-  for (const d of raw) {
+  for (const d of rawAgentes) {
     const esPersona = d.Agente === 'Persona';
     if (modo === 'personas' ? !esPersona : !d.Agente || esPersona) continue;
-    if (!d.Año || isNaN(+d.Año) || !d.Nombre_Codigo || !d.Atributo || !d.ID_Agente) continue;
 
-    const id = `${d.ID_Documento}|${d.Sub_Código}|${d.ID_Agente}`;
-    if (vistos.has(id)) continue;
-    vistos.add(id);
+    const atributo = textoOpcional(d.Atributo);
+    if (!atributo || !d.ID_Agente) continue;
 
+    // Género "Indeterminado" (no se pudo determinar) y los vacíos/"null" (no
+    // se registró) comparten una sola categoría: no hay una distinción útil
+    // entre ambos para este dashboard.
     const grupo =
-      modo === 'personas' ? (textoOpcional(d.Género) ?? 'Sin información') : d.Agente.trim();
-    const año = +d.Año;
-    filas.push({
-      idAgente: d.ID_Agente,
-      idCaso: d.ID_Caso,
-      grupo,
-      genero: grupo,
-      tipo: grupo,
-      atributo: d.Atributo.trim(),
-      crimen: d.Nombre_Codigo.trim(),
-      subcrimen: textoOpcional(d.Nombre_Sub_Codigo),
-      año,
-      década: Math.floor(año / 10) * 10,
-    });
+      modo === 'personas' ? (textoOpcional(d.Género) ?? 'Indeterminado') : d.Agente.trim();
+
+    // Un mismo agente puede haber participado en varios crímenes del caso
+    // (Relación_crímenes trae varios ID_Crímen, p.ej. "1A, 1B, 1C"): se genera
+    // una fila de participación por cada uno, todas con el mismo idAgente,
+    // para que el conteo de personas (deduplicado por idAgente en
+    // ComposicionSocial/Linea) siga siendo correcto y cada delito aparezca en
+    // la barra y la red de crímenes.
+    const codigosCrimen = ((d['Relación_crímenes'] as string) || '')
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean);
+
+    for (const codigo of codigosCrimen) {
+      const crimenRow = crimenPorId.get(codigo);
+      if (!crimenRow) continue;
+
+      const año = añoValido(crimenRow.Año);
+      if (año === null) continue;
+
+      const nombreCrimen = linajeNombreMap.get((crimenRow['Código'] || '').trim());
+      if (!nombreCrimen) continue;
+
+      const id = `${d.ID_Agente}|${codigo}`;
+      if (vistos.has(id)) continue;
+      vistos.add(id);
+
+      const subcodigo = textoOpcional(crimenRow['Sub_Código']);
+
+      filas.push({
+        idAgente: d.ID_Agente,
+        idCaso: d.ID_Caso,
+        grupo,
+        genero: grupo,
+        tipo: grupo,
+        atributo,
+        crimen: nombreCrimen,
+        codigoCrimen: (crimenRow['Código'] || '').trim(),
+        subcrimen: subcodigo ? (linajeNombreMap.get(subcodigo) ?? null) : null,
+        codigoSubcrimen: subcodigo,
+        año,
+        década: Math.floor(año / 10) * 10,
+      });
+    }
   }
   return filas;
 }

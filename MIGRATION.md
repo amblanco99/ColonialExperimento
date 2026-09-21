@@ -610,7 +610,7 @@ Para cada una de las 10 páginas restantes, además de `npm run check` y `npm ru
 
   1. `crearConteoInteractivo()` sale temprano si no encuentra `#conteoInteractivo`
      (`TablasConteo.js:63`).
-  2. Si lo encuentra, **hace `await` de dos CSV** — `Visualizaciones.csv` y `Casos.csv`
+  2. Si lo encuentra, **hace `await` de dos CSV** — `ConteoAgentes.csv` y `Casos.csv`
      (líneas 65-68). Todo lo demás va después de esa espera.
   3. Crea `<a class="conteo-expandir-btn">Expandir</a>` (línea 97) **sin `href`**.
   4. `dibujarToggle(...)` recibe las dos opciones con `destino: "personas.html"` y

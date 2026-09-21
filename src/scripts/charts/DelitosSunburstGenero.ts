@@ -9,6 +9,7 @@ type NodoMutable = any;
 type SeleccionD3 = any;
 import { PALETA_GENERO, PALETA_ATRIBUTO } from './agentesComun.js';
 import { crearBotonVerCasos, irATablasFiltradas } from './verCasos.js';
+import { colorDeCrimen } from './coloresCrimen.js';
 
 export function dibujarDelitosSunburstGenero(
   containerId: string,
@@ -73,28 +74,28 @@ export function dibujarDelitosSunburstGenero(
   d3.partition().size([2 * Math.PI, root.height + 1])(root);
   root.each((d: NodoMutable) => (d.current = d));
 
-  const PASOS_SOMBRA = [
-    { l: 0.3, s: -0.05 },
-    { l: -0.28, s: 0.1 },
-    { l: 0.46, s: -0.1 },
-    { l: -0.14, s: 0.05 },
-    { l: 0.14, s: 0 },
-    { l: -0.42, s: 0.15 },
-    { l: 0.06, s: -0.08 },
-    { l: -0.06, s: 0.08 },
-  ];
+  // La hoja (depth 3) es un crimen o un subcrimen, según haya uno fijado —
+  // usa el mismo color establecido para ese crimen en todo el sitio (ver
+  // coloresCrimen.ts), no un matiz derivado del atributo del padre.
+  const codigoPorNombreCrimen = new Map<string, string>();
+  const codigoPorNombreSubcrimen = new Map<string, string>();
+  filas.forEach((f: NodoMutable) => {
+    if (f.crimen && !codigoPorNombreCrimen.has(f.crimen)) {
+      codigoPorNombreCrimen.set(f.crimen, f.codigoCrimen);
+    }
+    if (f.subcrimen && !codigoPorNombreSubcrimen.has(f.subcrimen)) {
+      codigoPorNombreSubcrimen.set(f.subcrimen, f.codigoSubcrimen);
+    }
+  });
 
   function getColor(d: NodoMutable) {
     if (d.depth === 1) return (PALETA_GENERO as Record<string, string>)[d.data.name] || '#999';
     if (d.depth === 2) return (PALETA_ATRIBUTO as Record<string, string>)[d.data.name] || '#888';
 
-    const base = d3.hsl((PALETA_ATRIBUTO as Record<string, string>)[d.parent.data.name] || '#888');
-    const hermanos = d.parent.children || [d];
-    const idx = hermanos.indexOf(d);
-    const paso = PASOS_SOMBRA[idx % PASOS_SOMBRA.length];
-    const l = Math.min(0.88, Math.max(0.14, base.l + paso.l));
-    const s = Math.min(1, Math.max(0.15, base.s + paso.s));
-    return d3.hsl(base.h, s, l).formatHex();
+    const codigo = hayCrimenFijado
+      ? codigoPorNombreSubcrimen.get(d.data.name)
+      : codigoPorNombreCrimen.get(d.data.name);
+    return colorDeCrimen(codigo);
   }
 
   const arc = (d3.arc() as SeleccionD3)

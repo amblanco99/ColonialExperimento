@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { irATablasFiltradas } from './verCasos.js';
 import { esLinajeCriminal } from './linajeComun.js';
+import { colorDeCrimen } from './coloresCrimen.js';
 
 type NodoMutable = any;
 
@@ -22,12 +23,6 @@ function overridesDeNodo(d: NodoMutable) {
   return { codigo: d.parent.data.Nombre, subcodigo: d.data.Nombre };
 }
 
-function leerVariableCss(nombre: string, fallback: string): string {
-  const valor = getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
-
-  return valor || fallback;
-}
-
 function colorTextoContraste(hex: string): string {
   const limpio = hex.replace('#', '');
   const r = parseInt(limpio.substring(0, 2), 16) / 255;
@@ -38,8 +33,6 @@ function colorTextoContraste(hex: string): string {
 
   return luminancia > 0.4 ? '#1a1410' : '#fff';
 }
-
-const NUM_SERIES = 10;
 
 const RADIO_CIRCULO = 34;
 const RADIO_AGRANDADO = 58;
@@ -137,18 +130,11 @@ export async function crearLinaje(containerId: string, esCriminal: boolean) {
   const categorias: NodoMutable[] = root.children ?? [];
   const n = categorias.length;
 
-  const colorPorCategoria = new Map<string, string>();
-  categorias.forEach((categoria: NodoMutable, indice: number) => {
-    colorPorCategoria.set(
-      categoria.data.Path,
-      leerVariableCss(`--mapa-serie-${(indice % NUM_SERIES) + 1}`, '#7a3b1e'),
-    );
-  });
-
+  // Cada nodo (crimen o subcrimen) trae su propio color declarado por
+  // ID_Código en coloresCrimen.ts — sin herencia entre padre e hijo, así que
+  // un subcrimen no comparte el color de su categoría.
   function colorDeNodo(d: NodoMutable): string {
-    if (d.depth === 1) return colorPorCategoria.get(d.data.Path)!;
-
-    return colorPorCategoria.get(d.parent.data.Path)!;
+    return colorDeCrimen(d.data['ID_Código']);
   }
 
   const r1 = calcularRadioPrincipal(n);
@@ -371,14 +357,15 @@ export async function crearLinaje(containerId: string, esCriminal: boolean) {
 
     hijos.forEach((hijo: NodoMutable, indice: number) => {
       const pos = polarACartesiano((indice * 2 * Math.PI) / hijos.length, radioSubrueda);
+      const colorHijo = colorDeNodo(hijo);
 
-      svgSub.append(crearLineaSvg(0, 0, pos.x, pos.y, colorCategoria));
+      svgSub.append(crearLineaSvg(0, 0, pos.x, pos.y, colorHijo));
 
       const caja = document.createElement('button');
       caja.type = 'button';
       caja.className = 'linaje-nodo linaje-nodo-caja';
-      caja.style.setProperty('--categoria-color', colorCategoria);
-      caja.style.setProperty('--categoria-color-texto', colorTextoContraste(colorCategoria));
+      caja.style.setProperty('--categoria-color', colorHijo);
+      caja.style.setProperty('--categoria-color-texto', colorTextoContraste(colorHijo));
       caja.textContent = hijo.data.Nombre;
       caja.addEventListener('click', () => seleccionar(hijo, caja, colorDeNodo));
       conectarTooltip(caja, hijo);

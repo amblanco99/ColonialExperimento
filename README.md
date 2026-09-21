@@ -99,7 +99,7 @@ en el JS.
 CSV planos, sin build/procesamiento — se hace `fetch`/`d3.csv` directo desde
 el navegador. Los principales:
 
-- `Visualizaciones.csv` — el dataset central: una fila por persona/agente
+- `ConteoAgentes.csv` — el dataset central: una fila por persona/agente
   involucrado en un documento (género, atributo, tipo, año, crimen...).
   Lo usan casi todos los charts de `personas/` y `otrosAgentes`.
 - `crimenes.csv` / `Casos.csv` — un caso puede tener varios documentos y

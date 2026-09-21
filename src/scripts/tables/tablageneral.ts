@@ -33,9 +33,9 @@ export async function crearTabla() {
     tablaContainerInicial.innerHTML = `<p class="cargando">Cargando...</p>`;
   }
 
-  const [dataCrimenesCrudo, dataViz, dataLinaje] = await Promise.all([
+  const [dataCrimenesCrudo, dataAgentes, dataLinaje] = await Promise.all([
     d3.csv(`${import.meta.env.BASE_URL}data/crimenes.csv`),
-    d3.csv(`${import.meta.env.BASE_URL}data/Visualizaciones.csv`),
+    d3.csv(`${import.meta.env.BASE_URL}data/ConteoAgentes.csv`),
     d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`),
   ]);
 
@@ -50,6 +50,21 @@ export async function crearTabla() {
       esCriminal: tipoDelito === 'Criminal',
     });
   });
+
+  // ConteoAgentes.csv trae un renglón por agente (no por crimen): para
+  // traducir un filtro de género/atributo/tipo de agente a los ID_Crímen que
+  // debe mostrar la tabla, hay que resolver primero qué agentes cumplen esos
+  // filtros y luego, para cada uno, cuáles de sus crímenes relacionados
+  // (Relación_crímenes puede traer varios) cumplen además crimen/subcrimen/
+  // lugar/fecha — mismo join que usa ComposicionDatos.ts.
+  const crimenPorId = new Map(dataCrimenes.map((d) => [d['ID_Crímen'], d]));
+  // Ver añoValido en ComposicionDatos.ts: crimenes.csv escribe algunos años
+  // faltantes como " " (un espacio), que +valor deja pasar como 0 en vez de
+  // NaN.
+  function añoValido(valor: string | undefined): number | null {
+    const n = +(valor || '').trim();
+    return !isNaN(n) && n >= 1500 && n <= 1899 ? n : null;
+  }
 
   const params = new URLSearchParams(window.location.search);
   // Los filtros que trae la URL. Se pueden quitar uno a uno desde su etiqueta
@@ -90,48 +105,50 @@ export async function crearTabla() {
         )
       : null;
 
-    // genero/atributo/agente solo existen en Visualizaciones.csv (vive a nivel
-    // de agente/persona, no de documento) — sin ninguno de los tres no hace
-    // falta pasar por ahí. Es más que una optimización: Visualizaciones.csv
-    // solo cubre 28 nombres de crimen (nombres de agentes documentados), le
-    // faltan varios que sí existen en Linaje/crimenes.csv ("Delitos de
-    // violencia sexual", "Fuga (e intento)", "Relaciones unisexuales") —
-    // filtrar por código/lugar/fecha a través de ese archivo los deja siempre
-    // en cero casos aunque sí tengan expedientes. Por eso ese trío de filtros
-    // se aplica más abajo directamente sobre dataCrimenes (crimen/subcrimen/
-    // Lugar/Año, ya resueltos contra Linaje.csv), igual que hace
-    // CrimenesPorTipo.ts.
     const hayFiltroAgente = !!(genero || atributo || agente);
 
     if (!idCasosPermitidos && vieneDeFiltro && hayFiltroAgente) {
-      const vizFiltrada = dataViz.filter((d) => {
+      const permitidos = new Set<string>();
+
+      dataAgentes.forEach((a) => {
         const cumpleGenero =
           !genero ||
-          (genero === 'Sin información'
-            ? !d.Género || d.Género.trim() === '' || d.Género === 'Sin información'
-            : d.Género === genero);
-        const cumpleAtributo = !atributo || d.Atributo === atributo;
-        const cumpleAgente = !agente || d.Agente === agente;
-        const cumpleCodigo = !codigo || d.Nombre_Codigo === codigo;
-        const cumpleSubcodigo = !subcodigo || d.Nombre_Sub_Codigo === subcodigo;
-        const cumpleLugar = !lugarParam || d.Lugar?.trim() === lugarParam;
-        const cumpleFecha = fecha
-          ? getDecada(+d.Año) === +fecha
-          : fechaDesde && fechaHasta
-            ? getDecada(+d.Año) >= +fechaDesde && getDecada(+d.Año) <= +fechaHasta
-            : true;
-        return (
-          cumpleGenero &&
-          cumpleAtributo &&
-          cumpleAgente &&
-          cumpleCodigo &&
-          cumpleSubcodigo &&
-          cumpleLugar &&
-          cumpleFecha
-        );
+          (genero === 'Indeterminado'
+            ? !a.Género || a.Género.trim() === '' || a.Género === 'Indeterminado' || a.Género === 'null'
+            : a.Género === genero);
+        const cumpleAtributo = !atributo || a.Atributo === atributo;
+        const cumpleAgente = !agente || a.Agente === agente;
+        if (!cumpleGenero || !cumpleAtributo || !cumpleAgente) return;
+
+        // Un agente puede tener varios crímenes relacionados (p.ej.
+        // "1A, 1B, 1C"): cada uno se evalúa por separado contra
+        // crimen/subcrimen/lugar/fecha, y solo esos entran a la tabla — no
+        // todos los crímenes del agente por el hecho de que uno califique.
+        (a['Relación_crímenes'] || '')
+          .split(',')
+          .map((c: string) => c.trim())
+          .filter(Boolean)
+          .forEach((idCrimen: string) => {
+            const crimenRow = crimenPorId.get(idCrimen);
+            if (!crimenRow) return;
+
+            const cumpleCodigo = !codigo || crimenRow.crimen === codigo;
+            const cumpleSubcodigo = !subcodigo || crimenRow.subcrimen === subcodigo;
+            const cumpleLugar = !lugarParam || crimenRow.Lugar?.trim() === lugarParam;
+            const año = añoValido(crimenRow.Año);
+            const cumpleFecha = fecha
+              ? año !== null && getDecada(año) === +fecha
+              : fechaDesde && fechaHasta
+                ? año !== null && getDecada(año) >= +fechaDesde && getDecada(año) <= +fechaHasta
+                : true;
+
+            if (cumpleCodigo && cumpleSubcodigo && cumpleLugar && cumpleFecha) {
+              permitidos.add(idCrimen);
+            }
+          });
       });
 
-      idDocumentosPermitidos = new Set(vizFiltrada.map((d) => d.ID_Documento));
+      idDocumentosPermitidos = permitidos;
     }
 
     return idCasosPermitidos

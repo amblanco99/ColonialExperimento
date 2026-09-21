@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { esLinajeCriminal } from './linajeComun.js';
 import { crearBotonVerCasos } from './verCasos.js';
+import { colorDeCrimen } from './coloresCrimen.js';
 
 // TODO: type — genéricos de selección de d3. Ver MIGRATION.md (mismo patrón que Linaje.ts).
 type SeleccionD3 = any;
@@ -79,27 +80,6 @@ declare global {
   }
 }
 
-function leerVariableCss(nombre: string, fallback: string): string {
-  const valor = getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
-  return valor || fallback;
-}
-
-// Mismos diez tonos que usa el spike "Evolución en el tiempo" de
-// TiempoCrimenesMapa.ts (--mapa-serie-1…10): identidad de color consistente
-// para "una serie = un color" en todo el sitio.
-const SERIE_FALLBACK = [
-  '#bb4e99',
-  '#4e9bbb',
-  '#e8a838',
-  '#56b87e',
-  '#e05a5a',
-  '#7b5ea7',
-  '#3ab8b0',
-  '#d4784e',
-  '#6a8fce',
-  '#a05080',
-];
-
 // Presentación tipo embudo (la misma que tenía el "Top 5" que se fusionó
 // aquí), aplicada a TODOS los delitos en vez de solo los 5 primeros. Ningún
 // escalón se dibuja a un ancho ilegible aunque tenga muy pocos casos frente
@@ -159,13 +139,6 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
     columnaDerecha?.classList.toggle('mapa-crimenes-col-derecha--oculta', !haySeleccion);
   }
 
-  const colorTope = leerVariableCss('--mapa-acento-linea', '#bb4e99');
-  const colorBase = leerVariableCss('--mapa-acento-secundario', '#4e9bbb');
-  const interpolarColor = d3.interpolateHcl(colorTope, colorBase);
-  const COLORES_SERIE = SERIE_FALLBACK.map((valor, i) =>
-    leerVariableCss(`--mapa-serie-${i + 1}`, valor),
-  );
-
   const [crimenes, linaje] = await Promise.all([
     d3.csv(`${import.meta.env.BASE_URL}data/crimenes.csv`),
     d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`),
@@ -196,6 +169,32 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
   const crimenesAplicables = crimenes.filter(
     (d) => esLinajeCriminal(d['Código']) && tipoDelitoMap.get(d['Código']) !== 'No aplica',
   );
+
+  // Color por crimen/subcrimen: coloresCrimen.ts lo declara por ID_Código, no
+  // por nombre (dos ID_Código pueden compartir Nombre, ver el comentario de
+  // explicacionPorNombre arriba), así que hace falta la traducción inversa
+  // (Nombre -> ID_Código) que linajeMap no da, para resolver el color de lo
+  // que muestran barras/spike/dona antes de pedirlo.
+  const codigoPorNombreCrimen = new Map<string, string>();
+  const codigoPorNombreSubcrimen = new Map<string, string>();
+  crimenesAplicables.forEach((d) => {
+    const codigo = (d['Código'] || '').trim();
+    const nombre = linajeMap.get(codigo);
+    if (nombre && !codigoPorNombreCrimen.has(nombre)) codigoPorNombreCrimen.set(nombre, codigo);
+
+    const subCodigo = (d['Sub_Código'] || '').trim();
+    if (subCodigo && subCodigo.toLowerCase() !== 'null') {
+      const nombreSub = linajeMap.get(subCodigo);
+      if (nombreSub && !codigoPorNombreSubcrimen.has(nombreSub)) {
+        codigoPorNombreSubcrimen.set(nombreSub, subCodigo);
+      }
+    }
+  });
+  // Para el spike, que puede tener fijados nombres de crimen o de subcrimen
+  // mezclados (ver crimenesSeleccionados más abajo).
+  function codigoDeNombre(nombre: string): string | null {
+    return codigoPorNombreCrimen.get(nombre) ?? codigoPorNombreSubcrimen.get(nombre) ?? null;
+  }
 
   // Décadas del corpus completo — solo se usa como límite por defecto en
   // contar() cuando todavía no hay filtro de década activo (ver
@@ -323,7 +322,6 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
     wrapper.className = 'crimenes-tipo-wrapper';
 
     barras.forEach((delito, i) => {
-      const t = barras.length > 1 ? i / (barras.length - 1) : 0;
       const anchoPct = ANCHO_MINIMO_PCT + (100 - ANCHO_MINIMO_PCT) * (delito.total / maxTotal);
 
       const fila = document.createElement('div');
@@ -334,7 +332,7 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
       const barra = document.createElement('div');
       barra.className = 'crimenes-tipo-barra';
       barra.style.width = `${anchoPct}%`;
-      barra.style.background = interpolarColor(t);
+      barra.style.background = colorDeCrimen(codigoPorNombreCrimen.get(delito.nombre));
 
       const nombreEl = document.createElement('div');
       nombreEl.className = 'crimenes-tipo-nombre';
@@ -415,7 +413,7 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
       return { nombre, porDecada, total: porDecada.reduce((a: number, b: number) => a + b, 0) };
     });
 
-    const colorDe = new Map(seleccion.map((s, i) => [s.nombre, COLORES_SERIE[i % COLORES_SERIE.length]]));
+    const colorDe = new Map(seleccion.map((s) => [s.nombre, colorDeCrimen(codigoDeNombre(s.nombre))]));
 
     const MARGIN = { top: 16, right: 20, bottom: 30, left: 40 };
     const WIDTH = 700;
@@ -584,7 +582,9 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
       return;
     }
 
-    const colorDe = new Map(datos.map((d, i) => [d.nombre, COLORES_SERIE[i % COLORES_SERIE.length]]));
+    const colorDe = new Map(
+      datos.map((d) => [d.nombre, colorDeCrimen(codigoPorNombreSubcrimen.get(d.nombre))]),
+    );
     const totalDonut = datos.reduce((a, d) => a + d.total, 0);
 
     const LADO = 220;

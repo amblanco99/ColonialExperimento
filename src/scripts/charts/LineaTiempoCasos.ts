@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import Lenis from 'lenis';
 import type { FilaCsv } from './agentesComun.js';
+import { colorDeCrimen } from './coloresCrimen.js';
 
 type SeleccionD3 = any;
 
@@ -586,7 +587,11 @@ export async function crearLineaTiempoCasos(containerId: string) {
       const nombre = linajeMap.get(f['Código']) || 'Sin información';
       const nombreSub = linajeMap.get(f['Sub_Código']);
       const li = document.createElement('li');
-      li.textContent = nombreSub && nombreSub !== nombre ? `${nombre} — ${nombreSub}` : nombre;
+      const cuadro = document.createElement('i');
+      cuadro.className = 'linea-tiempo-casos-panel-caso__lista-color';
+      cuadro.style.background = colorDeCrimen(f['Código']);
+      const texto = nombreSub && nombreSub !== nombre ? `${nombre} — ${nombreSub}` : nombre;
+      li.append(cuadro, document.createTextNode(texto));
       elLista.appendChild(li);
     });
 
