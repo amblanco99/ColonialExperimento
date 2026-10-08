@@ -15,35 +15,25 @@ import { dibujarBarras } from './ComposicionBarras.js';
 import { dibujarRed } from './ComposicionRed.js';
 import { dibujarDelitosSunburstGenero } from './DelitosSunburstGenero.js';
 import { dibujarSunburst } from './InstitucionesAtributo.js';
-
 const TOP_BARRAS = 5;
 const TODOS_LOS_CRIMENES = 'Todos los crímenes';
-
 interface Estado {
-  /** Grupos elegidos (género o tipo). Vacío: todos, sin filtrar. */
   grupos: string[];
   crimen: string | null;
   desde: number;
   hasta: number;
-  /** Si la barra doble muestra todos los delitos o solo los principales. */
   expandido: boolean;
-  /** Si la red muestra todas las relaciones o solo las más comunes. */
   redCompleta: boolean;
-  /** Gráfico circular: un solo anillo por vez, en lugar de los tres niveles. */
   donaUnNivel: boolean;
-  /** Gráfico circular a todo el ancho. */
   donaGrande: boolean;
 }
-
 const porId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
-
 function crearOpcion(valor: string, texto: string) {
   const opt = document.createElement('option');
   opt.value = valor;
   opt.textContent = texto;
   return opt;
 }
-
 export async function crearComposicionSocial(modo: Modo) {
   const el = {
     filtros: porId('csFiltros'),
@@ -76,15 +66,12 @@ export async function crearComposicionSocial(modo: Modo) {
   } = el as {
     [K in keyof typeof el]: HTMLElement;
   };
-
   const config = crearConfig(modo);
   const todas = await cargarFilas(modo);
-
   if (todas.length === 0) {
     tarjetas.innerHTML = `<p class="cs-vacio">No hay datos disponibles.</p>`;
     return;
   }
-
   const años = [...new Set(todas.map((f) => f.año))].sort((a, b) => a - b);
   const estado: Estado = {
     grupos: [],
@@ -98,13 +85,10 @@ export async function crearComposicionSocial(modo: Modo) {
   };
   const inicial = { ...estado };
   const crimenesOrdenados = crimenesPorFrecuencia(todas).map(([nombre]) => nombre);
-
-  // ── Filtros ──────────────────────────────────────────────
   const selCrimen = document.createElement('select');
   selCrimen.className = 'cs-select';
   selCrimen.appendChild(crearOpcion('', TODOS_LOS_CRIMENES));
   crimenesOrdenados.forEach((c) => selCrimen.appendChild(crearOpcion(c, c)));
-
   const crearSelectorAño = (campo: 'desde' | 'hasta') => {
     const sel = document.createElement('select');
     sel.className = 'cs-select';
@@ -124,12 +108,10 @@ export async function crearComposicionSocial(modo: Modo) {
   };
   const selDesde = crearSelectorAño('desde');
   const selHasta = crearSelectorAño('hasta');
-
   selCrimen.addEventListener('change', () => {
     estado.crimen = selCrimen.value || null;
     actualizar();
   });
-
   const campo = (titulo: string, control: HTMLElement) => {
     const wrap = document.createElement('label');
     wrap.className = 'cs-campo';
@@ -139,7 +121,6 @@ export async function crearComposicionSocial(modo: Modo) {
     wrap.append(t, control);
     return wrap;
   };
-
   const bloqueGrupo = document.createElement('div');
   bloqueGrupo.className = 'cs-campo cs-campo--grupo';
   const tituloGrupo = document.createElement('span');
@@ -148,7 +129,6 @@ export async function crearComposicionSocial(modo: Modo) {
   const chips = document.createElement('div');
   chips.className = 'cs-chips';
   bloqueGrupo.append(tituloGrupo, chips);
-
   const chipsPorClave = new Map<string | null, HTMLButtonElement>();
   const alternarGrupo = (clave: string) => {
     estado.grupos = estado.grupos.includes(clave)
@@ -175,7 +155,6 @@ export async function crearComposicionSocial(modo: Modo) {
   };
   crearChip(null);
   config.grupos.forEach((g) => crearChip(g.clave, g));
-
   const separador = document.createElement('div');
   separador.className = 'cs-filtros-separador';
   const botonRestablecer = document.createElement('button');
@@ -186,7 +165,6 @@ export async function crearComposicionSocial(modo: Modo) {
     Object.assign(estado, inicial);
     actualizar();
   });
-
   filtros.replaceChildren(
     campo('Crimen', selCrimen),
     campo('Desde', selDesde),
@@ -195,15 +173,8 @@ export async function crearComposicionSocial(modo: Modo) {
     bloqueGrupo,
     botonRestablecer,
   );
-
-  // ── Cálculos compartidos ─────────────────────────────────
   const enRango = (f: Fila) => f.año >= estado.desde && f.año <= estado.hasta;
-  // Grupos elegidos, siempre en el orden de la configuración.
   const gruposElegidos = () => config.grupos.filter((g) => estado.grupos.includes(g.clave));
-
-  // Lados de la barra doble. Sin filtro (o con todos los grupos) se usan los
-  // lados por defecto. Con filtro se comparan los grupos elegidos; si hay uno
-  // solo, se completa con el primer otro grupo y el completado se atenúa.
   function ladosDeBarras(): [Lado, Lado] {
     const elegidos = gruposElegidos();
     if (elegidos.length === 0 || elegidos.length === config.grupos.length) return config.lados;
@@ -222,8 +193,6 @@ export async function crearComposicionSocial(modo: Modo) {
     });
     return [comoLado(a), comoLado(b)];
   }
-
-  // ── Tarjetas + panel de rol ──────────────────────────────
   function dibujarTarjetas(filasRango: Fila[]) {
     tarjetas.replaceChildren();
     config.grupos.forEach((g) => {
@@ -231,7 +200,6 @@ export async function crearComposicionSocial(modo: Modo) {
       const agentes = new Set(propias.map((f) => f.idAgente)).size;
       const casos = new Set(propias.map((f) => f.idCaso)).size;
       const activa = estado.grupos.includes(g.clave);
-
       const tarjeta = document.createElement('button');
       tarjeta.type = 'button';
       tarjeta.className = `cs-tarjeta${activa ? ' cs-tarjeta--activa' : ''}`;
@@ -252,28 +220,22 @@ export async function crearComposicionSocial(modo: Modo) {
       tarjetas.appendChild(tarjeta);
     });
   }
-
   function dibujarRol(filasBase: Fila[]) {
     rol.replaceChildren();
     const elegidos = gruposElegidos();
     rol.hidden = elegidos.length === 0;
     elegidos.forEach((g) => rol.append(...crearBloqueRol(g, filasBase)));
   }
-
-  // Un bloque de rol (medidores + delito más frecuente) por cada grupo elegido.
   function crearBloqueRol(g: Grupo, filasBase: Fila[]): HTMLElement[] {
     const propias = filasBase.filter((f) => f.grupo === g.clave);
-
     const cuenta = new Map<string, number>(ATRIBUTOS.map((a) => [a, 0] as [string, number]));
     propias.forEach((f) => {
       if (cuenta.has(f.atributo)) cuenta.set(f.atributo, cuenta.get(f.atributo)! + 1);
     });
     const totalAtributos = d3.sum(cuenta.values());
-
     const panel = document.createElement('div');
     panel.className = 'cs-rol';
     panel.style.setProperty('--cs-color', g.color);
-
     const cabecera = document.createElement('div');
     cabecera.className = 'cs-rol-cabecera';
     cabecera.innerHTML = `
@@ -283,14 +245,12 @@ export async function crearComposicionSocial(modo: Modo) {
       </div>
     `;
     panel.appendChild(cabecera);
-
     const medidores = document.createElement('div');
     medidores.className = 'cs-medidores';
     ATRIBUTOS.forEach((a) =>
       medidores.appendChild(crearMedidor(a, cuenta.get(a)!, totalAtributos)),
     );
     panel.appendChild(medidores);
-
     const top = crimenesPorFrecuencia(propias)[0];
     const pie = document.createElement('div');
     pie.className = 'cs-rol-delito';
@@ -314,7 +274,6 @@ export async function crearComposicionSocial(modo: Modo) {
     }
     return [panel, pie];
   }
-
   function crearMedidor(atributo: string, valor: number, total: number) {
     const color = (PALETA_ATRIBUTO as Record<string, string>)[atributo];
     const fraccion = total > 0 ? valor / total : 0;
@@ -324,7 +283,6 @@ export async function crearComposicionSocial(modo: Modo) {
     const fin = Math.PI / 2;
     const dibujar = (a0: number, a1: number) =>
       arco({ startAngle: a0, endAngle: a1, innerRadius: R - 9, outerRadius: R }) ?? '';
-
     const fig = document.createElement('figure');
     fig.className = 'cs-medidor';
     fig.innerHTML = `
@@ -340,8 +298,6 @@ export async function crearComposicionSocial(modo: Modo) {
     fig.title = `${fmt(valor)} caso(s)`;
     return fig;
   }
-
-  // ── Panel general ────────────────────────────────────────
   function actualizar() {
     selCrimen.value = estado.crimen ?? '';
     selDesde.value = String(estado.desde);
@@ -360,7 +316,6 @@ export async function crearComposicionSocial(modo: Modo) {
       chip.classList.toggle('cs-chip--activo', activo);
       chip.setAttribute('aria-pressed', String(activo));
     });
-
     const filasRango = todas.filter(enRango);
     const filasCrimen = estado.crimen
       ? filasRango.filter((f) => f.crimen === estado.crimen)
@@ -371,10 +326,8 @@ export async function crearComposicionSocial(modo: Modo) {
     const filasFiltradas = hayGrupos ? filasCrimen.filter(enGrupos) : filasCrimen;
     const elegidos = gruposElegidos();
     const etiquetaCrimen = estado.crimen ?? TODOS_LOS_CRIMENES;
-
     dibujarTarjetas(filasCrimen);
     dibujarRol(filasCrimen);
-
     lineaSubtitulo.textContent = `${estado.desde} – ${estado.hasta} · ${etiquetaCrimen.toLowerCase()}, ${config.unidadTarjeta} por década, sin repetir dentro de una misma década`;
     dibujarLineaEvolucion({
       contenedor: linea,
@@ -385,11 +338,7 @@ export async function crearComposicionSocial(modo: Modo) {
       etiquetaCrimen,
       unidad: config.unidadLinea,
     });
-
-    // La barra doble y la red ignoran el filtro de crimen a propósito: sirven
-    // para elegirlo, así que necesitan seguir mostrando los demás delitos.
     const todosLosCrimenes = crimenesPorFrecuencia(filasRango).map(([nombre]) => nombre);
-    // Los nodos en color de la red son siempre los delitos principales de la barra.
     const destacados = todosLosCrimenes.slice(0, TOP_BARRAS);
     const alSeleccionarCrimen = (crimen: string) => {
       estado.crimen = estado.crimen === crimen ? null : crimen;
@@ -410,7 +359,6 @@ export async function crearComposicionSocial(modo: Modo) {
       crimenActivo: estado.crimen,
       alSeleccionarCrimen,
     });
-
     donaSubtitulo.textContent = `${fmt(filasFiltradas.length)} participaciones registradas · ${
       estado.crimen ? `subdelitos de ${estado.crimen}` : 'todos los delitos'
     }`;
@@ -433,7 +381,6 @@ export async function crearComposicionSocial(modo: Modo) {
       contenedor: red,
       filas: filasGrupo,
       destacados,
-      // Con un solo grupo los nodos toman su color; con varios no hay un color único.
       grupoActivo: elegidos.length === 1 ? elegidos[0] : null,
       crimenActivo: estado.crimen,
       verTodas: estado.redCompleta,
@@ -444,7 +391,6 @@ export async function crearComposicionSocial(modo: Modo) {
       alSeleccionarCrimen,
     });
   }
-
   botonNivel.addEventListener('click', () => {
     estado.donaUnNivel = !estado.donaUnNivel;
     actualizar();
@@ -453,6 +399,5 @@ export async function crearComposicionSocial(modo: Modo) {
     estado.donaGrande = !estado.donaGrande;
     actualizar();
   });
-
   actualizar();
 }

@@ -1,7 +1,6 @@
 import * as d3 from 'd3';
 import type { Fila, Lado } from './ComposicionDatos.js';
 import { fmt } from './ComposicionDatos.js';
-
 const ANCHO = 740;
 const COL_ETIQUETA = 176;
 const MITAD = 236;
@@ -12,25 +11,18 @@ const ALTO_BARRA = 16;
 const ALTO_BARRA_SUB = 12;
 const SIN_SUBDELITO = 'Sin subdelito registrado';
 const MARGEN_VALOR = 40;
-
 interface Opciones {
   contenedor: HTMLElement;
-  /** Filas del rango de años, sin filtrar por grupo ni por crimen. */
   filas: Fila[];
-  /** Los dos lados que se comparan (los define el controlador según el filtro). */
   lados: [Lado, Lado];
-  /** Todos los delitos, del más al menos registrado. */
   crimenes: string[];
-  /** Cuántos se ven mientras la lista no esté expandida. */
   limite: number;
   expandido: boolean;
   alAlternarExpansion: () => void;
-  /** Grupos elegidos en el filtro: los lados que no incluyan ninguno se atenúan. */
   gruposActivos: string[];
   crimenActivo: string | null;
   alSeleccionarCrimen: (crimen: string) => void;
 }
-
 export function dibujarBarras({
   contenedor,
   filas,
@@ -44,12 +36,10 @@ export function dibujarBarras({
   alSeleccionarCrimen,
 }: Opciones) {
   contenedor.innerHTML = '';
-
   if (crimenes.length === 0) {
     contenedor.innerHTML = `<p class="cs-vacio">No hay delitos para esta selección.</p>`;
     return;
   }
-
   const [ladoIzq, ladoDer] = lados;
   const conteo = new Map<string, { izq: number; der: number }>(
     crimenes.map((nombre) => [nombre, { izq: 0, der: 0 }]),
@@ -60,17 +50,11 @@ export function dibujarBarras({
     if (ladoIzq.claves.includes(f.grupo)) c.izq++;
     else if (ladoDer.claves.includes(f.grupo)) c.der++;
   });
-
-  // Con la lista recogida se ven los primeros; si el delito filtrado queda
-  // fuera (p. ej. elegido desde la red), se añade al final para que se vea.
   const visibles = crimenes.slice(0, expandido ? crimenes.length : limite);
   if (crimenActivo && crimenes.includes(crimenActivo) && !visibles.includes(crimenActivo)) {
     visibles.push(crimenActivo);
   }
   const datos = visibles.map((nombre) => ({ nombre, ...conteo.get(nombre)! }));
-
-  // Subdelitos del delito elegido: se muestran bajo su fila, con las mismas
-  // barras a la misma escala, para ver de qué se compone.
   const conteoSub = new Map<string, { izq: number; der: number }>();
   if (crimenActivo) {
     filas.forEach((f) => {
@@ -90,18 +74,13 @@ export function dibujarBarras({
         Number(a.nombre === SIN_SUBDELITO) - Number(b.nombre === SIN_SUBDELITO) ||
         b.izq + b.der - (a.izq + a.der),
     );
-
-  // La escala sale de todos los delitos, así las barras no cambian de largo
-  // al expandir, recoger o abrir los subdelitos.
   const maximo = d3.max([...conteo.values()], (d) => Math.max(d.izq, d.der)) || 1;
   const escala = d3
     .scaleLinear()
     .domain([0, maximo])
     .range([0, MITAD - MARGEN_VALOR]);
-
   const xIzq = COL_ETIQUETA + 12 + MITAD;
   const xDer = xIzq + HUECO;
-
   type Linea = { nombre: string; izq: number; der: number; y: number; sub: boolean };
   const lineas: Linea[] = [];
   let yActual = 0;
@@ -116,11 +95,9 @@ export function dibujarBarras({
     }
   });
   const alto = yActual;
-
   const wrapper = document.createElement('div');
   wrapper.className = 'cs-barras-wrapper';
   contenedor.appendChild(wrapper);
-
   const tooltip = document.createElement('div');
   tooltip.className = 'tooltip-grafico tooltip-grafico--neutro';
   wrapper.appendChild(tooltip);
@@ -129,7 +106,6 @@ export function dibujarBarras({
     tooltip.style.left = `${event.clientX - rect.left + 12}px`;
     tooltip.style.top = `${event.clientY - rect.top + 12}px`;
   };
-
   const svg = d3
     .create('svg')
     .attr('viewBox', `0 0 ${ANCHO} ${alto}`)
@@ -139,10 +115,8 @@ export function dibujarBarras({
       'aria-label',
       `Delitos más registrados: ${ladoIzq.etiqueta} frente a ${ladoDer.etiqueta}`,
     );
-
   const ladoAtenuado = (lado: { claves: string[] }) =>
     gruposActivos.length > 0 && !lado.claves.some((c) => gruposActivos.includes(c));
-
   lineas.forEach((d) => {
     const alturaFila = d.sub ? FILA_SUB : FILA;
     const altoBarra = d.sub ? ALTO_BARRA_SUB : ALTO_BARRA;
@@ -150,7 +124,6 @@ export function dibujarBarras({
     const cy = y + alturaFila / 2;
     const seleccionada = !d.sub && crimenActivo === d.nombre;
     const atenuada = !d.sub && crimenActivo !== null && !seleccionada;
-
     const fila = svg
       .append('g')
       .attr('class', d.sub ? 'cs-barras-fila cs-barras-fila--sub' : 'cs-barras-fila')
@@ -164,7 +137,6 @@ export function dibujarBarras({
     } else {
       fila.attr('aria-label', `Subdelito ${d.nombre}: ${fmt(d.izq)} y ${fmt(d.der)}`);
     }
-
     fila
       .append('rect')
       .attr('x', 0)
@@ -180,7 +152,6 @@ export function dibujarBarras({
             ? 'cs-barras-banda cs-barras-banda--sub'
             : 'cs-barras-banda',
       );
-
     const claseEtiqueta = seleccionada
       ? 'cs-barras-etiqueta cs-barras-etiqueta--activa'
       : d.sub
@@ -200,7 +171,6 @@ export function dibujarBarras({
       )
       .append('title')
       .text(d.nombre);
-
     const lados = [
       { lado: ladoIzq, valor: d.izq, derecha: false },
       { lado: ladoDer, valor: d.der, derecha: true },
@@ -228,7 +198,6 @@ export function dibujarBarras({
         .attr('class', 'cs-barras-valor')
         .text(fmt(valor));
     });
-
     const ayuda = d.sub
       ? ''
       : `<br/><em>${seleccionada ? 'Clic para quitar el filtro y ocultar los subdelitos' : 'Clic para filtrar y ver sus subdelitos'}</em>`;
@@ -240,7 +209,6 @@ export function dibujarBarras({
       })
       .on('mousemove', moverTooltip)
       .on('mouseleave', () => tooltip.classList.remove('tooltip-grafico--visible'));
-
     if (!d.sub) {
       const activar = () => alSeleccionarCrimen(d.nombre);
       fila.on('click', activar).on('keydown', (event: KeyboardEvent) => {
@@ -251,9 +219,7 @@ export function dibujarBarras({
       });
     }
   });
-
   wrapper.appendChild(svg.node()!);
-
   const leyenda = document.createElement('div');
   leyenda.className = 'cs-leyenda-cuadros';
   [ladoIzq, ladoDer].forEach((lado) => {
@@ -262,7 +228,6 @@ export function dibujarBarras({
     leyenda.appendChild(item);
   });
   contenedor.appendChild(leyenda);
-
   if (crimenes.length > limite) {
     const boton = document.createElement('button');
     boton.type = 'button';

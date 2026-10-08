@@ -14,9 +14,25 @@ Pregunta,Respuesta,Desglose
 
 <strong>Otros agentes</strong>: como instituciones y poblaciones, para evitar el sobreconteo de las personas.
 
-<strong>Género</strong>: Restrictiva.
+<strong>Género</strong>: Solo se coloca si se esposible reconocer el género por el nombre, si no es indeterminado
 
-<strong>Calidad</strong>: Social/Racial.
+<strong>Calidad</strong>: Entendiéndolo como el estatus socio-racial de la persona, se registran solo las categorías explícitamente indicadas en los documentos: <strong>Mestizo</strong>, <strong>Indígenas</strong>, <strong>Negro libre o Mulato</strong>. Se deja sin codificar en los casos ambiguos.
 
-<strong>Ocupación</strong>: Restrictiva.",
-¿Cuáles fueron las decisiones metodológicas?,,data/DecisionesMetodologicas.csv
+<strong>Ocupación</strong>: Solo se registra si la mención es directa.",
+¿Cuáles fueron las decisiones metodológicas?,"<strong> Usar las descripciones archivísticas como fuente principal.</strong> Aceptando el sacrificio del análisis detallado de casos individuales a cambio de poder analizar patrones a gran escala (lectura distante).
+
+<strong>Distinguir entre documento y caso.</strong> Reconstruyendo los procesos judiciales dispersos en múltiples registros archivísticos.
+
+<strong>Distinguir entre caso y delito.</strong> Para no perder la variedad de delitos que podían coexistir en un mismo proceso judicial.
+
+<strong>Redefinir el contenido del archivo.</strong> Clasificando los registros de Juicios Criminales en procesos penales, procesos no penales (inspecciones, peticiones administrativas, etc.) y registros ambiguos pendientes de verificación.
+
+<strong>Definir las variables de tiempo y lugar.</strong> Usando el año de los metadatos como fecha de referencia y la provincia como unidad territorial más confiable ante la ambigüedad de las localidades específicas.
+
+<strong>Clasificar a los actores judiciales según su rol procesal.</strong> Perpetrador, víctima o cómplice, sin forzar la asignación de roles no respaldados por la evidencia archivística.
+
+<strong>Separar las observaciones a nivel de delito y a nivel de caso.</strong> Para evitar el doble conteo de individuos.
+
+<strong>Adoptar un enfoque conservador para las características sociales.</strong> Género, calidad y ocupación: se registra solo lo explícitamente indicado y se deja sin codificar los casos ambiguos, con la única excepción parcial de los honoríficos Don/Doña.
+
+<strong>Incluir actores no individuales.</strong> Instituciones y actores colectivos se registran como tales, en lugar de asignarles un número arbitrario de personas."

@@ -1,13 +1,6 @@
 import * as d3 from 'd3';
 import { guardarResultados, leerResultados } from './resultadosGuardados.js';
-
 const fmt = (n: number) => n.toLocaleString('de-DE');
-
-/**
- * Filtros que llegan por la URL desde otras visualizaciones ("Ver casos").
- * Cada uno se muestra como una etiqueta que se puede quitar; ver
- * `origen` más abajo.
- */
 interface FiltrosOrigen {
   genero: string | null;
   atributo: string | null;
@@ -20,27 +13,22 @@ interface FiltrosOrigen {
   fechaHasta: string | null;
   casos: string | null;
 }
-
 interface EtiquetaActiva {
   texto: string;
   titulo: string;
   quitar: () => void;
 }
-
 export async function crearTabla() {
   const tablaContainerInicial = document.getElementById('tablaContainer');
   if (tablaContainerInicial) {
     tablaContainerInicial.innerHTML = `<p class="cargando">Cargando...</p>`;
   }
-
   const [dataCrimenesCrudo, dataAgentes, dataLinaje] = await Promise.all([
     d3.csv(`${import.meta.env.BASE_URL}data/crimenes.csv`),
     d3.csv(`${import.meta.env.BASE_URL}data/ConteoAgentes.csv`),
     d3.csv(`${import.meta.env.BASE_URL}data/Linaje.csv`),
   ]);
-
   const linajeMap = new Map(dataLinaje.map((d) => [d['ID_Código'], d.Nombre]));
-
   const tipoDelitoMap = new Map(dataLinaje.map((d) => [d['ID_Código'], d.Tipo_delito]));
   const dataCrimenes = dataCrimenesCrudo.map((d) => {
     const tipoDelito = tipoDelitoMap.get(d['Sub_Código']) ?? tipoDelitoMap.get(d['Código']);
@@ -50,26 +38,12 @@ export async function crearTabla() {
       esCriminal: tipoDelito === 'Criminal',
     });
   });
-
-  // ConteoAgentes.csv trae un renglón por agente (no por crimen): para
-  // traducir un filtro de género/atributo/tipo de agente a los ID_Crímen que
-  // debe mostrar la tabla, hay que resolver primero qué agentes cumplen esos
-  // filtros y luego, para cada uno, cuáles de sus crímenes relacionados
-  // (Relación_crímenes puede traer varios) cumplen además crimen/subcrimen/
-  // lugar/fecha — mismo join que usa ComposicionDatos.ts.
   const crimenPorId = new Map(dataCrimenes.map((d) => [d['ID_Crímen'], d]));
-  // Ver añoValido en ComposicionDatos.ts: crimenes.csv escribe algunos años
-  // faltantes como " " (un espacio), que +valor deja pasar como 0 en vez de
-  // NaN.
   function añoValido(valor: string | undefined): number | null {
     const n = +(valor || '').trim();
     return !isNaN(n) && n >= 1500 && n <= 1899 ? n : null;
   }
-
   const params = new URLSearchParams(window.location.search);
-  // Los filtros que trae la URL. Se pueden quitar uno a uno desde su etiqueta
-  // (ver etiquetasActivas), así que viven en un objeto que cambia; el conjunto
-  // de datos de partida se recalcula cada vez (ver calcularBase).
   const origen: FiltrosOrigen = {
     genero: params.get('genero'),
     atributo: params.get('atributo'),
@@ -82,19 +56,11 @@ export async function crearTabla() {
     fechaHasta: params.get('fechaHasta'),
     casos: params.get('casos'),
   };
-
-  // Implementación local; hay otras tres en el proyecto con contratos distintos
-  // (ver MIGRATION.md). Esta recibe el número que le pasa el llamante.
   const getDecada = (y: number) => Math.floor(y / 10) * 10;
-
-  // El conjunto de partida según los filtros de la URL. Es la lógica de
-  // siempre, sin cambios; solo está en una función para poder recalcularla al
-  // quitar una etiqueta.
   function calcularBase() {
     const { genero, atributo, agente, codigo, subcodigo, fecha, fechaDesde, fechaHasta } = origen;
     const lugarParam = origen.lugar;
     const vieneDeFiltro = Object.values(origen).some(Boolean);
-
     let idDocumentosPermitidos: Set<string> | null = null;
     const idCasosPermitidos = origen.casos
       ? new Set(
@@ -104,12 +70,9 @@ export async function crearTabla() {
             .filter(Boolean),
         )
       : null;
-
     const hayFiltroAgente = !!(genero || atributo || agente);
-
     if (!idCasosPermitidos && vieneDeFiltro && hayFiltroAgente) {
       const permitidos = new Set<string>();
-
       dataAgentes.forEach((a) => {
         const cumpleGenero =
           !genero ||
@@ -119,11 +82,6 @@ export async function crearTabla() {
         const cumpleAtributo = !atributo || a.Atributo === atributo;
         const cumpleAgente = !agente || a.Agente === agente;
         if (!cumpleGenero || !cumpleAtributo || !cumpleAgente) return;
-
-        // Un agente puede tener varios crímenes relacionados (p.ej.
-        // "1A, 1B, 1C"): cada uno se evalúa por separado contra
-        // crimen/subcrimen/lugar/fecha, y solo esos entran a la tabla — no
-        // todos los crímenes del agente por el hecho de que uno califique.
         (a['Relación_crímenes'] || '')
           .split(',')
           .map((c: string) => c.trim())
@@ -131,7 +89,6 @@ export async function crearTabla() {
           .forEach((idCrimen: string) => {
             const crimenRow = crimenPorId.get(idCrimen);
             if (!crimenRow) return;
-
             const cumpleCodigo = !codigo || crimenRow.crimen === codigo;
             const cumpleSubcodigo = !subcodigo || crimenRow.subcrimen === subcodigo;
             const cumpleLugar = !lugarParam || crimenRow.Lugar?.trim() === lugarParam;
@@ -141,16 +98,13 @@ export async function crearTabla() {
               : fechaDesde && fechaHasta
                 ? año !== null && getDecada(año) >= +fechaDesde && getDecada(año) <= +fechaHasta
                 : true;
-
             if (cumpleCodigo && cumpleSubcodigo && cumpleLugar && cumpleFecha) {
               permitidos.add(idCrimen);
             }
           });
       });
-
       idDocumentosPermitidos = permitidos;
     }
-
     return idCasosPermitidos
       ? dataCrimenes.filter((d) => idCasosPermitidos.has(d.ID_Caso))
       : idDocumentosPermitidos
@@ -169,12 +123,7 @@ export async function crearTabla() {
             })
           : dataCrimenes;
   }
-
   let datosBase = calcularBase();
-
-  // Todos los elementos están en el marcado de base-de-datos/index.astro. El
-  // `!` y los casts preservan el comportamiento: si alguno faltara, esto
-  // seguiría reventando igual que antes en vez de saltárselo en silencio.
   const tablaContainer = document.getElementById('tablaContainer')!;
   const filtroLugar = document.getElementById('filtroLugar') as HTMLSelectElement;
   const filtroCrimen = document.getElementById('filtroCrimen') as HTMLSelectElement;
@@ -192,10 +141,6 @@ export async function crearTabla() {
   const conteoNumero = document.getElementById('tgConteo')!;
   const conteoEtiqueta = document.getElementById('tgConteoEtiqueta')!;
   const subtitulo = document.getElementById('tgSubtitulo')!;
-
-  // Lugares y crímenes que se pueden elegir salen del conjunto de partida; al
-  // quitar una etiqueta de la URL hay que rehacerlos, conservando la elección
-  // si sigue existiendo.
   function poblarSelector(select: HTMLSelectElement, valores: string[], textoTodos: string) {
     const elegido = select.value;
     select.innerHTML = '';
@@ -211,7 +156,6 @@ export async function crearTabla() {
     });
     select.value = valores.includes(elegido) ? elegido : '';
   }
-
   function poblarSelectores() {
     poblarSelector(
       filtroLugar,
@@ -225,14 +169,9 @@ export async function crearTabla() {
     );
   }
   poblarSelectores();
-
-  // El período cubre todo el archivo: 1550 (el arranque real de los casos
-  // coloniales documentados) hasta el último año con datos. Los registros sin
-  // fecha (año 0) quedan fuera, igual que antes con el valor inicial de 1550.
   const aniosValidos = dataCrimenes.map((d) => +d.Año).filter((a) => !isNaN(a) && a > 0);
   const ANIO_MIN = aniosValidos.length ? Math.min(...aniosValidos) : 1550;
   const ANIO_MAX = aniosValidos.length ? Math.max(...aniosValidos) : 1824;
-
   for (const input of [filtroAnioDesde, filtroAnioHasta]) {
     input.min = String(ANIO_MIN);
     input.max = String(ANIO_MAX);
@@ -241,9 +180,6 @@ export async function crearTabla() {
   filtroAnioDesde.value = String(ANIO_MIN);
   filtroAnioHasta.value = String(ANIO_MAX);
   subtitulo.textContent = `Archivo general · ${ANIO_MIN} — ${ANIO_MAX}`;
-
-  // Marcas bajo el control: los extremos y cada 50 años, sin apretar las de
-  // los bordes.
   const posicionMarca = (anio: number) => ((anio - ANIO_MIN) / (ANIO_MAX - ANIO_MIN)) * 100;
   const anioMarcas = [
     ANIO_MIN,
@@ -259,24 +195,17 @@ export async function crearTabla() {
     marca.style.left = `${posicionMarca(anio)}%`;
     marcas.append(marca);
   });
-
   function periodoCompleto() {
     return +filtroAnioDesde.value === ANIO_MIN && +filtroAnioHasta.value === ANIO_MAX;
   }
-
   function sincronizarSlider() {
     const desde = +filtroAnioDesde.value;
     const hasta = +filtroAnioHasta.value;
     slider.style.setProperty('--desde', `${posicionMarca(desde)}%`);
     slider.style.setProperty('--hasta', `${posicionMarca(hasta)}%`);
-    // Si las dos bolitas están en la mitad derecha, la de "desde" va encima
-    // para poder moverla hacia la izquierda.
     slider.classList.toggle('tg-slider--desde-encima', desde > (ANIO_MIN + ANIO_MAX) / 2);
     periodoValor.textContent = desde === hasta ? `${desde}` : `${desde} – ${hasta}`;
   }
-
-  // Cambia la URL sin recargar, para que reflejar los filtros de origen que
-  // quedan (o ninguno) y que recargar la página conserve lo que se ve.
   function sincronizarUrl() {
     const nuevos = new URLSearchParams();
     (Object.keys(origen) as (keyof FiltrosOrigen)[]).forEach((clave) => {
@@ -287,7 +216,6 @@ export async function crearTabla() {
     const ruta = `${window.location.pathname}${consulta ? `?${consulta}` : ''}`;
     window.history.replaceState(null, '', ruta);
   }
-
   function quitarOrigen(claves: (keyof FiltrosOrigen)[]) {
     claves.forEach((clave) => {
       origen[clave] = null;
@@ -297,14 +225,10 @@ export async function crearTabla() {
     poblarSelectores();
     renderTodo();
   }
-
-  // Todo lo que está filtrando ahora mismo: primero lo que trae la URL, luego
-  // lo que se eligió en el panel. Cada uno se puede quitar desde su etiqueta.
   function etiquetasActivas(): EtiquetaActiva[] {
     const lista: EtiquetaActiva[] = [];
     const conOrigen = (claves: (keyof FiltrosOrigen)[], texto: string, titulo: string) =>
       lista.push({ texto, titulo, quitar: () => quitarOrigen(claves) });
-
     if (origen.casos) {
       const n = origen.casos.split(',').filter((s) => s.trim()).length;
       conOrigen(['casos'], `${fmt(n)} caso(s) en común`, 'Coincidencia de crímenes');
@@ -324,7 +248,6 @@ export async function crearTabla() {
           : `${origen.fechaDesde} – ${origen.fechaHasta}`;
       conOrigen(['fechaDesde', 'fechaHasta'], rango, 'Fecha');
     }
-
     if (filtroLugar.value) {
       lista.push({
         texto: filtroLugar.value,
@@ -368,7 +291,6 @@ export async function crearTabla() {
     }
     return lista;
   }
-
   function limpiarTodo() {
     (Object.keys(origen) as (keyof FiltrosOrigen)[]).forEach((clave) => {
       origen[clave] = null;
@@ -383,38 +305,31 @@ export async function crearTabla() {
     poblarSelectores();
     renderTodo();
   }
-
   function renderActivos() {
     const etiquetas = etiquetasActivas();
     contenedorActivos.hidden = etiquetas.length === 0;
     contenedorActivos.replaceChildren();
     if (etiquetas.length === 0) return;
-
     const titulo = document.createElement('span');
     titulo.className = 'tg-activos-titulo';
     titulo.textContent = 'Filtros activos:';
     contenedorActivos.append(titulo);
-
     etiquetas.forEach(({ texto, titulo: tituloEtiqueta, quitar }) => {
       const chip = document.createElement('span');
       chip.className = 'tg-chip';
       chip.title = tituloEtiqueta;
-
       const textoChip = document.createElement('span');
       textoChip.className = 'tg-chip-texto';
       textoChip.textContent = texto;
-
       const boton = document.createElement('button');
       boton.type = 'button';
       boton.className = 'tg-chip-quitar';
       boton.textContent = '×';
       boton.setAttribute('aria-label', `Quitar el filtro ${tituloEtiqueta}: ${texto}`);
       boton.addEventListener('click', quitar);
-
       chip.append(textoChip, boton);
       contenedorActivos.append(chip);
     });
-
     const limpiar = document.createElement('button');
     limpiar.type = 'button';
     limpiar.className = 'tg-limpiar';
@@ -422,24 +337,17 @@ export async function crearTabla() {
     limpiar.addEventListener('click', limpiarTodo);
     contenedorActivos.append(limpiar);
   }
-
   type SortKey = 'crimen' | 'subcrimen' | 'Año' | 'Lugar';
-  // Por defecto, orden cronológico del caso más viejo al más reciente.
   let sortKey: SortKey = 'Año';
   let sortDir: 'asc' | 'desc' = 'asc';
-  // Hasta que el usuario haga clic en un encabezado, ninguna columna se marca
-  // como "activa": todas muestran el mismo ícono neutro para que se note que
-  // cualquiera se puede ordenar, aunque Año ya esté ordenado por defecto.
   let sortTocado = false;
   let resultadosActuales: typeof dataCrimenes = [];
-
   function compararFilas(a: (typeof dataCrimenes)[number], b: (typeof dataCrimenes)[number]) {
     if (sortKey === 'Año') {
       const anioA = +a.Año;
       const anioB = +b.Año;
       const validaA = a.Año !== '' && !isNaN(anioA);
       const validaB = b.Año !== '' && !isNaN(anioB);
-      // Los casos sin año conocido siempre van al final, sin importar la dirección.
       if (validaA !== validaB) return validaA ? -1 : 1;
       if (!validaA && !validaB) return 0;
       return sortDir === 'asc' ? anioA - anioB : anioB - anioA;
@@ -449,14 +357,12 @@ export async function crearTabla() {
     const resultado = valorA.localeCompare(valorB, 'es', { sensitivity: 'base' });
     return sortDir === 'asc' ? resultado : -resultado;
   }
-
   function renderTabla() {
     const lugar = filtroLugar.value;
     const crimen = filtroCrimen.value;
     const texto = busqueda.value.toLowerCase();
     const anioDesde = filtroAnioDesde.value ? +filtroAnioDesde.value : null;
     const anioHasta = filtroAnioHasta.value ? +filtroAnioHasta.value : null;
-
     const filtrados = datosBase.filter((d) => {
       const cumpleLugar = !lugar || d.Lugar === lugar;
       const cumpleCrimen = !crimen || d.crimen === crimen;
@@ -466,14 +372,11 @@ export async function crearTabla() {
         (anioDesde === null || +d.Año >= anioDesde) && (anioHasta === null || +d.Año <= anioHasta);
       return cumpleLugar && cumpleCrimen && cumpleBusqueda && cumplePenal && cumpleAnio;
     });
-
     filtrados.sort(compararFilas);
     resultadosActuales = filtrados;
-
     conteoNumero.textContent = fmt(filtrados.length);
     conteoEtiqueta.textContent =
       filtrados.length === 1 ? 'registro encontrado' : 'registros encontrados';
-
     const encabezados: { etiqueta: string; key: SortKey | null }[] = [
       { etiqueta: 'Descripción', key: null },
       { etiqueta: 'Crimen', key: 'crimen' },
@@ -481,7 +384,6 @@ export async function crearTabla() {
       { etiqueta: 'Año', key: 'Año' },
       { etiqueta: 'Lugar', key: 'Lugar' },
     ];
-
     tablaContainer.innerHTML = `
       <table class="tabla-datos">
         <thead>
@@ -514,7 +416,6 @@ export async function crearTabla() {
       </table>
       ${filtrados.length === 0 ? '<p class="tg-vacio">Ningún registro coincide con los filtros actuales.</p>' : ''}
     `;
-
     tablaContainer.querySelectorAll<HTMLElement>('tr[data-caso]').forEach((tr) => {
       tr.addEventListener('click', () => {
         const casoId = tr.dataset.caso;
@@ -522,7 +423,6 @@ export async function crearTabla() {
         window.location.href = `${import.meta.env.BASE_URL}base-de-datos/caso.html?caso=${encodeURIComponent(casoId!)}`;
       });
     });
-
     tablaContainer.querySelectorAll<HTMLElement>('th[data-key]').forEach((th) => {
       th.addEventListener('click', () => {
         const key = th.dataset.key as SortKey;
@@ -537,9 +437,6 @@ export async function crearTabla() {
       });
     });
   }
-
-  // Deja a la vista del caso lo necesario para "Caso 14 de N", Anterior /
-  // Siguiente y para volver a la tabla tal como estaba.
   function guardarResultadosActuales() {
     const conservados = new URLSearchParams(window.location.search);
     conservados.delete('volver');
@@ -561,8 +458,6 @@ export async function crearTabla() {
       scrollY: window.scrollY,
     });
   }
-
-  // Al volver desde un caso ("Volver a resultados") se restaura lo que había.
   function restaurarResultados() {
     const guardados = leerResultados();
     if (!guardados) return 0;
@@ -582,19 +477,15 @@ export async function crearTabla() {
     sortTocado = estado.sortTocado;
     return guardados.scrollY;
   }
-
   function renderTodo() {
     sincronizarSlider();
     renderActivos();
     renderTabla();
   }
-
   filtroLugar.addEventListener('change', renderTodo);
   filtroCrimen.addEventListener('change', renderTodo);
   busqueda.addEventListener('input', renderTodo);
   filtroCrimenesPenales.addEventListener('change', renderTodo);
-
-  // Las dos bolitas comparten carril: ninguna puede pasar a la otra.
   filtroAnioDesde.addEventListener('input', () => {
     if (+filtroAnioDesde.value > +filtroAnioHasta.value) {
       filtroAnioDesde.value = filtroAnioHasta.value;
@@ -607,19 +498,14 @@ export async function crearTabla() {
     }
     renderTodo();
   });
-
-  // Los filtros se aplican al momento; "Buscar" (o Enter) solo confirma y lleva
-  // la vista a los resultados, útil cuando el panel ocupa toda la pantalla.
   formulario.addEventListener('submit', (event) => {
     event.preventDefault();
     renderTodo();
     tablaContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
-
   const volviendo = params.has('volver');
   const scrollGuardado = volviendo ? restaurarResultados() : 0;
   if (volviendo) sincronizarUrl();
-
   renderTodo();
   if (volviendo && scrollGuardado) window.scrollTo({ top: scrollGuardado });
 }

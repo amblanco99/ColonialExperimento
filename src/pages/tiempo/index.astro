@@ -28,9 +28,22 @@ import 'lenis/dist/lenis.css';
     </div>
 
     <div id="panel-instrucciones" class="mapa-tarjeta mapa-vista--oculta">
+      <button type="button" class="mapa-tarjeta-cerrar" id="cerrar-instrucciones" aria-label="Cerrar instrucciones">×</button>
       <div class="mapa-tarjeta-titulo">Instrucciones</div>
       <div class="mapa-tarjeta-divisor"></div>
-      <p class="mapa-tarjeta-parrafo">Pendiente.</p>
+      <p class="mapa-tarjeta-parrafo">
+        Para navegar en esta sección tienes tres opciones: Lugar, Línea del tiempo y Crímenes.
+      </p>
+      <p class="mapa-tarjeta-parrafo">
+        En <b>Lugar</b> está el mapa de las provincias (1808). Puedes hacer clic en los puntos para ver los lugares específicos, lo que abrirá más información sobre el lugar. Prueba comparar varios lugares a la par.
+      </p>
+      <p class="mapa-tarjeta-parrafo">
+        En <b>Línea del tiempo</b> tienes dos vistas, puedes navegar por línea o rueda. En la vista de línea puedes observar el desarrollo de los casos a lo largo de los años. Por otro lado, la rueda te permite explorar año a año, haz clic en uno de los círculos para detallar cada caso.
+      </p>
+      <p class="mapa-tarjeta-parrafo">
+        Los <b>crímenes</b> están organizados de los más populares a los menos. Haz clic en una barra y tendrás más detalles. Puedes seleccionar varios crímenes a la vez.
+      </p>
+      <p class="mapa-tarjeta-parrafo">¡Explora!</p>
     </div>
 
     <div id="panel-filtros" class="controles"></div>
@@ -187,12 +200,35 @@ import 'lenis/dist/lenis.css';
       // Panel aparte de las vistas de arriba: no oculta ni reemplaza la
       // vista activa, solo se abre/cierra encima del selector de vistas.
       const btnInstrucciones = document.getElementById('btn-instrucciones')!;
-      const panelInstrucciones = document.getElementById('panel-instrucciones')!;
-      btnInstrucciones.addEventListener('click', () => {
-        panelInstrucciones.classList.toggle('mapa-vista--oculta');
-        const abierto = !panelInstrucciones.classList.contains('mapa-vista--oculta');
-        btnInstrucciones.classList.toggle('btn-mapa--activo', abierto);
-      });
+const panelInstrucciones = document.getElementById('panel-instrucciones')!;
+const btnCerrarInstrucciones = document.getElementById('cerrar-instrucciones');
+
+function establecerInstrucciones(abierto: boolean) {
+  panelInstrucciones.classList.toggle('mapa-vista--oculta', !abierto);
+  btnInstrucciones.classList.toggle('btn-mapa--activo', abierto);
+}
+
+btnInstrucciones.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const abierto = !panelInstrucciones.classList.contains('mapa-vista--oculta');
+  establecerInstrucciones(!abierto);
+});
+
+btnCerrarInstrucciones?.addEventListener('click', () => establecerInstrucciones(false));
+
+// Cerrar al hacer clic fuera del panel
+document.addEventListener('click', (e) => {
+  if (panelInstrucciones.classList.contains('mapa-vista--oculta')) return;
+  const target = e.target as Node;
+  if (!panelInstrucciones.contains(target) && !btnInstrucciones.contains(target)) {
+    establecerInstrucciones(false);
+  }
+});
+
+// Cerrar con Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') establecerInstrucciones(false);
+});
     </script>
   </main>
 </BaseLayout>

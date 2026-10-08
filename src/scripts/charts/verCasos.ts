@@ -1,4 +1,3 @@
-/** Filtros que acepta la tabla de base-de-datos por query string. */
 interface FiltrosTabla {
   genero?: string;
   atributo?: string;
@@ -8,7 +7,6 @@ interface FiltrosTabla {
   fecha?: string | number;
   escala?: string;
 }
-
 export function crearBotonVerCasos() {
   const boton = document.createElement('button');
   boton.type = 'button';
@@ -17,7 +15,6 @@ export function crearBotonVerCasos() {
   boton.addEventListener('click', () => {
     if (handlerActivo) handlerActivo();
   });
-
   function ocultar() {
     boton.classList.remove('btn-ver-casos-generico--visible');
     handlerActivo = null;
@@ -29,7 +26,6 @@ export function crearBotonVerCasos() {
   }
   return { boton, mostrar, ocultar };
 }
-
 export function irATablasFiltradas(overrides: FiltrosTabla = {}) {
   const params = new URLSearchParams();
   if (overrides.genero) params.set('genero', overrides.genero);

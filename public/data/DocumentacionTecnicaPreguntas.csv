@@ -38,7 +38,7 @@ Consulte la tabla Linaje crímenes antes de agrupar delitos para su propio anál
 Revise la columna Tipo_delito en Linaje crímenes si su interés es exclusivamente la justicia penal, ya que la base también documenta procesos no criminales (civiles, peticiones, etc.) que no deben incluirse en conteos de criminalidad.
 
 No modifique los ID_Caso o ID_Crímen originales al reutilizar o fusionar los datos con otras fuentes; en su lugar, agregue una columna adicional propia para no romper la trazabilidad con las tablas Fuentes y Conteo de agentes."
-6. Citación y atribución,"Citar como: Crimen y justicia en el Nuevo Reino de Granada: un proyecto de Humanidades Digitales, editado por XXXX, Universidad de los Andes, 2026.
+6. Citación y atribución,"Citar como: Crimen y justicia en el Nuevo Reino de Granada: un proyecto de Humanidades Digitales, editado por equipo de investigación Crímen y Justicia, Universidad de los Andes, 2026.
 
 Derechos de autor: Esta obra está bajo una <a href=""https://creativecommons.org/licenses/by-nc-sa/4.0/"" target=""_blank"" rel=""noopener noreferrer"">Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional</a>.
 
