@@ -20,6 +20,11 @@
   display: none;
 }
 
+.btn-mapa-ver-casos:hover {
+  background: var(--mapa-acento-hover);
+  border-color: var(--mapa-acento-hover);
+}
+
 .btn-mapa-ver-casos--separado {
   margin-bottom: 8px;
 }
@@ -86,6 +91,10 @@
 .btn-mapa--activo {
   background: var(--mapa-acento-linea);
   color: #fff;
+}
+
+.btn-mapa--activo:hover {
+  background: var(--mapa-acento-hover);
 }
 
 .btn-mapa--visible {

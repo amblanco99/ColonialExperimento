@@ -17,6 +17,13 @@
   max-width: none;
 }
 
+/* Los párrafos sueltos de esta página van directo sobre el fondo vinotinto
+   del body; con el --ink-light global de `p` no se leían. */
+.linaje-main-ancho > div > p,
+.linaje-seccion-ancha > p {
+  color: var(--crema);
+}
+
 /* =====================================================
    NORIA DE LINAJES DE DELITOS (Linaje.ts)
    Las categorías (nivel 1) son las "cabinas" de una rueda principal que gira,
@@ -78,7 +85,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink-light, #4a3f35);
+  color: var(--crema);
 }
 
 @media (max-width: 900px) {

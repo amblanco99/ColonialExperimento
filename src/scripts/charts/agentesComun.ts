@@ -32,9 +32,9 @@ export const PALETA_GENERO = {
 };
 
 export const PALETA_ATRIBUTO = {
-  Víctima: '#4e7d5c',
-  Perpetrador: '#b5443a',
-  Cómplice: '#5b7c92',
+  Víctima: leerVariableCss('--atributo-victima', '#2e496f'),
+  Perpetrador: leerVariableCss('--atributo-perpetrador', '#e33950'),
+  Cómplice: leerVariableCss('--atributo-complice', '#406706'),
 };
 
 export const ATRIBUTOS_ORDEN = ['Víctima', 'Perpetrador', 'Cómplice'];

@@ -130,7 +130,7 @@ export async function inicializarDashboard() {
     tierra: leerVariableCss('--mapa-tierra', '#e8dcc0'),
     borde: leerVariableCss('--mapa-borde', '#6b4f2a'),
     tintaOscura: leerVariableCss('--mapa-tinta-oscura', '#3a2d1a'),
-    acentoLinea: leerVariableCss('--mapa-acento-linea', '#bb4e99'),
+    acentoLinea: leerVariableCss('--mapa-acento-linea', '#ac8c9b'),
     acentoSecundario: leerVariableCss('--mapa-acento-secundario', '#4e9bbb'),
     tarjetaFondo: leerVariableCss('--mapa-tarjeta-fondo', '#fdf8ec'),
   };

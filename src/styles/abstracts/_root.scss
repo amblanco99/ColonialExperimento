@@ -74,6 +74,7 @@
   --mapa-borde: #{v.$mapa-borde};
   --mapa-tinta-oscura: #{v.$mapa-tinta-oscura};
   --mapa-acento-linea: #{v.$mapa-acento-linea};
+  --mapa-acento-hover: #{v.$mapa-acento-hover};
   --mapa-acento-secundario: #{v.$mapa-acento-secundario};
   --mapa-tarjeta-fondo: #{v.$mapa-tarjeta-fondo};
   --mapa-punto-color: #{v.$mapa-punto-color};
@@ -96,4 +97,8 @@
   --tipo-institucion: #{v.$tipo-institucion};
   --tipo-poblacion-completa: #{v.$tipo-poblacion-completa};
   --tipo-poblacion-indigena: #{v.$tipo-poblacion-indigena};
+
+  --atributo-victima: #{v.$atributo-victima};
+  --atributo-perpetrador: #{v.$atributo-perpetrador};
+  --atributo-complice: #{v.$atributo-complice};
 }
