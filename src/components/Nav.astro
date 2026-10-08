@@ -1,5 +1,6 @@
 ---
-export type SeccionActiva = 'inicio' | 'base-de-datos' | 'tiempo' | 'personas' | 'about';
+export type SeccionActiva =
+  'inicio' | 'base-de-datos' | 'tiempo' | 'personas' | 'about' | 'estudios-de-caso';
 
 interface Props {
   active?: SeccionActiva;
@@ -17,6 +18,7 @@ const enlaces = [
   { id: 'personas', texto: 'Composición social', href: `${base}personas/index.html` },
   { id: 'base-de-datos', texto: 'Base de datos', href: `${base}base-de-datos/index.html` },
   { id: 'about', texto: 'Fuentes y metodología', href: `${base}about/index.html` },
+  { id: 'estudios-de-caso', texto: 'Estudios de caso', href: `${base}estudios-de-caso/index.html` },
 ] as const satisfies ReadonlyArray<{ id: SeccionActiva; texto: string; href: string }>;
 ---
 

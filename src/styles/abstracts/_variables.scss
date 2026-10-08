@@ -72,7 +72,9 @@ $mapa-panel: #efe4c8;
 $mapa-tierra: #e8dcc0;
 $mapa-borde: #6b4f2a;
 $mapa-tinta-oscura: #3a2d1a;
-$mapa-acento-linea: #bb4e99;
+$mapa-acento-linea: $rosado;
+// Hover de los botones que usan $mapa-acento-linea.
+$mapa-acento-hover: $dorado;
 $mapa-acento-secundario: #4e9bbb;
 $mapa-tarjeta-fondo: #fdf8ec;
 $mapa-punto-color: #7b5ea7;
@@ -107,14 +109,19 @@ $mapa-provincias: (
 );
 
 // ── Paleta de género ─────────────────────────────────────
-$genero-mujer: #c9a679;
-$genero-hombre: #a9573b;
-$genero-sin-info: #5b7c92;
+$genero-mujer: #e5bf7c;
+$genero-hombre: #1d918b;
+$genero-sin-info: #83568d;
 
 // ── Paleta de tipo de agente ─────────────────────────────
-$tipo-institucion: #5b7c92;
-$tipo-poblacion-completa: #c9a679;
-$tipo-poblacion-indigena: #a9573b;
+$tipo-institucion: #696e22;
+$tipo-poblacion-completa: #b14356;
+$tipo-poblacion-indigena: #582b14;
+
+// ── Paleta de atributo (rol en el caso) ──────────────────
+$atributo-victima: #2e496f;
+$atributo-perpetrador: #e33950;
+$atributo-complice: #406706;
 
 // ── Breakpoints ──────────────────────────────────────────
 // Sin lector en JS: son variables SCSS de tiempo de compilación y no se emiten

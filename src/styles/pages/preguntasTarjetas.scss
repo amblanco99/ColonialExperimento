@@ -52,19 +52,19 @@
   font-weight: 600;
   line-height: var(--lh-snug);
   color: #fff;
-  background: var(--mapa-acento-linea, #bb4e99);
+  background: var(--mapa-acento-linea, #ac8c9b);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
 
 .preguntas-tarjetas-pildora:hover {
-  background: #a13f80;
+  background: var(--mapa-acento-hover, #d1a677);
 }
 
 .preguntas-tarjetas-pildora--activa,
 .preguntas-tarjetas-pildora--activa:hover {
   background: #fff;
-  color: var(--mapa-acento-linea, #bb4e99);
+  color: var(--mapa-acento-linea, #ac8c9b);
 }
 
 .preguntas-tarjetas-pildora--volver {
@@ -75,7 +75,7 @@
 
 .preguntas-tarjetas-pildora--volver:hover {
   background: #fff;
-  color: var(--mapa-acento-linea, #bb4e99);
+  color: var(--mapa-acento-linea, #ac8c9b);
 }
 
 .preguntas-tarjetas-panel {
@@ -116,7 +116,7 @@
   margin-bottom: 14px;
   padding: 6px 14px;
   border-radius: 999px;
-  background: var(--mapa-acento-linea, #bb4e99);
+  background: var(--mapa-acento-linea, #ac8c9b);
   color: #fff;
   font-family: var(--font-ui);
   font-size: var(--fs-xs);

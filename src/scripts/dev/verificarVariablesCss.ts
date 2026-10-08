@@ -67,6 +67,11 @@ export const VARIABLES_REQUERIDAS: readonly string[] = [
   '--genero-hombre',
   '--genero-sin-info',
 
+  // agentesComun.ts — PALETA_ATRIBUTO, igual en el nivel superior del módulo.
+  '--atributo-victima',
+  '--atributo-perpetrador',
+  '--atributo-complice',
+
   ...MAPA_NOMBRADAS,
   ...MAPA_SERIES,
   ...MAPA_PROVINCIAS,

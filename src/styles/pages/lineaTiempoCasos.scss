@@ -75,6 +75,11 @@
   color: #fff;
 }
 
+.linea-tiempo-casos-selector-vista__boton--activo:hover {
+  background: var(--mapa-acento-hover);
+  border-color: var(--mapa-acento-hover);
+}
+
 .linea-tiempo-casos-cuerpo {
   display: flex;
   justify-content: center;
@@ -137,8 +142,8 @@
 }
 
 .linea-tiempo-casos-linea-reproducir:hover:not(:disabled) {
-  background: var(--mapa-acento-linea);
-  border-color: var(--mapa-acento-linea);
+  background: var(--mapa-acento-hover);
+  border-color: var(--mapa-acento-hover);
   color: #fff;
 }
 
@@ -450,6 +455,10 @@
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.linea-tiempo-casos-panel-caso__boton-mapa:hover:not(:disabled) {
+  background: var(--mapa-acento-hover);
 }
 
 .linea-tiempo-casos-panel-caso__boton-mapa:disabled {
