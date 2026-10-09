@@ -7,14 +7,20 @@
    DASHBOARD "TIEMPO Y CRÍMENES" — layout específico
 ===================================================== */
 // Grilla de 3 columnas para que el grupo Lugar/Línea de tiempo/Crímenes
-// quede centrado en la página (columna del medio) sin importar el botón
-// "Instrucciones" a la derecha (columna final, pegado al extremo).
+// quede centrado en la página (columna del medio) sin importar los botones
+// de los extremos: "Información" a la izquierda (columna 1) e
+// "Instrucciones" a la derecha (columna 3), cada uno pegado a su borde.
 .mapa-selector-vista {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   margin-bottom: 14px;
   font-family: var(--font-ui);
+}
+
+.mapa-selector-vista-informacion {
+  grid-column: 1;
+  justify-self: start;
 }
 
 .mapa-selector-vista-grupo {
@@ -108,23 +114,48 @@
 .mapa-vista--oculta {
   display: none !important;
 }
-#panel-instrucciones {
+
+// Paneles flotantes "Instrucciones" e "Información" (ver
+// configurarPanelDesplegable en tiempo/index.astro): misma tarjeta fija
+// debajo de su botón — Instrucciones anclado a la derecha, Información a la
+// izquierda — y cada uno entra deslizándose desde su propio borde.
+#panel-instrucciones,
+#panel-informacion {
   position: fixed;
   top: 90px;
-  right: 24px;
   width: 340px;
   max-width: calc(100vw - 48px);
   max-height: calc(100vh - 120px);
   overflow-y: auto;
   z-index: 1000;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+}
+
+#panel-instrucciones {
+  right: 24px;
   animation: panel-instrucciones-entrada 0.2s ease;
+}
+
+#panel-informacion {
+  left: 24px;
+  animation: panel-informacion-entrada 0.2s ease;
 }
 
 @keyframes panel-instrucciones-entrada {
   from {
     opacity: 0;
     transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes panel-informacion-entrada {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
   }
   to {
     opacity: 1;
@@ -264,9 +295,8 @@
   opacity: 0.25;
 }
 
-// Panel "Instrucciones" (ver btn-instrucciones en tiempo/index.astro): por
-// ahora solo un párrafo placeholder ("Pendiente."), mismo cuerpo de texto
-// que el resto de las tarjetas.
+// Cuerpo de texto de los paneles "Instrucciones" e "Información" (ver
+// tiempo/index.astro): mismo estilo que el resto de las tarjetas.
 .mapa-tarjeta-parrafo {
   font-family: var(--mapa-font);
   font-size: var(--fs-sm);
@@ -682,7 +712,7 @@
    y los puntos encima. En el mapa normal el borde no cambia. */
 .mapa-provincia--sin-relleno {
   fill: none;
-  stroke: #fff;
+  stroke: #848185;
   stroke-opacity: 1;
 }
 
@@ -920,4 +950,3 @@
   pointer-events: all;
   cursor: pointer;
 }
-

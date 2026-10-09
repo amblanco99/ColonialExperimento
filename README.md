@@ -1,4 +1,4 @@
-# Crímenes Coloniales
+# crimenes Coloniales
 
 Visualización de datos sobre juicios criminales del periodo colonial en el
 Nuevo Reino de Granada. Sitio estático (Vite + JS vanilla + D3.js), sin
@@ -12,7 +12,7 @@ portada de esa sección:
 ```
 index.html                  portada del sitio
 
-base-de-datos/index.html    Tablas y filtros de la base de datos (Crímenes)
+base-de-datos/index.html    Tablas y filtros de la base de datos (crimenes)
 base-de-datos/caso.html      └─ Detalle de un caso
 about/index.html            Sobre el proyecto (portada)
 about/fuentes.html           └─ Fuentes
@@ -103,7 +103,7 @@ el navegador. Los principales:
   involucrado en un documento (género, atributo, tipo, año, crimen...).
   Lo usan casi todos los charts de `personas/` y `otrosAgentes`.
 - `crimenes.csv` / `Casos.csv` — un caso puede tener varios documentos y
-  varios crímenes; `src/tables/caso.js` los cruza para armar el detalle de
+  varios crimenes; `src/tables/caso.js` los cruza para armar el detalle de
   `base-de-datos/caso.html`.
 - `Source.csv` — metadatos archivísticos (archivo, sección, fondo, folios)
   por documento.

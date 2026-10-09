@@ -32,11 +32,11 @@
    tamaños a propósito, para que el nombre se lea con claridad). La tarjeta
    de definición/sinónimos/"Ver casos" (el hub) es una columna aparte, de
    ancho fijo, al lado derecho de la rueda. Cuando la categoría activa tiene
-   subcrímenes (nivel 2), debajo de esa tarjeta aparece la "subrueda": un
+   subcrimenes (nivel 2), debajo de esa tarjeta aparece la "subrueda": un
    segundo <svg>, chico y propio, con esa misma categoría en el centro y sus
-   subcrímenes repartidos en círculo completo alrededor — mismo lenguaje
+   subcrimenes repartidos en círculo completo alrededor — mismo lenguaje
    visual que la rueda principal, pero sin competir por espacio con ella. Sin
-   subcrímenes, la subrueda queda vacía y se colapsa (ver
+   subcrimenes, la subrueda queda vacía y se colapsa (ver
    .linaje-subrueda-col:empty), y la tarjeta ocupa sola la columna.
 
    Ambas ruedas viven en un <svg viewBox="…">, con cada nodo dibujado como
@@ -77,7 +77,7 @@
 // "Nivel 1" (rueda principal) / "Nivel 2" (subrueda), ver crearLinaje en
 // Linaje.ts: mismo rótulo chico para las dos, así queda claro qué nivel de
 // Linaje.csv dibuja cada visualización. tituloNivel2 se oculta a mano junto
-// con la subrueda cuando la categoría activa no tiene subcrímenes.
+// con la subrueda cuando la categoría activa no tiene subcrimenes.
 .linaje-nivel-titulo {
   margin: 0;
   font-family: var(--font-ui);
@@ -115,7 +115,7 @@
 }
 
 // Contenedor de la subrueda (ver reconstruirSubrueda en Linaje.ts): sin
-// subcrímenes queda sin hijos y :empty la colapsa, así el gap de
+// subcrimenes queda sin hijos y :empty la colapsa, así el gap de
 // .linaje-hub-col no deja un hueco vacío arriba de la tarjeta.
 .linaje-subrueda-col {
   width: 100%;

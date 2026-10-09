@@ -1,6 +1,6 @@
-ID_Agente,ID_Caso,Agente,Atributo,Género,Calidad,Labor,Relación_crímenes,Conteo_mínimo,Tipo_Institución,Doble_Atributo,RCDA,Proceso,
+ID_Agente,ID_Caso,Agente,Atributo,Género,Calidad,Labor,Relación_crimenes,Conteo_mínimo,Tipo_Institución,Doble_Atributo,RCDA,Proceso,
 IDA1,1,Persona,Perpetrador,Hombre,Sin especificar,Político del Estado,"1A, 1B, 1C",,null,Víctima,1D,Contrademanda,
-IDA2,1,Persona,Perpetrador,Indeterminado,Indeterminado,Indeterminado,"1B,1D",1,null,null,,,
+IDA2,1,Persona,Perpetrador,Indeterminado,Indeterminado,Indeterminado,"1B",1,null,null,,,
 IDA3,1,Persona,Perpetrador,Hombre,Sin especificar,Político del Estado,1C,,null,null,,,
 IDA4,2,Persona,Perpetrador,Hombre,Sin especificar,Político del Estado,2A,1,null,,,,
 IDA5,2,Persona,Perpetrador,Hombre,Sin especificar,Político del Estado,2A,1,null,,,,
@@ -259,9 +259,9 @@ IDA257,113,Persona,Víctima,Hombre,Sin especificar,Sin especificar,113A,,null,,,
 IDA258,114,Persona,Perpetrador,Indeterminado,Indeterminado,Indeterminado,114A,1,null,,,,
 IDA259,114,Persona,Perpetrador,Indeterminado,Indeterminado,Indeterminado,114A,1,null,,,,
 IDA260,114,Persona,Víctima,Hombre,Sin especificar,Sin especificar,114A,,null,,,,
-IDA261,115,Persona,Perpetrador,Mujer,Sin especificar,Sin especificar,"115A, 115B, 115C, 115H",,null,,,,
-IDA262,115,Persona,Perpetrador,Hombre,Sin especificar,Sin especificar,"115A, 115B, 115C, 115H",,null,,,,
-IDA263,115,Persona,Víctima,Hombre,Sin especificar,Sin especificar,"115A, 115B, 115C, 115D, 115H",,null,,,,
+IDA261,115,Persona,Perpetrador,Mujer,Sin especificar,Sin especificar,"115A, 115B, 115C",,null,,,,
+IDA262,115,Persona,Perpetrador,Hombre,Sin especificar,Sin especificar,"115A, 115B, 115C",,null,,,,
+IDA263,115,Persona,Víctima,Hombre,Sin especificar,Sin especificar,"115A, 115B, 115C",,null,,,,
 IDA264,116,Persona,Perpetrador,Hombre,Sin especificar,Eclesiástico,116A,,null,,,,
 IDA265,116,Persona,Víctima,Hombre,Sin especificar,Sin especificar,"116A, 116B",,null,,,,
 IDA266,116,Población Completa,Perpetrador,null,null,null,116B,,null,,,,
@@ -1872,9 +1872,9 @@ IDA1870,837,Persona,Perpetrador,Hombre,Sin especificar,Sin especificar,"837A, 83
 IDA1871,837,Persona,Víctima,Mujer,Sin especificar,Sin especificar,"837A, 837B",,null,,,,
 IDA1872,838,Persona,Perpetrador,Hombre,Sin especificar,Sin especificar,"838A, 838B",,null,,838A,,
 IDA1873,838,Persona,Perpetrador,Mujer,Sin especificar,Sin especificar,838A,,null,,838A,,
-IDA1874,838,Persona,Víctima,Hombre,Sin especificar,Sin especificar,"838A, 838C, 838D",,null,,838A,,
+IDA1874,838,Persona,Víctima,Hombre,Sin especificar,Sin especificar,"838A, 838C",,null,,838A,,
 IDA1875,838,Persona,Víctima,Mujer,Sin especificar,Sin especificar,838B,,null,,838A,,
-IDA1876,838,Persona,Perpetrador,Hombre,Sin especificar,Político del Estado,"838C, 838D",,null,,838A,,
+IDA1876,838,Persona,Perpetrador,Hombre,Sin especificar,Político del Estado,"838C",,null,,838A,,
 IDA1877,839,Persona,Perpetrador,Hombre,Sin especificar,Sin especificar,839A,,null,,,,
 IDA1878,839,Persona,Víctima,Mujer,Sin especificar,Sin especificar,839A,,null,,,,
 IDA1879,840,Persona,Perpetrador,Hombre,Sin especificar,Sin especificar,840A,,null,,,,
@@ -2014,11 +2014,11 @@ IDA2012,881,Persona,Víctima,Indeterminado,Indeterminado,Indeterminado,881A,1,nu
 IDA2013,882,Persona,Perpetrador,Hombre,Sin especificar,Sin especificar,882A,,null,,,,
 IDA2014,882,Persona,Víctima,Hombre,Sin especificar,Sin especificar,882A,,null,,,,
 IDA2015,883,Persona,Perpetrador,Hombre,Sin especificar,Político del Estado,"883A, 883B, 883C, 883E, 883F, 883I, 883J, 883K, 883O, 883P, 883Q, 883R",,null,Víctima,"883L, 883S",Contrademanda,Roldan 
-IDA2016,883,Persona,Perpetrador,Mujer,Sin especificar,Sin especificar,"883A, 883B, 883M, 883Q, 883R",,null,Víctima,883F,Otros crímenes,Vicenta
+IDA2016,883,Persona,Perpetrador,Mujer,Sin especificar,Sin especificar,"883A, 883B, 883M, 883Q, 883R",,null,Víctima,883F,Otros crimenes,Vicenta
 IDA2017,883,Persona,Víctima,Mujer,Sin especificar,Sin especificar,883A,,null,,,,esposa de Roldan 
 IDA2018,883,Persona,Víctima,Indeterminado,Indeterminado,Indeterminado,883B,,null,,,,bebe no nacido de Vicenta
-IDA2019,883,Persona,Perpetrador,Mujer,Sin especificar,Sin especificar,"883D, 883E, 883I",,null,Víctima,883K,Otros crímenes,petronila martinez
-IDA2020,883,Persona,Víctima,Hombre,Sin especificar,Político del Estado,"883J, 883P",,null,Perpetrador,"883N, 883S",Otros crímenes,Bernardo García 
+IDA2019,883,Persona,Perpetrador,Mujer,Sin especificar,Sin especificar,"883D, 883E, 883I",,null,Víctima,883K,Otros crimenes,petronila martinez
+IDA2020,883,Persona,Víctima,Hombre,Sin especificar,Político del Estado,"883J, 883P",,null,Perpetrador,"883N, 883S",Otros crimenes,Bernardo García 
 IDA2021,883,Institución,Perpetrador,null,null,null,883L,,La justicia/jueces,,,,Los jueces del proceso
 IDA2022,883,Persona,Perpetrador,Hombre,Sin especificar,Sin especificar,883E,,null,,,,Xavier Aparicio
 IDA2023,883,Persona,Perpetrador,Hombre,Esclavo,Sin especificar,883E,,null,,,,José
@@ -2849,8 +2849,8 @@ IDA2847,1225,Persona,Perpetrador,Indeterminado,Indeterminado,Indeterminado,1225A
 IDA2848,1225,Persona,Víctima,Hombre,Sin especificar,Político del Estado,1225A,,null,,,,
 IDA2849,1226,Persona,Perpetrador,Hombre,Sin especificar,Sin especificar,1226A,,null,,,,
 IDA2850,1226,Persona,Víctima,Hombre,Sin especificar,Sin especificar,1226A,,null,,,,
-IDA2851,1227,Persona,Perpetrador,Hombre,Sin especificar,Sin especificar,"1227A, 1227B, 1227C",,null,,,,
-IDA2852,1227,Persona,Víctima,Hombre,Sin especificar,Sin especificar,"1227A, 1227B, 1227C",,null,,,,
+IDA2851,1227,Persona,Perpetrador,Hombre,Sin especificar,Sin especificar,"1227A, 1227B",,null,,,,
+IDA2852,1227,Persona,Víctima,Hombre,Sin especificar,Sin especificar,"1227A, 1227B",,null,,,,
 IDA2853,1227,Persona,Víctima,Hombre,Sin especificar,Sin especificar,1227A,,null,,,,
 IDA2854,1228,Persona,Perpetrador,Hombre,Sin especificar,Sin especificar,1228A,,null,,,,
 IDA2855,1228,Persona,Víctima,Hombre,Sin especificar,Sin especificar,1228A,,null,,,,
@@ -4637,7 +4637,7 @@ IDA4635,2049,Persona,Víctima,Mujer,Sin especificar,Sin especificar,2049A,,null,
 IDA4636,2050,Persona,Perpetrador,Hombre,Sin especificar,Sin especificar,2050A,,null,,,,
 IDA4637,2050,Persona,Víctima,Hombre,Sin especificar,Sin especificar,2050A,,null,,,,
 IDA4638,2051,Persona,Perpetrador,Mujer,Sin especificar,Sin especificar,2051A,,null,,,,
-IDA4639,2051,Persona,Víctima,Hombre,Sin especificar,Sin especificar,"2051A, 2051B",,null,,,,
+IDA4639,2051,Persona,Víctima,Hombre,Sin especificar,Sin especificar,"2051A",,null,,,,
 IDA4640,2052,Persona,Perpetrador,Hombre,Sin especificar,Eclesiástico,"2052A, 2052B",,null,,,,
 IDA4641,2052,Persona,Víctima,Hombre,Sin especificar,Político del Estado,"2052A, 2052B",,null,,,,
 IDA4642,2053,Persona,Perpetrador,Hombre,Sin especificar,Político del Estado,"2053A, 2053B",,null,,,,

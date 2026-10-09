@@ -465,7 +465,7 @@ máquinas donde se desarrolla.
 | Observable Plot | `TiposCasos.ts` | Sin opción `style`. Ejes y leyenda salen a `10px` / `system-ui`, los defaults de Plot. Aparece en `about/index.astro`, rodeado de Source Sans 3 |
 | Cuerpos de SVG en D3 | `graficos.scss:23`, `mapa.scss:702`, `crimenesPorTipo.scss:108,216` | `system-ui` mientras la página corre en Source Sans 3 |
 | Sunbursts | `sunburst.scss:10` | `sans-serif` a secas — ni `system-ui` ni la del sitio |
-| Grafo de crímenes | `mapa.scss:747` | Georgia, mientras los demás gráficos de la misma página van en `system-ui` |
+| Grafo de crimenes | `mapa.scss:747` | Georgia, mientras los demás gráficos de la misma página van en `system-ui` |
 | Tamaño de eje X | `TiempoCrimenesMapa.ts:1774` | `9px` en línea. **Ese valor no existe en ninguna hoja**; el más pequeño del CSS es `9.5px`. Y al ser estilo en línea, gana sobre cualquier clase |
 | Tooltips | `tooltips.scss:20` vs `:32,39` | El tooltip base va en Georgia; las variantes `--sans` y `--neutro` en `system-ui`. Tres gráficos de la misma página pueden mostrar tooltips en dos familias distintas |
 

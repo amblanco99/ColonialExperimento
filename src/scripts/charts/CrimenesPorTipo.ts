@@ -475,7 +475,7 @@ export async function crearCrimenesPorTipo(ids: ContenedoresCrimenesPorTipo) {
     if (datos.length === 0) {
       const aviso = document.createElement('div');
       aviso.className = 'mapa-aviso-vacio mapa-aviso-vacio--compacto';
-      aviso.textContent = `"${crimenActivoDonut}" no tiene subcrímenes registrados.`;
+      aviso.textContent = `"${crimenActivoDonut}" no tiene subcrimenes registrados.`;
       contenedorDonut.appendChild(aviso);
       return;
     }

@@ -9,18 +9,21 @@ import '../../styles/pages/mapa.scss';
 import '../../styles/pages/crimenesPorTipo.scss';
 import '../../styles/pages/lineaTiempoCasos.scss';
 import 'lenis/dist/lenis.css';
-
+const base = import.meta.env.BASE_URL
 ---
 
 <BaseLayout title="Tiempo" active="tiempo">
   <main class="container">
-    <h1 class="section-mainTitle">Cambio en el tiempo y espacio de los crímenes</h1>
+    <h1 class="section-mainTitle">Cambio de los crimenes en el tiempo y espacio </h1>
 
     <div class="mapa-selector-vista">
+      <button type="button" id="btn-informacion" class="btn-mapa-vista mapa-selector-vista-informacion">
+        Información
+      </button>
       <div class="mapa-selector-vista-grupo">
         <button type="button" id="btn-vista-lugar" class="btn-mapa-vista btn-mapa--activo">Lugar</button>
         <button type="button" id="btn-vista-tiempo" class="btn-mapa-vista">Línea de tiempo</button>
-        <button type="button" id="btn-vista-crimenes" class="btn-mapa-vista">Crímenes</button>
+        <button type="button" id="btn-vista-crimenes" class="btn-mapa-vista">Crimenes</button>
       </div>
       <button type="button" id="btn-instrucciones" class="btn-mapa-vista mapa-selector-vista-instrucciones">
         Instrucciones
@@ -32,7 +35,7 @@ import 'lenis/dist/lenis.css';
       <div class="mapa-tarjeta-titulo">Instrucciones</div>
       <div class="mapa-tarjeta-divisor"></div>
       <p class="mapa-tarjeta-parrafo">
-        Para navegar en esta sección tienes tres opciones: Lugar, Línea del tiempo y Crímenes.
+        Para navegar en esta sección tienes tres opciones: Lugar, Línea del tiempo y crimenes.
       </p>
       <p class="mapa-tarjeta-parrafo">
         En <b>Lugar</b> está el mapa de las provincias (1808). Puedes hacer clic en los puntos para ver los lugares específicos, lo que abrirá más información sobre el lugar. Prueba comparar varios lugares a la par.
@@ -41,9 +44,18 @@ import 'lenis/dist/lenis.css';
         En <b>Línea del tiempo</b> tienes dos vistas, puedes navegar por línea o rueda. En la vista de línea puedes observar el desarrollo de los casos a lo largo de los años. Por otro lado, la rueda te permite explorar año a año, haz clic en uno de los círculos para detallar cada caso.
       </p>
       <p class="mapa-tarjeta-parrafo">
-        Los <b>crímenes</b> están organizados de los más populares a los menos. Haz clic en una barra y tendrás más detalles. Puedes seleccionar varios crímenes a la vez.
+        Los <b>crimenes</b> están organizados de los más frecuentes a los menos. Haz clic en una barra y tendrás más detalles. Puedes seleccionar varios crimenes a la vez o puedes ver el top de crimenes de cada lugar.
       </p>
       <p class="mapa-tarjeta-parrafo">¡Explora!</p>
+    </div>
+
+    <div id="panel-informacion" class="mapa-tarjeta mapa-vista--oculta">
+      <button type="button" class="mapa-tarjeta-cerrar" id="cerrar-informacion" aria-label="Cerrar información">×</button>
+      <div class="mapa-tarjeta-titulo">Información importante</div>
+      <div class="mapa-tarjeta-divisor"></div>
+      <p>
+       Para comprender las gráficas recuerda: <br>
+      Un <b>caso</b> es uno o más documentos que se refieren al mismo proceso judicial. Un caso puede contener varios crímenes. Cada <b> crimen</b> se ha clasificado con una observación analítica del equipo. <br> <a href={`${base}about/index.html`}>Más información.</a> </p>
     </div>
 
     <div id="panel-filtros" class="controles"></div>
@@ -58,10 +70,8 @@ import 'lenis/dist/lenis.css';
     <div id="vista-tiempo" class="mapa-vista--oculta">
       <div class="mapa-tarjeta">
         <div class="mapa-tarjeta-encabezado">
-          <div class="mapa-tarjeta-titulo" id="lineaTiempoCasosTitulo">Línea de tiempo de casos</div>
-          <div class="mapa-tarjeta-subtitulo" id="lineaTiempoCasosSubtitulo">
-            Cada punto es un caso individual en su año exacto, según los filtros de arriba.
-          </div>
+          <div class="mapa-tarjeta-titulo" id="lineaTiempoCasosTitulo">Casos a lo largo de los años</div>
+          <div class="mapa-tarjeta-subtitulo" id="lineaTiempoCasosSubtitulo">Cada línea suma los casos por año según su tipo de proceso. </div>
         </div>
         <div class="mapa-tarjeta-divisor"></div>
         <div id="lineaTiempoCasosContenedor"></div>
@@ -73,12 +83,10 @@ import 'lenis/dist/lenis.css';
         <div class="mapa-crimenes-col-izquierda">
           <div class="mapa-tarjeta mapa-tarjeta--compacta">
             <div class="mapa-tarjeta-encabezado">
-              <div class="mapa-tarjeta-titulo">Crímenes por tipo</div>
+              <div class="mapa-tarjeta-titulo">Top de crimenes</div>
               <div class="mapa-tarjeta-subtitulo">
-                Delitos criminales registrados por linaje, según década y lugar, de mayor a menor.
-                Haz clic en uno o más para ver su definición y comparar su tendencia por década (o
-                elegilo en el filtro "Crimen" de arriba). No incluye los linajes no criminales
-                (documentos, traslados, juicios civiles, etc.).
+               Aquí puede observar los crimenes de los más frecuentes a los menos frecuentes a lo largo de los años.
+               Ajuste el rango de fecha para observar los cambios en cada periodo. Haga clic en cada barra para conocer más. 
               </div>
             </div>
             <div class="mapa-tarjeta-divisor"></div>
@@ -91,7 +99,7 @@ import 'lenis/dist/lenis.css';
             <div class="mapa-tarjeta-encabezado">
               <div class="mapa-tarjeta-titulo">Evolución del crimen</div>
               <div class="mapa-tarjeta-subtitulo">
-                Casos por década de todo el corpus, según crimen/subcrimen/lugar
+                Si quiere comparar, seleccione otros crimenes. Si quiere ver algún subcrimen a lo largo del tiempo, seleccione uno de la dona. 
               </div>
             </div>
             <div class="mapa-tarjeta-divisor"></div>
@@ -100,9 +108,9 @@ import 'lenis/dist/lenis.css';
 
           <div class="mapa-tarjeta mapa-tarjeta--compacta">
             <div class="mapa-tarjeta-encabezado">
-              <div class="mapa-tarjeta-titulo">Subcrímenes</div>
+              <div class="mapa-tarjeta-titulo">Subcrimenes</div>
               <div class="mapa-tarjeta-subtitulo">
-                Del crimen fijado, según los filtros de arriba
+                Del crimen fijado
               </div>
             </div>
             <div class="mapa-tarjeta-divisor"></div>
@@ -162,7 +170,7 @@ import 'lenis/dist/lenis.css';
 
         // El filtro de Lugar no aplica en "Línea de tiempo" (esa vista ya no
         // agrupa por lugar); se oculta solo ahí, sigue disponible en "Lugar"
-        // y "Crímenes".
+        // y "crimenes".
         document
           .getElementById('filtro-lugar-wrap')
           ?.classList.toggle('mapa-vista--oculta', vista === 'tiempo');
@@ -197,38 +205,53 @@ import 'lenis/dist/lenis.css';
       vistas.tiempo.boton.addEventListener('click', () => mostrarVista('tiempo'));
       vistas.crimenes.boton.addEventListener('click', () => mostrarVista('crimenes'));
 
-      // Panel aparte de las vistas de arriba: no oculta ni reemplaza la
-      // vista activa, solo se abre/cierra encima del selector de vistas.
-      const btnInstrucciones = document.getElementById('btn-instrucciones')!;
-const panelInstrucciones = document.getElementById('panel-instrucciones')!;
-const btnCerrarInstrucciones = document.getElementById('cerrar-instrucciones');
+      // Paneles aparte de las vistas de arriba (Instrucciones, Información):
+      // no ocultan ni reemplazan la vista activa, solo se abren/cierran
+      // encima del selector de vistas. Misma lógica para todos: botón que
+      // alterna, botón × para cerrar, clic fuera y Escape. Al abrir uno se
+      // cierran los demás para que no queden dos paneles apilados.
+      const panelesDesplegables: Array<(abierto: boolean) => void> = [];
 
-function establecerInstrucciones(abierto: boolean) {
-  panelInstrucciones.classList.toggle('mapa-vista--oculta', !abierto);
-  btnInstrucciones.classList.toggle('btn-mapa--activo', abierto);
-}
+      function configurarPanelDesplegable(botonId: string, panelId: string, cerrarId: string) {
+        const boton = document.getElementById(botonId)!;
+        const panel = document.getElementById(panelId)!;
+        const botonCerrar = document.getElementById(cerrarId);
 
-btnInstrucciones.addEventListener('click', (e) => {
-  e.stopPropagation();
-  const abierto = !panelInstrucciones.classList.contains('mapa-vista--oculta');
-  establecerInstrucciones(!abierto);
-});
+        const estaAbierto = () => !panel.classList.contains('mapa-vista--oculta');
 
-btnCerrarInstrucciones?.addEventListener('click', () => establecerInstrucciones(false));
+        function establecer(abierto: boolean) {
+          if (abierto) {
+            panelesDesplegables.forEach((otro) => {
+              if (otro !== establecer) otro(false);
+            });
+          }
+          panel.classList.toggle('mapa-vista--oculta', !abierto);
+          boton.classList.toggle('btn-mapa--activo', abierto);
+        }
+        panelesDesplegables.push(establecer);
 
-// Cerrar al hacer clic fuera del panel
-document.addEventListener('click', (e) => {
-  if (panelInstrucciones.classList.contains('mapa-vista--oculta')) return;
-  const target = e.target as Node;
-  if (!panelInstrucciones.contains(target) && !btnInstrucciones.contains(target)) {
-    establecerInstrucciones(false);
-  }
-});
+        boton.addEventListener('click', (e) => {
+          e.stopPropagation();
+          establecer(!estaAbierto());
+        });
 
-// Cerrar con Escape
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') establecerInstrucciones(false);
-});
+        botonCerrar?.addEventListener('click', () => establecer(false));
+
+        // Cerrar al hacer clic fuera del panel
+        document.addEventListener('click', (e) => {
+          if (!estaAbierto()) return;
+          const target = e.target as Node;
+          if (!panel.contains(target) && !boton.contains(target)) establecer(false);
+        });
+
+        // Cerrar con Escape
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') establecer(false);
+        });
+      }
+
+      configurarPanelDesplegable('btn-instrucciones', 'panel-instrucciones', 'cerrar-instrucciones');
+      configurarPanelDesplegable('btn-informacion', 'panel-informacion', 'cerrar-informacion');
     </script>
   </main>
 </BaseLayout>

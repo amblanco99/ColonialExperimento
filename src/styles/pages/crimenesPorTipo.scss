@@ -1,7 +1,7 @@
 @use 'abstracts/variables' as v;
 
 /* =====================================================
-   CRÍMENES POR TIPO (CrimenesPorTipo.ts)
+   crimenes POR TIPO (CrimenesPorTipo.ts)
    Todos los delitos criminales del corpus, de mayor a menor, en la misma
    presentación de embudo que tenía el "Top 5" (ahora fusionado aquí). Al
    hacer clic en uno o más delitos se fijan para comparar su tendencia por
@@ -13,7 +13,7 @@
   width: 100%;
 }
 
-/* Fila de crímenes fijados para comparar (ver renderizarFijados en el .ts):
+/* Fila de crimenes fijados para comparar (ver renderizarFijados en el .ts):
    vive ARRIBA de las barras, como el "filtro" desde el que se puede
    desfijar uno (× en su chip) o todos (botón "Quitar selección") sin bajar
    hasta la leyenda del spike. */
@@ -254,7 +254,7 @@
   margin: 0;
 }
 
-/* Tarjeta "Subcrímenes": selector de pestañas cuando hay más de un crimen
+/* Tarjeta "Subcrimenes": selector de pestañas cuando hay más de un crimen
    fijado (ver renderizarDonut en CrimenesPorTipo.ts) y el donut en sí. */
 .crimenes-tipo-donut-selector {
   display: flex;

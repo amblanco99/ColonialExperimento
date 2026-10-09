@@ -54,7 +54,7 @@ original se indica.
 
 | Archivo | Título | Script de entrada |
 |---|---|---|
-| `index.html` | Crímenes Coloniales | **ninguno** |
+| `index.html` | crimenes Coloniales | **ninguno** |
 | `base-de-datos/index.html` | Tablas y Filtros | `baseDeDatosMain.js` |
 | `base-de-datos/caso.html` | Detalle del Caso | `baseDeDatosMain.js` |
 | `about/index.html` | Fuentes y metodología | `aboutmain.js` |

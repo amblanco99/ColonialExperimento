@@ -1,16 +1,15 @@
 Pregunta,Respuesta,Desglose
 ¿A partir de qué se construyó la base de datos?,"La base de datos se construyó <strong>a partir de las descripciones archivísticas</strong> de la colección Juicios Criminales del Archivo General de la Nación (AGN). No se ha realizado una lectura completa de cada expediente original.",
-¿Cómo se construyó la base de datos?,"Se transcribieron y organizaron sistemáticamente todas las descripciones archivísticas; luego se cotejaron manualmente los nombres personales recurrentes y se verificaron las posibles correspondencias entre documentos mediante evidencia contextual (fechas, lugares y otra información de cada entrada), con el fin de identificar qué documentos, dispersos en distintos fondos y legajos, pertenecían a un mismo proceso judicial.",
+¿Cómo se construyó la base de datos?,"Se transcribieron y organizaron sistemáticamente todas las descripciones archivísticas; luego se cotejaron manualmente los nombres recurrentes y se verificaron las posibles correspondencias entre documentos mediante evidencia contextual (fechas, lugares y otra información de cada entrada), con el fin de identificar qué documentos, dispersos en distintos fondos y legajos, pertenecían a un mismo proceso judicial.
+ Se clasificaron los registros en criminales y no criminales. Se identificaron los crímenes. Se definieron las variables de tiempo y lugar usando el año de los metadatos como fecha de referencia. Se clasificaron a los agentes según su rol: perpetrador, víctima o cómplice. Se adoptó un enfoque conservador para las características sociales (género, calidad y labor).",
 ¿Cuáles son las unidades de análisis?,"<strong>Documento</strong>: un único registro archivístico identificado por su signatura del AGN.
 
-<strong>Casos</strong>: uno o más documentos que se refieren al mismo proceso judicial; unidad más amplia de análisis.
+<strong>Casos</strong>: uno o más documentos que se refieren al mismo proceso judicial.
 
-<strong>Delitos</strong>: cada delito constituye una observación analítica separada, vinculada al caso correspondiente y a los actores involucrados en él; tiene su propio identificador único. Para más información <a href=""#"" data-ir-vista=""delitos"">entre aquí</a>.
+<strong>Crimenes</strong>: cada crimen constituye una observación analítica separada, vinculada al caso correspondiente y a los actores involucrados en él; tiene su propio identificador único. Para más información <a href=""#"" data-ir-vista=""delitos"">entre aquí</a>.
 
-<strong>Agentes</strong>: individuos (u ocasionalmente instituciones o actores colectivos) vinculados a cada delito según su rol procesal.",
+<strong>Agentes</strong>: individuos (u ocasionalmente instituciones o poblaciones) vinculados a cada crimen según su rol en el proceso.",
 ¿Cuáles son las categorías utilizadas?,"<strong>Atributo</strong>: Víctima, cómplice y perpetrador.
-
-<strong>Mujeres mencionadas</strong>: Se resaltan las mujeres que fueron testigas, pero no participantes directas del proceso.
 
 <strong>Otros agentes</strong>: como instituciones y poblaciones, para evitar el sobreconteo de las personas.
 
@@ -23,16 +22,14 @@ Pregunta,Respuesta,Desglose
 
 <strong>Distinguir entre documento y caso.</strong> Reconstruyendo los procesos judiciales dispersos en múltiples registros archivísticos.
 
-<strong>Distinguir entre caso y delito.</strong> Para no perder la variedad de delitos que podían coexistir en un mismo proceso judicial.
+<strong>Distinguir entre caso y crimen.</strong> Para no perder la variedad de crimenes que podían coexistir en un mismo proceso judicial.
 
-<strong>Redefinir el contenido del archivo.</strong> Clasificando los registros de Juicios Criminales en procesos penales, procesos no penales (inspecciones, peticiones administrativas, etc.) y registros ambiguos pendientes de verificación.
+<strong>Redefinir el contenido del archivo.</strong> Clasificando los registros de Juicios Criminales en procesos penales, procesos no penales (peticiones administrativas, separaciones, etc.) y registros ambiguos pendientes de verificación.
 
 <strong>Definir las variables de tiempo y lugar.</strong> Usando el año de los metadatos como fecha de referencia y la provincia como unidad territorial más confiable ante la ambigüedad de las localidades específicas.
 
 <strong>Clasificar a los actores judiciales según su rol procesal.</strong> Perpetrador, víctima o cómplice, sin forzar la asignación de roles no respaldados por la evidencia archivística.
 
-<strong>Separar las observaciones a nivel de delito y a nivel de caso.</strong> Para evitar el doble conteo de individuos.
-
-<strong>Adoptar un enfoque conservador para las características sociales.</strong> Género, calidad y ocupación: se registra solo lo explícitamente indicado y se deja sin codificar los casos ambiguos, con la única excepción parcial de los honoríficos Don/Doña.
+<strong>Adoptar un enfoque conservador para las características sociales.</strong> Género, calidad y ocupación: se registra solo lo explícitamente indicado en la descripción, sin asumir información adicional.
 
 <strong>Incluir actores no individuales.</strong> Instituciones y actores colectivos se registran como tales, en lugar de asignarles un número arbitrario de personas."

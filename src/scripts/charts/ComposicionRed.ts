@@ -186,7 +186,7 @@ export function dibujarRed({
     .attr('role', 'button')
     .attr('tabindex', 0)
     .attr('aria-pressed', (n) => n.id === crimenActivo)
-    .attr('aria-label', (n) => `${n.id}, ${fmt(n.casos)} caso(s)`);
+    .attr('aria-label', (n) => `${n.id}, ${fmt(n.casos)} casos`);
   const destacadosSet = new Set(destacados);
   const codigoPorCrimen = new Map<string, string>();
   filas.forEach((f) => {

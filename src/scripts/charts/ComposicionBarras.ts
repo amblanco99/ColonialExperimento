@@ -113,7 +113,7 @@ export function dibujarBarras({
     .attr('role', 'img')
     .attr(
       'aria-label',
-      `Delitos más registrados: ${ladoIzq.etiqueta} frente a ${ladoDer.etiqueta}`,
+      `Crimenes más registrados: ${ladoIzq.etiqueta} frente a ${ladoDer.etiqueta}`,
     );
   const ladoAtenuado = (lado: { claves: string[] }) =>
     gruposActivos.length > 0 && !lado.claves.some((c) => gruposActivos.includes(c));
@@ -235,7 +235,7 @@ export function dibujarBarras({
     boton.setAttribute('aria-expanded', String(expandido));
     boton.textContent = expandido
       ? 'Mostrar menos'
-      : `Mostrar más (${fmt(crimenes.length - limite)} delitos más)`;
+      : 'Mostrar más';
     boton.addEventListener('click', alAlternarExpansion);
     contenedor.appendChild(boton);
   }

@@ -217,7 +217,7 @@ function renderCase(caso: any, personas: Fila[], main: HTMLElement, casesMap: Ma
   if (caso.documentos.length > 1) {
     const secTitle = document.createElement('h2');
     secTitle.className = 'section-title';
-    secTitle.textContent = `Crímenes registrados (${caso.documentos.length})`;
+    secTitle.textContent = `crimenes registrados (${caso.documentos.length})`;
     main.appendChild(secTitle);
   }
   const list = document.createElement('div');
@@ -226,7 +226,7 @@ function renderCase(caso: any, personas: Fila[], main: HTMLElement, casesMap: Ma
     const card = document.createElement('article');
     card.className = 'crime-card';
     const agentesDocumento = personas.filter((p: Fila) =>
-      ((p['Relación_crímenes'] as string) || '')
+      ((p['Relación_crimenes'] as string) || '')
         .split(',')
         .some((c) => c.trim() === String(doc.id_documento).trim()),
     );

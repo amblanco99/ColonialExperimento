@@ -23,8 +23,8 @@ const base = import.meta.env.BASE_URL;
 const esPersonas = modo === 'personas';
 const titulo = esPersonas ? 'Personas' : 'Otros agentes';
 const pista = esPersonas
-  ? 'Haz clic en un género, un delito o un nodo de la red — los demás paneles se actualizan'
-  : 'Haz clic en un tipo de agente, un delito o un nodo de la red — los demás paneles se actualizan';
+  ? 'Haz clic en un género, un crimen o un nodo del grafo, los demás paneles se actualizan'
+  : 'Haz clic en un tipo de agente, un crimen o un nodo del grafo, los demás paneles se actualizan';
 
 const pestañas = [
   { modo: 'personas', texto: 'Personas', href: `${base}personas/index.html` },
@@ -56,11 +56,10 @@ const pestañas = [
 
   <div id="csFiltros" class="cs-filtros"></div>
 
-  <h2 class="cs-seccion-titulo"><span>Quién · clic en una tarjeta para ver su rol</span></h2>
+  <h2 class="cs-seccion-titulo"><span>¿Quién? Selecciona para mayor información</span></h2>
   <div id="csTarjetas" class="cs-tarjetas"></div>
   <div id="csRol" class="cs-panel cs-panel--rol" hidden></div>
 
-  <h2 class="cs-seccion-titulo"><span>Cuándo</span></h2>
   <section class="cs-panel">
     <h3 class="cs-panel-titulo">
       {esPersonas ? 'Personas registradas' : 'Agentes registrados'} a lo largo del tiempo
@@ -70,14 +69,13 @@ const pestañas = [
   </section>
 
   <h2 class="cs-seccion-titulo">
-    <span>Qué y cómo se relaciona</span>
+    <span>¿Cómo se relacionan?</span>
   </h2>
   <div id="csRejilla" class="cs-rejilla">
     <section class="cs-panel cs-panel--barras">
-      <h3 class="cs-panel-titulo">Delitos más registrados</h3>
+      <h3 class="cs-panel-titulo">Distribución por crimenes</h3>
       <p class="cs-panel-subtitulo">
-        Haz clic en un delito para ver sus subdelitos, filtrar la dona y resaltarlo en la red de
-        abajo
+        Haz clic en un crimen para ver sus subcrimenes. También puedes interacturar con el sunburst o el grafo. 
       </p>
       <div id="csBarras"></div>
     </section>
@@ -98,10 +96,9 @@ const pestañas = [
   </div>
 
   <section class="cs-panel">
-    <h3 class="cs-panel-titulo">Delitos que suelen coincidir en un mismo caso</h3>
+    <h3 class="cs-panel-titulo"> Crimenes que suelen coincidir en un mismo caso</h3>
     <p id="csRedSubtitulo" class="cs-panel-subtitulo">
-      Los nodos en color son los 5 delitos principales de la barra de arriba — haz clic para
-      vincular ambos paneles y arrastra para mover
+      Puedes observar cuáles son los crimenes que más suceden en un mismo caso, puedes hacer clic en los nodos para ver su conexión.
     </p>
     <div id="csRed"></div>
   </section>

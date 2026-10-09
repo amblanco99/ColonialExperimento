@@ -424,7 +424,7 @@ export async function inicializarDashboard() {
     const anioMax = Math.max(...todosLosAnios);
     const encabezado = crearElemento('div', 'lugar-ficha-encabezado');
     encabezado.append(
-      crearElemento('h4', 'lugar-ficha-subtitulo', 'Crímenes documentados'),
+      crearElemento('h4', 'lugar-ficha-subtitulo', 'crimenes documentados'),
       crearElemento(
         'span',
         'lugar-ficha-resumen',
@@ -574,8 +574,8 @@ export async function inicializarDashboard() {
   columnaMapa.appendChild(
     envolverEnTarjeta(
       mapaContenedor,
-      'Distribución geográfica',
-      'Haz clic en un punto para fijarlo y compararlo',
+      'Distribución geográfica de los crimenes',
+      'Puedes hacer clic en un punto para fijarlo y compararlo',
     ),
   );
   layoutLugar.appendChild(columnaMapa);
@@ -588,7 +588,7 @@ export async function inicializarDashboard() {
       envolverEnTarjeta(
         contenedorLineasEl,
         'Evolución en el tiempo',
-        'Casos por década según el rango seleccionado',
+        'Crimenes ocurridos en el lugar seleccionado según el rango elegido. Puedes fijar varios lugares para compararlos.',
       ),
     );
     contenedorInfoLugares = document.createElement('div');
@@ -703,7 +703,7 @@ export async function inicializarDashboard() {
   const wrapTiempo = document.createElement('div');
   wrapTiempo.className = 'mapa-wrap-tiempo';
   const labelTiempo = document.createElement('label');
-  labelTiempo.textContent = 'Década';
+  labelTiempo.textContent = 'Fecha';
   labelTiempo.className = 'filtro-label';
   const sliderRango = document.createElement('div');
   sliderRango.className = 'mapa-slider-rango';
@@ -798,7 +798,7 @@ export async function inicializarDashboard() {
     etiqueta: 'Subcrimen',
     opciones: subcrimenesParaCrimen(estado.crimen),
     valorInicial: estado.subcrimen,
-    notaVacia: 'Este crimen no tiene subcrímenes registrados.',
+    notaVacia: 'Este crimen no tiene subcrimenes registrados.',
     onChange: (valor: any) => {
       estado.subcrimen = valor;
       actualizarMapa();
@@ -909,7 +909,7 @@ export async function inicializarDashboard() {
   mapaContenedor.appendChild(botonVerCasosMapa.boton);
   const btnEscalarTamanio = document.createElement('button');
   btnEscalarTamanio.type = 'button';
-  btnEscalarTamanio.textContent = 'Tamaño según cantidad de crímenes';
+  btnEscalarTamanio.textContent = 'Aumentar según cantidad de crimenes';
   btnEscalarTamanio.className = 'btn-mapa-escalar';
   function actualizarEstiloBotonEscalar() {
     btnEscalarTamanio.classList.toggle('btn-mapa--activo', escalarPorCantidad);
@@ -923,7 +923,7 @@ export async function inicializarDashboard() {
   mapaContenedor.appendChild(btnEscalarTamanio);
   const btnMapaBase = document.createElement('button');
   btnMapaBase.type = 'button';
-  btnMapaBase.textContent = 'Mapa topográfico de fondo';
+  btnMapaBase.textContent = 'Ver en un mapa actual';
   btnMapaBase.className = 'btn-mapa-base-topografico';
   mapaContenedor.appendChild(btnMapaBase);
   const mapaLienzo = document.createElement('div');
@@ -1428,7 +1428,7 @@ export async function inicializarDashboard() {
     function buildSerieTotal() {
       const lista = decadasSeleccionadas();
       const filtrados = datosFiltradosBase();
-      const nombreSerie = estado.crimen === 'Todos' ? 'Todos los crímenes' : estado.crimen;
+      const nombreSerie = estado.crimen === 'Todos' ? 'Todos los crimenes' : estado.crimen;
       const puntos = lista.map((t) => {
         const set = new Set(
           filtrados
@@ -1593,12 +1593,12 @@ export async function inicializarDashboard() {
         });
       const sufijoProvincia =
         !enModoComparacion && estado.provincia !== 'Todos' ? ` · ${estado.provincia}` : '';
-      const tituloTexto =
-        (enModoComparacion
-          ? `Comparando ${series.length} lugar(es) fijado(s)`
-          : estado.crimen === 'Todos'
-            ? 'Todos los crímenes'
-            : estado.crimen) + sufijoProvincia;
+     const tituloTexto =
+      (enModoComparacion
+        ? `Comparando ${series.length} ${series.length === 1 ? 'lugar' : 'lugares'}`
+        : estado.crimen === 'Todos'
+          ? 'Todos los crimenes'
+          : estado.crimen) + sufijoProvincia;
       svgLine
         .append('text')
         .attr('x', MARGIN.left + IW / 2)
@@ -1612,7 +1612,7 @@ export async function inicializarDashboard() {
         .attr('y', 40)
         .attr('text-anchor', 'middle')
         .attr('class', 'mapa-linea-subtitulo')
-        .text(`${totalGeneral} registros únicos · por década`);
+        .text(`${totalGeneral} registros únicos por década`);
       const lineGen = (d3.line() as any)
         .x((d: FilaCsv) => x(d.tiempo))
         .y((d: FilaCsv) => y(d.cantidad))

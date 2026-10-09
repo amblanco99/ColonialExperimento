@@ -24,7 +24,7 @@ export function dibujarDelitosSunburstGenero(
     const vacio = document.createElement('p');
     vacio.className = 'grafico-vacio';
     vacio.textContent = hayCrimenFijado
-      ? `"${crimenSeleccionado}" no tiene subcrímenes registrados para los géneros activos.`
+      ? `"${crimenSeleccionado}" no tiene subcrimenes registrados para los géneros activos.`
       : 'No hay datos para los géneros activos.';
     contenedor.appendChild(vacio);
     return;
@@ -273,7 +273,7 @@ export function dibujarDelitosSunburstGenero(
     ? 'Clic en un sector para bajar al siguiente nivel; el centro vuelve.'
     : 'Clic en un anillo para hacer zoom.';
   nota.textContent = hayCrimenFijado
-    ? `Recorrido de las ${filasHierarchy.length.toLocaleString('es')} persona(s) con subcrimen registrado en "${crimenSeleccionado}". ${pista}`
-    : `Recorrido de las ${filasHierarchy.length.toLocaleString('es')} persona(s) registradas, todos los crímenes. ${pista}`;
+    ? `Recorrido de las ${filasHierarchy.length.toLocaleString('es')} personas con subcrimen registrado en "${crimenSeleccionado}". ${pista}`
+    : '';
   contenedor.appendChild(nota);
 }

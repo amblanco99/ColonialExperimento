@@ -16,7 +16,7 @@ import { dibujarRed } from './ComposicionRed.js';
 import { dibujarDelitosSunburstGenero } from './DelitosSunburstGenero.js';
 import { dibujarSunburst } from './InstitucionesAtributo.js';
 const TOP_BARRAS = 5;
-const TODOS_LOS_CRIMENES = 'Todos los crímenes';
+const TODOS_LOS_CRIMENES = 'Todos los crimenes';
 interface Estado {
   grupos: string[];
   crimen: string | null;
@@ -211,7 +211,7 @@ export async function crearComposicionSocial(modo: Modo) {
           <span class="cs-tarjeta-accion">${activa ? 'Ocultar rol' : 'Ver rol'}</span>
         </span>
         <span class="cs-tarjeta-valor">${fmt(agentes)}</span>
-        <span class="cs-tarjeta-sub">${fmt(casos)} caso(s) asociados</span>
+        <span class="cs-tarjeta-sub">${fmt(casos)} casoss</span>
       `;
       tarjeta.addEventListener('click', () => {
         alternarGrupo(g.clave);
@@ -257,9 +257,9 @@ export async function crearComposicionSocial(modo: Modo) {
     if (top) {
       const [nombre, cantidad] = top;
       pie.innerHTML = `
-        <span class="cs-rol-delito-titulo">Delito más frecuente</span>
+        <span class="cs-rol-delito-titulo">Crimen más frecuente</span>
         <strong class="cs-rol-delito-nombre">${nombre}</strong>
-        <span class="cs-rol-delito-texto">${fmt(cantidad)} caso(s) registrados en este grupo</span>
+        <span class="cs-rol-delito-texto">${fmt(cantidad)} casos registrados en este grupo</span>
       `;
       const enlace = document.createElement('button');
       enlace.type = 'button';
@@ -295,7 +295,7 @@ export async function crearComposicionSocial(modo: Modo) {
         <span>${atributo}</span>
       </figcaption>
     `;
-    fig.title = `${fmt(valor)} caso(s)`;
+    fig.title = `${fmt(valor)} casos`;
     return fig;
   }
   function actualizar() {
@@ -328,7 +328,6 @@ export async function crearComposicionSocial(modo: Modo) {
     const etiquetaCrimen = estado.crimen ?? TODOS_LOS_CRIMENES;
     dibujarTarjetas(filasCrimen);
     dibujarRol(filasCrimen);
-    lineaSubtitulo.textContent = `${estado.desde} – ${estado.hasta} · ${etiquetaCrimen.toLowerCase()}, ${config.unidadTarjeta} por década, sin repetir dentro de una misma década`;
     dibujarLineaEvolucion({
       contenedor: linea,
       filas: filasFiltradas,
@@ -359,9 +358,7 @@ export async function crearComposicionSocial(modo: Modo) {
       crimenActivo: estado.crimen,
       alSeleccionarCrimen,
     });
-    donaSubtitulo.textContent = `${fmt(filasFiltradas.length)} participaciones registradas · ${
-      estado.crimen ? `subdelitos de ${estado.crimen}` : 'todos los delitos'
-    }`;
+    donaSubtitulo.textContent = 'Haz clic en un anillo para hacer zoom y ver los subcrímenes.';
     const opcionesDona = { unNivel: estado.donaUnNivel };
     rejilla.classList.toggle('cs-rejilla--dona-grande', estado.donaGrande);
     botonNivel.setAttribute('aria-pressed', String(estado.donaUnNivel));
@@ -373,7 +370,7 @@ export async function crearComposicionSocial(modo: Modo) {
       dibujarSunburst('csDonaGrafico', filasFiltradas, estado.crimen, opcionesDona);
     }
     const subtituloRedBase =
-      'Los nodos en color son los 5 delitos principales de la barra de arriba — haz clic para vincular ambos paneles y arrastra para mover';
+      ' Puedes observar cuáles son los crimenes que más suceden en un mismo caso, puedes hacer clic en los nodos para ver su conexión.';
     redSubtitulo.textContent = !hayGrupos
       ? subtituloRedBase
       : `Con ${elegidos.map((g) => g.etiqueta).join(' y ')} elegido${elegidos.length > 1 ? 's' : ''}, el tamaño de cada nodo muestra en cuántos de sus casos aparece el delito — haz clic para filtrar y arrastra para mover`;

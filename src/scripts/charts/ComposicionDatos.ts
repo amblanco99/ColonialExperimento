@@ -111,7 +111,7 @@ export async function cargarFilas(modo: Modo): Promise<Fila[]> {
     if (!atributo || !d.ID_Agente) continue;
     const grupo =
       modo === 'personas' ? (textoOpcional(d.Género) ?? 'Indeterminado') : d.Agente.trim();
-    const codigosCrimen = ((d['Relación_crímenes'] as string) || '')
+    const codigosCrimen = ((d['Relación_crimenes'] as string) || '')
       .split(',')
       .map((c) => c.trim())
       .filter(Boolean);

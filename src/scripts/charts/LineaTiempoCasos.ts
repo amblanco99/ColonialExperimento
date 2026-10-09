@@ -28,6 +28,15 @@ function getDecada(y: number): number {
 function decadaValida(y: number): boolean {
   return y >= 1500 && y <= 1899;
 }
+
+// Formato con punto de miles (2.000, 1.500) para el eje Y.
+const formatoMiles = d3
+  .formatLocale({ decimal: ',', thousands: '.', grouping: [3], currency: ['', ''] })
+  .format(',d');
+
+// El CSV trae el texto "null" en algunos lugares: se trata como "sin información".
+const textoLugar = (l?: string) => (!l || l.trim().toLowerCase() === 'null' ? 'Lugar no identificado' : l);
+
 const ULTIMA_DECADA = 1820;
 const SIN_TIPO_PROCESO = 'Sin información';
 interface ResumenCaso {
@@ -37,6 +46,19 @@ interface ResumenCaso {
   lugar: string;
   tipoProceso: string;
   filas: FilaCsv[];
+}
+
+// Orden alfabético por lugar, respetando tildes y la ñ en español. Los casos
+// sin lugar identificado van al final del año. Si dos casos son del mismo
+// lugar se desempata por tipo de proceso y luego por id, para que el orden
+// sea siempre el mismo.
+function compararCasosPorLugar(a: ResumenCaso, b: ResumenCaso): number {
+  if (!a.lugar !== !b.lugar) return a.lugar ? -1 : 1;
+  return (
+    textoLugar(a.lugar).localeCompare(textoLugar(b.lugar), 'es', { sensitivity: 'base' }) ||
+    a.tipoProceso.localeCompare(b.tipoProceso, 'es', { sensitivity: 'base' }) ||
+    a.id.localeCompare(b.id)
+  );
 }
 const FADE_PASO_PX = 90;
 const ESPACIO_ANIO_BASE = 42;
@@ -73,7 +95,7 @@ export async function crearLineaTiempoCasos(containerId: string) {
     const conteoLugar = new Map<string, number>();
     filas.forEach((f) => {
       const l = (f.Lugar || '').trim();
-      if (l) conteoLugar.set(l, (conteoLugar.get(l) || 0) + 1);
+      if (l && l.toLowerCase() !== 'null') conteoLugar.set(l, (conteoLugar.get(l) || 0) + 1);
     });
     const lugar = [...conteoLugar.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || '';
     resumenPorCaso.set(id, {
@@ -124,10 +146,10 @@ export async function crearLineaTiempoCasos(containerId: string) {
   wrapper.className = 'linea-tiempo-casos-wrapper';
   const selectorVista = document.createElement('div');
   selectorVista.className = 'linea-tiempo-casos-selector-vista';
-selectorVista.innerHTML = `
-  <button type="button" class="linea-tiempo-casos-selector-vista__boton linea-tiempo-casos-selector-vista__boton--activo" data-vista="linea">Vista en línea</button>
-  <button type="button" class="linea-tiempo-casos-selector-vista__boton" data-vista="rueda">Rueda de años</button>
-`;
+  selectorVista.innerHTML = `
+    <button type="button" class="linea-tiempo-casos-selector-vista__boton linea-tiempo-casos-selector-vista__boton--activo" data-vista="linea">Vista en línea</button>
+    <button type="button" class="linea-tiempo-casos-selector-vista__boton" data-vista="rueda">Vista en detalle</button>
+  `;
   wrapper.appendChild(selectorVista);
   const botonVistaLinea = selectorVista.querySelector<HTMLButtonElement>('[data-vista="linea"]')!;
   const botonVistaRueda = selectorVista.querySelector<HTMLButtonElement>('[data-vista="rueda"]')!;
@@ -141,13 +163,13 @@ selectorVista.innerHTML = `
   const elSubtitulo = document.getElementById('lineaTiempoCasosSubtitulo');
   const TEXTOS_VISTA = {
     rueda: {
-      titulo: 'Línea de tiempo de casos',
-      subtitulo: 'Cada punto es un caso individual en su año exacto, según los filtros de arriba.',
-    },
-    linea: {
       titulo: 'Casos por año',
       subtitulo:
-        'Cada línea suma los casos por año según su tipo de proceso, con los filtros de arriba.',
+        'Cada punto es un caso individual en su año exacto. Desplázate por los años para ver el detalle de cada uno.',
+    },
+    linea: {
+      titulo: 'Casos a lo largo de los años',
+      subtitulo: 'Cada línea suma los casos por año según su tipo de proceso',
     },
   } as const;
   function mostrarVistaTimeline(vista: 'linea' | 'rueda') {
@@ -193,6 +215,12 @@ selectorVista.innerHTML = `
   });
   let filas: HTMLElement[] = [];
   let aniosFilas: number[] = [];
+  // Casos de cada columna (mismo orden que filas/aniosFilas): sirve para
+  // mostrar la lista del año que quede resaltado en la rueda.
+  let casosPorFila: ResumenCaso[][] = [];
+  // Índice de la columna resaltada la última vez que se mostró el panel
+  // (-1 = ninguna): el panel solo se actualiza cuando este índice cambia.
+  let indiceActivoPrevio = -1;
   let espaciadorFinal: HTMLElement | null = null;
   let anioMinActual = decadaMinGlobal;
   let anioMaxActual = ULTIMA_DECADA + 9;
@@ -216,6 +244,12 @@ selectorVista.innerHTML = `
     filas.forEach((fila, i) => {
       fila.classList.toggle('linea-tiempo-casos-anio--activo', i === indiceActivo);
     });
+    // Cada vez que cambia el año resaltado, el panel muestra su información.
+    // (Si la vista está oculta, clientWidth es 0 y no se hace nada.)
+    if (lista.clientWidth > 0 && indiceActivo !== indiceActivoPrevio) {
+      indiceActivoPrevio = indiceActivo;
+      mostrarPopupAnio(aniosFilas[indiceActivo], casosPorFila[indiceActivo]);
+    }
   }
   function recolocarColumnas() {
     if (filas.length === 0) {
@@ -316,6 +350,30 @@ selectorVista.innerHTML = `
     recolocarColumnas();
     actualizarDesvanecido();
   });
+
+  // Lleva la columna i al centro de la ventana visible.
+  function centrarFila(i: number) {
+    const fila = filas[i];
+    if (!fila) return;
+    const maxScrollLeft = Math.max(0, lista.scrollWidth - lista.clientWidth);
+    const destino = fila.offsetLeft + fila.offsetWidth / 2 - lista.clientWidth / 2;
+    lenis.scrollTo(Math.min(maxScrollLeft, Math.max(0, destino)), { immediate: true });
+  }
+
+  // Cuando el panel de detalle se abre/cierra (o la vista pasa de oculta a
+  // visible) el ancho de la rueda cambia: se recalcula el espaciado y se
+  // mantiene centrado el año resaltado, para que no "salte" a otro año.
+  let anchoListaPrevio = 0;
+  new ResizeObserver(() => {
+    const ancho = lista.clientWidth;
+    if (ancho === anchoListaPrevio) return;
+    anchoListaPrevio = ancho;
+    if (filas.length === 0 || ancho === 0) return;
+    const idx = indiceActivoPrevio;
+    recolocarColumnas();
+    if (idx >= 0) centrarFila(idx);
+    actualizarDesvanecido();
+  }).observe(lista);
   const nota = document.createElement('div');
   nota.className = 'linea-tiempo-casos-nota';
   wrapper.appendChild(nota);
@@ -331,10 +389,13 @@ selectorVista.innerHTML = `
     leyenda.appendChild(item);
   });
   wrapper.appendChild(leyenda);
+
+  // ---------- Panel de detalle ----------
   const panelCaso = document.createElement('div');
   panelCaso.className = 'linea-tiempo-casos-panel-caso';
   panelCaso.innerHTML = `
     <button type="button" class="linea-tiempo-casos-panel-caso__cerrar" aria-label="Cerrar">×</button>
+    <button type="button" class="linea-tiempo-casos-panel-caso__volver" hidden>← Volver al año</button>
     <div class="linea-tiempo-casos-panel-caso__fecha"></div>
     <div class="linea-tiempo-casos-panel-caso__lugar"></div>
     <p class="linea-tiempo-casos-panel-caso__descripcion"></p>
@@ -355,16 +416,23 @@ selectorVista.innerHTML = `
   const botonVerCaso = panelCaso.querySelector<HTMLButtonElement>(
     '.linea-tiempo-casos-panel-caso__boton-caso',
   )!;
+  const botonVolver = panelCaso.querySelector<HTMLButtonElement>(
+    '.linea-tiempo-casos-panel-caso__volver',
+  )!;
   function ocultarPopup() {
     panelCaso.classList.remove('linea-tiempo-casos-panel-caso--visible');
   }
-  function mostrarPopup(caso: ResumenCaso) {
+
+  // Detalle de un caso. volverA es opcional: si viene (desde la lista de un
+  // año), se muestra el botón "← Volver al año".
+  function mostrarPopup(caso: ResumenCaso, volverA?: () => void) {
     elFecha.textContent =
       caso.anioDesde === caso.anioHasta ? `${caso.anioDesde}` : `${caso.anioDesde}–${caso.anioHasta}`;
-    elLugar.textContent = caso.lugar || 'Sin información';
+    elLugar.textContent = textoLugar(caso.lugar);
     const descripcion = (caso.filas[0]?.['Descripción'] || '').trim().replace(/\*\*(.+?)\*\*/g, '$1');
     elDescripcion.textContent = descripcion;
     elDescripcion.hidden = !descripcion;
+
     elLista.innerHTML = '';
     caso.filas.forEach((f) => {
       const nombre = linajeMap.get(f['Código']) || 'Sin información';
@@ -377,23 +445,75 @@ selectorVista.innerHTML = `
       li.append(cuadro, document.createTextNode(texto));
       elLista.appendChild(li);
     });
-    botonMapa.disabled = !caso.lugar;
+
+    const tieneLugar = !!caso.lugar;
+    botonMapa.hidden = false;
+    botonVerCaso.hidden = false;
+    botonMapa.disabled = !tieneLugar;
     botonMapa.onclick = () => {
-      if (!caso.lugar) return;
+      if (!tieneLugar) return;
       window.__irAVistaLugar?.();
       requestAnimationFrame(() => window.__resaltarCasoEnMapa?.(caso.lugar));
     };
     botonVerCaso.onclick = () => {
       window.location.href = `${import.meta.env.BASE_URL}base-de-datos/caso.html?caso=${encodeURIComponent(caso.id)}`;
     };
+
+    botonVolver.hidden = !volverA;
+    botonVolver.onclick = volverA ?? null;
+
     panelCaso.classList.add('linea-tiempo-casos-panel-caso--visible');
   }
+
+  // Lista de todos los casos de un año (lugar + crímenes). Al hacer clic en
+  // uno se abre su detalle, con botón para volver a esta lista.
+  function mostrarPopupAnio(anio: number, casosAnio: ResumenCaso[]) {
+    elFecha.textContent = String(anio);
+    elLugar.textContent = `${casosAnio.length} caso${casosAnio.length === 1 ? '' : 's'}`;
+    elDescripcion.hidden = true;
+    botonMapa.hidden = true;
+    botonVerCaso.hidden = true;
+    botonVolver.hidden = true;
+
+    elLista.innerHTML = '';
+    casosAnio.forEach((caso) => {
+      const crimenesTexto = [
+        ...new Set(caso.filas.map((f) => linajeMap.get(f['Código']) || 'Sin información')),
+      ].join(', ');
+
+      const li = document.createElement('li');
+      li.className = 'linea-tiempo-casos-panel-caso__item-caso';
+      li.tabIndex = 0;
+
+      const cuadro = document.createElement('i');
+      cuadro.className = 'linea-tiempo-casos-panel-caso__lista-color';
+      cuadro.style.background = colorDeCrimen(caso.filas[0]?.['Código']);
+
+      const texto = document.createElement('span');
+      texto.innerHTML = '<strong></strong><br/><small></small>';
+      texto.querySelector('strong')!.textContent = textoLugar(caso.lugar);
+      texto.querySelector('small')!.textContent = crimenesTexto;
+
+      li.append(cuadro, texto);
+      const abrir = () => mostrarPopup(caso, () => mostrarPopupAnio(anio, casosAnio));
+      li.addEventListener('click', abrir);
+      li.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') abrir();
+      });
+      elLista.appendChild(li);
+    });
+
+    panelCaso.classList.add('linea-tiempo-casos-panel-caso--visible');
+  }
+
   panelCaso
     .querySelector('.linea-tiempo-casos-panel-caso__cerrar')!
     .addEventListener('click', ocultarPopup);
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') ocultarPopup();
   });
+
+  // ---------- Gráfico de líneas ----------
   function renderizarLinea(anioDesde: number, anioHasta: number, casos: ResumenCaso[]) {
     contenedorLinea.innerHTML = '';
     if (casos.length === 0) {
@@ -415,7 +535,7 @@ selectorVista.innerHTML = `
       color: colorDeTipo(tipo),
       valores: anios.map((a) => conteoPorAnio.get(a)?.get(tipo) ?? 0),
     }));
-    const MARGIN = { top: 16, right: 20, bottom: 30, left: 44 };
+    const MARGIN = { top: 16, right: 20, bottom: 34, left: 56 };
     const WIDTH = 900;
     const HEIGHT = 320;
     const IW = WIDTH - MARGIN.left - MARGIN.right;
@@ -429,15 +549,26 @@ selectorVista.innerHTML = `
       .attr('class', 'linea-tiempo-casos-linea-svg');
     const g = svg.append('g').attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
     g.append('g')
-      .call(d3.axisLeft(y).ticks(5).tickSize(-IW).tickFormat(d3.format('d')) as SeleccionD3)
+      .call(
+        d3
+          .axisLeft(y)
+          .ticks(5)
+          .tickSize(-IW)
+          .tickPadding(10)
+          .tickFormat(formatoMiles as any) as SeleccionD3,
+      )
       .call((gg: SeleccionD3) => gg.select('.domain').remove())
       .call((gg: SeleccionD3) => gg.selectAll('line').attr('class', 'mapa-linea-grid-linea'))
       .call((gg: SeleccionD3) => gg.selectAll('text').attr('class', 'mapa-linea-eje-y-texto'));
     const spanAnios = anioHasta - anioDesde;
-    const ejeX = d3.axisBottom(x).tickFormat(d3.format('d') as SeleccionD3).tickSizeOuter(0);
+    const ejeX = d3
+      .axisBottom(x)
+      .tickFormat(d3.format('d') as SeleccionD3)
+      .tickSize(0)
+      .tickPadding(14)
+      .tickSizeOuter(0);
     if (spanAnios > 20) {
-      const paso = Math.ceil(spanAnios / 12);
-      ejeX.tickValues(d3.range(anioDesde, anioHasta + 1, paso));
+      ejeX.tickValues(d3.range(anioDesde, anioHasta + 1, 30));
     }
     g.append('g')
       .attr('transform', `translate(0,${IH})`)
@@ -545,8 +676,8 @@ selectorVista.innerHTML = `
         const t = Math.max(0, Math.min(1, (ahora - inicio) / duracionMs));
         clipRect.attr('width', IW * t);
         const xPix = moverFocoA(anioDesde + spanAnios * t);
-        tooltip.style.left = `${(svgRect.left - tooltipRect.left) + (MARGIN.left + xPix) * escalaSvg + 12}px`;
-        tooltip.style.top = `${(svgRect.top - tooltipRect.top) + MARGIN.top * escalaSvg}px`;
+        tooltip.style.left = `${svgRect.left - tooltipRect.left + (MARGIN.left + xPix) * escalaSvg + 12}px`;
+        tooltip.style.top = `${svgRect.top - tooltipRect.top + MARGIN.top * escalaSvg}px`;
         if (t < 1) {
           idAnimacion = requestAnimationFrame(paso);
         } else {
@@ -559,6 +690,8 @@ selectorVista.innerHTML = `
       idAnimacion = requestAnimationFrame(paso);
     });
   }
+
+  // ---------- Dibujo principal ----------
   function dibujar() {
     const filtros = window.__obtenerFiltrosCrimenesPorTipo?.() ?? null;
     const decadaDesde = filtros?.decadaDesde ?? decadaMinGlobal;
@@ -569,6 +702,8 @@ selectorVista.innerHTML = `
     ocultarPopup();
     filas = [];
     aniosFilas = [];
+    casosPorFila = [];
+    indiceActivoPrevio = -1;
     if (casos.length === 0) {
       const aviso = document.createElement('div');
       aviso.className = 'mapa-aviso-vacio mapa-aviso-vacio--compacto';
@@ -583,7 +718,8 @@ selectorVista.innerHTML = `
     const porAnio = d3.group(casos, (c) => c.anioDesde);
     const aniosConCasos = [...porAnio.keys()].sort((a, b) => a - b);
     aniosConCasos.forEach((anio) => {
-      const casosAnio = porAnio.get(anio)!;
+      // Casos del año en orden alfabético por lugar (puntos y lista del panel).
+      const casosAnio = [...porAnio.get(anio)!].sort(compararCasosPorLugar);
       const fila = document.createElement('div');
       fila.className = 'linea-tiempo-casos-anio';
       const circulos = document.createElement('div');
@@ -597,19 +733,32 @@ selectorVista.innerHTML = `
           caso.anioDesde === caso.anioHasta
             ? `${caso.anioDesde}`
             : `${caso.anioDesde}–${caso.anioHasta}`;
-        punto.title = `${caso.lugar || 'Sin información'} · ${rango} · ${caso.tipoProceso}`;
+        punto.title = `${textoLugar(caso.lugar)} · ${rango} · ${caso.tipoProceso}`;
         punto.addEventListener('click', () => mostrarPopup(caso));
         circulos.appendChild(punto);
       });
       const conteo = document.createElement('div');
       conteo.className = 'linea-tiempo-casos-anio-conteo';
       conteo.textContent = String(casosAnio.length);
-      const numero = document.createElement('div');
+
+      // La píldora del año es un botón: centra ese año en la rueda y muestra
+      // su lista de casos (al centrarse pasa a ser el año resaltado).
+      const numero = document.createElement('button');
+      numero.type = 'button';
       numero.className = 'linea-tiempo-casos-anio-numero';
       numero.textContent = String(anio);
+      numero.addEventListener('click', () => {
+        const i = aniosFilas.indexOf(anio);
+        centrarFila(i);
+        indiceActivoPrevio = i;
+        mostrarPopupAnio(anio, casosAnio);
+        actualizarDesvanecido();
+      });
+
       fila.append(conteo, circulos, numero);
       contenido.appendChild(fila);
       aniosFilas.push(anio);
+      casosPorFila.push(casosAnio);
     });
     espaciadorFinal = document.createElement('div');
     espaciadorFinal.className = 'linea-tiempo-casos-espaciador';
@@ -618,7 +767,7 @@ selectorVista.innerHTML = `
     recolocarColumnas();
     lenis.scrollTo(0, { immediate: true });
     actualizarDesvanecido();
-    nota.textContent = `${casos.length.toLocaleString('es')} caso${casos.length === 1 ? '' : 's'} en ${aniosConCasos.length} año${aniosConCasos.length === 1 ? '' : 's'} · clic en un punto para ver el detalle`;
+    nota.textContent = `${casos.length.toLocaleString('es')} caso${casos.length === 1 ? '' : 's'} en ${aniosConCasos.length} año${aniosConCasos.length === 1 ? '' : 's'} · desplázate por los años o haz clic en un punto para ver el detalle`;
   }
   window.__actualizarLineaTiempoCasosDashboard = dibujar;
   container.appendChild(wrapper);

@@ -21,7 +21,7 @@ export function dibujarSunburst(
     : eventosFiltrados;
   if (eventosHierarchy.length === 0) {
     contenedor.innerHTML = hayCrimenFijado
-      ? `<p class="agentes-vacio">"${crimenSeleccionado}" no tiene subcrímenes registrados para esta selección.</p>`
+      ? `<p class="agentes-vacio">"${crimenSeleccionado}" no tiene subcrimenes registrados para esta selección.</p>`
       : `<p class="agentes-vacio">No hay datos para esta selección.</p>`;
     return;
   }
